@@ -183,6 +183,8 @@ Page::Page(PageClients& pageClients)
     , m_isEditable(false)
     , m_isPrerender(false)
     , m_viewState(PageInitialViewState)
+    , m_blockPopUPWindow(false)
+    , m_blockPopUPWindowURL("")
     , m_requestedLayoutMilestones(0)
     , m_headerHeight(0)
     , m_footerHeight(0)
@@ -1219,6 +1221,13 @@ void Page::enablePageThrottler()
 
 void Page::setViewState(ViewState::Flags viewState)
 {
+
+		 if(isBlockPopUpWindow() && isVisible())
+			 chrome().client().isJavascriptPopupWindowIntercepted(blockPopUpWindowURL());
+
+		 if(isVisible())
+			  setIsBlockPopUpWindow(false);
+
     ViewState::Flags changed = m_viewState ^ viewState;
     if (!changed)
         return;

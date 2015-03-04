@@ -316,6 +316,10 @@ public:
     WEBCORE_EXPORT void setIsVisible(bool);
     WEBCORE_EXPORT void setIsPrerender();
     bool isVisible() const { return m_viewState & ViewState::IsVisible; }
+    bool isBlockPopUpWindow() const { return m_blockPopUPWindow; }
+    void setIsBlockPopUpWindow(bool isBlocked) { m_blockPopUPWindow = isBlocked; }
+    void setBlockPopUpWindowURL(const String& urlString) { m_blockPopUPWindowURL = urlString; }
+    String& blockPopUpWindowURL() { return m_blockPopUPWindowURL; }
 
     // Notification that this Page was moved into or out of a native window.
     WEBCORE_EXPORT void setIsInWindow(bool);
@@ -553,6 +557,8 @@ private:
     bool m_isEditable;
     bool m_isPrerender;
     ViewState::Flags m_viewState;
+    bool m_blockPopUPWindow;
+    String m_blockPopUPWindowURL;
 
     LayoutMilestones m_requestedLayoutMilestones;
 

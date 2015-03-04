@@ -2137,9 +2137,11 @@ PassRefPtr<DOMWindow> DOMWindow::open(const String& urlString, const AtomicStrin
     if (!firstFrame)
         return 0;
     if (!firstWindow.allowPopUp()) {
-					page()->chrome().client().isJavascriptPopupWindowIntercepted(urlString);//lxx, send intercepted message to UIprocess, 201502213
+						page()->setIsBlockPopUpWindow(true);
+						page()->setBlockPopUpWindowURL(urlString);
+					if(page()->isVisible())
+						page()->setViewState(1 << 2);
 
-g_print("lxx------%s(%d) %s-----%p-----\n", __FUNCTION__, __LINE__, __FILE__, page());
         // Because FrameTree::find() returns true for empty strings, we must check for empty frame names.
         // Otherwise, illegitimate window.open() calls with no name will pass right through the popup blocker.
         if (frameName.isEmpty() || !m_frame->tree().find(frameName))
