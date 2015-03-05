@@ -3426,7 +3426,6 @@ webkit_web_view_create_web_view_cb (GtkWidget*      web_view,
                                     WebKitNavigationAction* navigationAction, // ZRL add the parameter for webkit2gtk-4.0
                                     MidoriView*     view)
 {
-g_print("lxx------%s(%d) %s----------\n", __FUNCTION__, __LINE__, __FILE__);
     MidoriView* new_view;
 
     WebKitURIRequest *naviationRequest = webkit_navigation_action_get_request(navigationAction);
