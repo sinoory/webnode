@@ -771,11 +771,34 @@ webkit_web_view_javascript_popup_window_block_cb(WebKitWebView *web_view,
 }
 #endif //#if TRACK_LOCATION_TAB_ICON //lxx, 20150203
 
+//add by luyue 2015/2/9
+static void
+free_midori_view_get_website_record (MidoriView*        view)
+{
+   if(view->website_record_array[0])
+      free(view->website_record_array[0]);
+   if(view->website_record_array[1])
+      free(view->website_record_array[1]);
+   if(view->website_record_array[2])
+      free(view->website_record_array[2]);
+   if(view->website_record_array[3])
+      free(view->website_record_array[3]);
+   if(view->website_record_array[4])
+      free(view->website_record_array[4]);
+   if(view->website_record_array[5])
+      free(view->website_record_array[5]);
+   free(view->website_record_array);
+   view->website_record_array = NULL;
+}
+
 //add by luyue 2015/02/07
 static void _get_website_record_info(MidoriView*        view)
 {
     char *tmp = NULL;
     char *tmp1 = NULL;
+
+    if( view->website_record_array)
+       free_midori_view_get_website_record(view);
 
     if(strstr(view->total_read_buffer,"没有符合条件的记录"))
     {
