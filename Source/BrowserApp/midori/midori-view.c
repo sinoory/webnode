@@ -187,7 +187,7 @@ enum {
     NEW_TAB,
     NEW_WINDOW,
     NEW_VIEW,
-#if TRACK_LOCATION_TAB_ICON,lxx,20150203
+#if TRACK_LOCATION_TAB_ICON//lxx,20150203
     TRACK_LOCATION,
 		 JAVASCRIPT_POPUP_WINDOW_UI_MESSAGE,
 #endif	 
@@ -5498,9 +5498,11 @@ midori_view_save_source (MidoriView*  view,
 
     file = g_file_new_for_uri (converted);
 
-    if (g_str_has_suffix (uri, ".mht"))
+    if (g_str_has_suffix (outfile, ".mht"))
+{
         webkit_web_view_save_to_file (WEBKIT_WEB_VIEW (web_view), file, WEBKIT_SAVE_MODE_MHTML,
                                   NULL, NULL, NULL);
+}
     else
         g_file_replace_async (file, NULL, FALSE,
                           G_FILE_CREATE_REPLACE_DESTINATION | G_FILE_CREATE_PRIVATE,

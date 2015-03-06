@@ -1487,6 +1487,20 @@ midori_browser_save_uri (MidoriBrowser* browser,
         GTK_WINDOW (browser), GTK_FILE_CHOOSER_ACTION_SAVE);
     gtk_file_chooser_set_do_overwrite_confirmation (GTK_FILE_CHOOSER (dialog), TRUE);
 
+    ///文件选择类型过滤
+
+    //保存为.html文件，只保存html
+    GtkFileFilter* filter = gtk_file_filter_new();
+    gtk_file_filter_set_name (filter, _("网页，仅HTML"));
+		 gtk_file_filter_add_pattern(filter,"*.html");
+    gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (dialog),filter);
+
+    //后缀为.mht文件，可保存网页的全部内容
+    filter = gtk_file_filter_new();
+    gtk_file_filter_set_name (filter, _("网页，全部"));
+		 gtk_file_filter_add_pattern(filter,"*.mht");
+    gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (dialog),filter);
+
     if (uri == NULL)
         uri = midori_view_get_display_uri (view);
 
@@ -1500,8 +1514,42 @@ midori_browser_save_uri (MidoriBrowser* browser,
         gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (dialog), dirname);
         g_free (dirname);
     }
+#ifdef HAVE_WEBKIT2
+    filename = midori_download_clean_filename (title);
+    gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (dialog), filename);
+    g_free (filename);
 
-#ifndef HAVE_WEBKIT2
+    if (midori_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK)
+    {
+		GtkFileFilter *filtertwo = gtk_file_chooser_get_filter( GTK_FILE_CHOOSER (dialog));
+		const gchar * filternamee =  gtk_file_filter_get_name(filtertwo);
+
+// ZRL 实现网页的保存功能。
+   char *filename = gtk_file_chooser_get_uri (GTK_FILE_CHOOSER (dialog));
+		if(NULL == filename)return;
+		gchar* suggested_filename = NULL;
+		if(0 == strcmp(filternamee, _("网页，全部")))
+		{
+			    suggested_filename = g_strconcat (filename, ".mht", NULL);
+		}
+		else if(0 == strcmp(filternamee, _("网页，仅HTML")))
+		{
+			    suggested_filename = g_strconcat (filename, ".html", NULL);
+		}
+
+        if (uri != NULL)
+        {
+            midori_view_save_source (view, uri, suggested_filename, false);
+            g_free (filename);
+        }
+        katze_assign (last_dir,
+            gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER (dialog)));
+				
+				g_free (suggested_filename);
+    }
+
+#else
+
     GList* resources = midori_view_get_resources (view);
     gboolean file_only = TRUE;
     GtkWidget* checkbox = NULL;
@@ -1544,34 +1592,7 @@ midori_browser_save_uri (MidoriBrowser* browser,
     }
     g_list_foreach (resources, (GFunc)g_object_unref, NULL);
     g_list_free (resources);
-#else
-    filename = midori_download_clean_filename (title);
-    gchar* suggested_filename = g_strconcat (filename, ".mht", NULL);
-    gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (dialog), suggested_filename);
 
-    g_free (filename);
-    g_free (suggested_filename);
-    if (midori_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK)
-    {
-// ZRL 实现网页的保存功能。
-#if 0
-        char *uri = gtk_file_chooser_get_uri (GTK_FILE_CHOOSER (dialog));
-        if (uri != NULL)
-        {
-            midori_view_save_source (view, uri, NULL, false);
-            g_free (uri);
-        }
-#else
-        char *filename = gtk_file_chooser_get_uri (GTK_FILE_CHOOSER (dialog));
-        if (uri != NULL)
-        {
-            midori_view_save_source (view, uri, filename, false);
-            g_free (filename);
-        }
-#endif
-        katze_assign (last_dir,
-            gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER (dialog)));
-    }
 #endif
     gtk_widget_destroy (dialog);
 }
