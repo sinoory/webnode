@@ -162,6 +162,7 @@ struct _MidoriView
    GInputStream *inputStream;
    char *once_read_buffer;
    char *total_read_buffer;
+   char *tmp_uri; //网址鉴别时保存uri
 };
 
 struct _MidoriViewClass
@@ -770,34 +771,12 @@ webkit_web_view_javascript_popup_window_block_cb(WebKitWebView *web_view,
 }
 #endif //#if TRACK_LOCATION_TAB_ICON //lxx, 20150203
 
-//add by luyue 2015/2/9
-static void
-free_midori_view_get_website_record (MidoriView*        view)
-{
-   if(view->website_record_array[0])
-      free(view->website_record_array[0]);
-   if(view->website_record_array[1])
-      free(view->website_record_array[1]);
-   if(view->website_record_array[2])
-      free(view->website_record_array[2]);
-   if(view->website_record_array[3])
-      free(view->website_record_array[3]);
-   if(view->website_record_array[4])
-      free(view->website_record_array[4]);
-   if(view->website_record_array[5])
-      free(view->website_record_array[5]);
-   free(view->website_record_array);
-   view->website_record_array = NULL;
-}
-
 //add by luyue 2015/02/07
 static void _get_website_record_info(MidoriView*        view)
 {
     char *tmp = NULL;
     char *tmp1 = NULL;
 
-    if( view->website_record_array)
-       free_midori_view_get_website_record(view);
     if(strstr(view->total_read_buffer,"没有符合条件的记录"))
     {
        view->website_record_array = (char **)malloc(sizeof(char *));
@@ -1089,8 +1068,20 @@ midori_view_web_view_navigation_decision_cb (WebKitWebView*             web_view
         if(!memcmp(w_uri, d_uri, strlen(w_uri) + 1))
         {
             //add by luyue 2015/2/9 start
-       //     g_thread_create(midori_view_website_query_idle,view,FALSE,NULL);
-            g_idle_add (midori_view_website_query_idle, view);
+            //刷新页面时，同一url，只做一次网址鉴别查询
+            if(view->tmp_uri == NULL || strcmp(view->tmp_uri,w_uri) != 0)
+            {
+               if( view->website_record_array)
+                  katze_assign (view->website_record_array, NULL);
+               g_idle_add (midori_view_website_query_idle, view);
+               if(view->tmp_uri)
+               {
+                  free(view->tmp_uri);
+                  view->tmp_uri = NULL;
+               }
+               view->tmp_uri = (char *)malloc(strlen(w_uri)+1);
+               strcpy(view->tmp_uri,w_uri);
+            }
             //add end
         }
 #endif
@@ -1246,9 +1237,6 @@ midori_view_web_view_navigation_decision_cb (WebKitWebView*             web_view
 static void
 midori_view_load_started (MidoriView* view)
 {
-    //add by zgh 20150120
-    katze_assign (view->website_record_array, NULL);
-    
     midori_view_update_load_status (view, MIDORI_LOAD_PROVISIONAL);
     midori_tab_set_progress (MIDORI_TAB (view), 0.0);
     midori_tab_set_load_error (MIDORI_TAB (view), MIDORI_LOAD_ERROR_NONE);
@@ -4002,7 +3990,7 @@ midori_view_init (MidoriView* view)
     view->item = katze_item_new ();
 
     view->scrollh = view->scrollv = -2;
-    
+    view->tmp_uri = NULL; //luyue 2015/3/6 
     view->content_length = 0; //zgh 20150106
     view->website_record_array = NULL;  //zgh 20150108
     #ifndef HAVE_WEBKIT2
