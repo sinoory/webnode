@@ -419,7 +419,6 @@ void WebFrameLoaderClient::dispatchDidStartProvisionalLoad()
     const String& url = provisionalLoader.url().string();
     RefPtr<API::Object> userData;
 		
-g_print("lxx------%s(%d) %s----------\n", __FUNCTION__, __LINE__, __FILE__);
     // Notify the bundle client.
     webPage->injectedBundleLoaderClient().didStartProvisionalLoadForFrame(webPage, m_frame, userData);
 
