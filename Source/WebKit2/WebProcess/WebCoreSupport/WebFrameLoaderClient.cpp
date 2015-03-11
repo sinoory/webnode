@@ -418,13 +418,21 @@ void WebFrameLoaderClient::dispatchDidStartProvisionalLoad()
     WebDocumentLoader& provisionalLoader = static_cast<WebDocumentLoader&>(*m_frame->coreFrame()->loader().provisionalDocumentLoader());
     const String& url = provisionalLoader.url().string();
     RefPtr<API::Object> userData;
-
+		
+g_print("lxx------%s(%d) %s----------\n", __FUNCTION__, __LINE__, __FILE__);
     // Notify the bundle client.
     webPage->injectedBundleLoaderClient().didStartProvisionalLoadForFrame(webPage, m_frame, userData);
 
     String unreachableURL = provisionalLoader.unreachableURL().string();
 
     // Notify the UIProcess.
+			if(provisionalLoader.url().isLocalFile())
+			{
+				String decodedURL = decodeURLEscapeSequences(url);//lxx, 20150310
+    webPage->send(Messages::WebPageProxy::DidStartProvisionalLoadForFrame(m_frame->frameID(), provisionalLoader.navigationID(), /*url*/decodedURL, unreachableURL, InjectedBundleUserMessageEncoder(userData.get())));
+				return;
+			}
+
     webPage->send(Messages::WebPageProxy::DidStartProvisionalLoadForFrame(m_frame->frameID(), provisionalLoader.navigationID(), url, unreachableURL, InjectedBundleUserMessageEncoder(userData.get())));
 }
 
