@@ -25,12 +25,14 @@
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>
 
-#include <glib.h>
+#include <glib.h> 
 
+// for cdos browser 2.6.5版本返回0时会导致崩溃问题，故此处修改为返回""。
 gchar* convertToUTF8String(WTF::String const& s)
 {
-    if (s.isNull())
-        return 0;
+    if (s.isNull()) {
+        return g_strdup("");
+    }
 
     return g_strdup(s.utf8().data());
 }
@@ -39,4 +41,5 @@ gchar* convertToUTF8String(WebCore::URL const& s)
 {
     return convertToUTF8String(s.string());
 }
+
 
