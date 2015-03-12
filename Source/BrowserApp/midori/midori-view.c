@@ -1072,13 +1072,13 @@ midori_view_web_view_navigation_decision_cb (WebKitWebView*             web_view
         {
             //ZRL 增加close事件，针对下载情况，若webview启动下载后，关闭下载的webview窗口。可解决crash问题。
             //增加对link_uri的判断，以避免把有效页面也自动关闭
-            if (!view->link_uri) {
-                g_signal_connect (web_view, "close", G_CALLBACK (midori_view_web_view_close_cb), view);
+            //if (!view->link_uri) {
+                //g_signal_connect (web_view, "close", G_CALLBACK (midori_view_web_view_close_cb), view);
                 //zgh 下载资源页关闭后，设置前一页面为焦点页
-                MidoriBrowser* browser = midori_browser_get_for_widget (view);
-                gint n = midori_browser_get_current_page(browser);
-                midori_browser_set_current_page(browser, n-1);
-            }
+                //MidoriBrowser* browser = midori_browser_get_for_widget (view);
+                //gint n = midori_browser_get_current_page(browser);
+                //midori_browser_set_current_page(browser, n-1);
+            //}
 
             webkit_policy_decision_download (decision);
             return TRUE;
