@@ -191,7 +191,9 @@ namespace Midori {
 		  public bool zoom_text_and_images {get; set; default = true; } //lianxx add, 20141211
 		  public bool auto_load_images {get; set; default = true; } //lianxx add, 20141211 
 		  public bool enable_scripts {get; set; default = true; } //lianxx add, 20141211 
-		  public string default_font_family {get; set; default = "monospace"; } //lianxx add, 20141211 
+		  public string default_font_family {get; set; default = "Khmer OS"; } //lianxx add, 20141211 
+		  public string serif_font_family {get; set; default = "serif"; } //lianxx add, 20141211
+		  public string sans_serif_font_family {get; set; default = "Lohit Tamil"; } //lianxx add, 20141211 
 		  public int default_font_size {get; set; default = 16; } //lianxx add, 20141211 
         public bool page_content_cache {get; set; default = true;} //lianxx add, 20141212
 		  public int history_setting {get; set; default = 0;} //lianxx add, 20141212

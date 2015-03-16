@@ -1044,7 +1044,7 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
    g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(runJavascriptCallback), settings);
 	gtk_grid_attach(grid,button,2,13,2,1);
 
-	button = gtk_check_button_new_with_label("JavaScript自动弹出窗口");
+	button = gtk_check_button_new_with_label("允许所有网站显示弹出式窗口");
    bvalue = 1;
    g_object_get(settings, "javascript-can-open-windows-automatically", &bvalue, NULL);
 	if(bvalue)
