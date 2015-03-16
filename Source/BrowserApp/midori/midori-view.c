@@ -944,18 +944,22 @@ static void readCallback(GObject* object, GAsyncResult* asyncResult, gpointer da
    if (!bytesRead) {
        g_input_stream_close(view->inputStream, 0, 0);
        char *tmp_str = strstr(view->total_read_buffer,"</html>");
-       char *tmp_str1 = (char *) malloc(strlen(view->total_read_buffer)-strlen(tmp_str)+1);
-       memset(tmp_str1,0,strlen(view->total_read_buffer)-strlen(tmp_str)+1);
-       memcpy(tmp_str1,view->total_read_buffer,strlen(view->total_read_buffer)-strlen(tmp_str));
-       free(view->total_read_buffer);
-       free(view->once_read_buffer);
+       if(tmp_str)
+       {
+          char *tmp_str1 = (char *) malloc(strlen(view->total_read_buffer)-strlen(tmp_str)+1);
+          memset(tmp_str1,0,strlen(view->total_read_buffer)-strlen(tmp_str)+1);
+          memcpy(tmp_str1,view->total_read_buffer,strlen(view->total_read_buffer)-strlen(tmp_str));
+          free(view->total_read_buffer);
+          free(view->once_read_buffer);
 
-       view->total_read_buffer = (char *) malloc(strlen(tmp_str1)+1);
-       memset(view->total_read_buffer,0,strlen(tmp_str1)+1);
-       strcpy(view->total_read_buffer,tmp_str1);
-       free(tmp_str1);
-       _get_website_record_info(view);  
-       return;
+          view->total_read_buffer = (char *) malloc(strlen(tmp_str1)+1);
+          memset(view->total_read_buffer,0,strlen(tmp_str1)+1);
+          strcpy(view->total_read_buffer,tmp_str1);
+          free(tmp_str1);
+          _get_website_record_info(view);  
+          return;
+       }
+       else return;
    }
    strcat(view->total_read_buffer,view->once_read_buffer);
    memset(view->once_read_buffer,0,1024*10);
