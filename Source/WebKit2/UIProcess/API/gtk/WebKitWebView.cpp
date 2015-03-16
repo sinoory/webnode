@@ -2185,7 +2185,6 @@ WebKitUserContentManager* webkit_web_view_get_user_content_manager(WebKitWebView
  */
 void webkit_web_view_load_uri(WebKitWebView* webView, const gchar* uri)
 {
-    printf("loaduri===%lld \n",g_get_real_time());
     g_return_if_fail(WEBKIT_IS_WEB_VIEW(webView));
     g_return_if_fail(uri);
     GUniquePtr<SoupURI> soupURI(soup_uri_new(uri));

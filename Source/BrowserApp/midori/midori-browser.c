@@ -3406,15 +3406,20 @@ _action_delete_activate (GtkAction*     action,
     {
         if (GTK_IS_EDITABLE (widget))
             gtk_editable_delete_selection (GTK_EDITABLE (widget));
-#ifndef HAVE_WEBKIT2
         else if (WEBKIT_IS_WEB_VIEW (widget))
+#ifndef HAVE_WEBKIT2
             webkit_web_view_delete_selection (WEBKIT_WEB_VIEW (widget));
+#else
+       //midify by luyue 2015/3/16
+       //modiri不支持webkit2的delete操作。
+       //Webkit2/UIProcess/API/gtk/WebKitEditingCommands.h中无WEBKIT_EDITING_COMMAND_DELETE
+       //用cut代替delete
+           webkit_web_view_execute_editing_command (WEBKIT_WEB_VIEW (widget), WEBKIT_EDITING_COMMAND_CUT);
 #endif
         else if (GTK_IS_TEXT_VIEW (widget))
             gtk_text_buffer_delete_selection (
                 gtk_text_view_get_buffer (GTK_TEXT_VIEW (widget)), TRUE, FALSE);
     }
-}
 
 static void
 _action_select_all_activate (GtkAction*     action,
