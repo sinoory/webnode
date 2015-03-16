@@ -1512,13 +1512,13 @@ midori_browser_save_uri (MidoriBrowser* browser,
 
     //保存为.html文件，只保存html
     GtkFileFilter* filter = gtk_file_filter_new();
-    gtk_file_filter_set_name (filter, _("网页，仅HTML"));
+    gtk_file_filter_set_name (filter, _("网页，仅HTML(.html)"));
 		 gtk_file_filter_add_pattern(filter,"*.html");
     gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (dialog),filter);
 
     //后缀为.mht文件，可保存网页的全部内容
     filter = gtk_file_filter_new();
-    gtk_file_filter_set_name (filter, _("网页，全部"));
+    gtk_file_filter_set_name (filter, _("网页，全部(.mht)"));
 		 gtk_file_filter_add_pattern(filter,"*.mht");
     gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (dialog),filter);
 
@@ -1549,11 +1549,11 @@ midori_browser_save_uri (MidoriBrowser* browser,
    char *filename = gtk_file_chooser_get_uri (GTK_FILE_CHOOSER (dialog));
 		if(NULL == filename)return;
 		gchar* suggested_filename = NULL;
-		if(0 == strcmp(filternamee, _("网页，全部")))
+		if(0 == strcmp(filternamee, _("网页，全部(.mht)")))
 		{
 			    suggested_filename = g_strconcat (filename, ".mht", NULL);
 		}
-		else if(0 == strcmp(filternamee, _("网页，仅HTML")))
+		else if(0 == strcmp(filternamee, _("网页，仅HTML(.html)")))
 		{
 			    suggested_filename = g_strconcat (filename, ".html", NULL);
 		}
