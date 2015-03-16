@@ -1523,21 +1523,18 @@ midori_settings_new_full (gchar*** extensions)
 //default font family
 	char *defaultFontFamily = NULL;
 	g_object_get(settings, "default-font-family", &defaultFontFamily, NULL);
-g_print("default-font-family is %s\n", defaultFontFamily);
 	if (g_strcmp0(webkit_settings_get_default_font_family((WebKitSettings*)settings), defaultFontFamily))
 		webkit_settings_set_default_font_family((WebKitSettings*)settings, defaultFontFamily);
 	g_free(defaultFontFamily);
 //serif font family
 	char *serifFontFamily = NULL;
 	g_object_get(settings, "serif-font-family", &serifFontFamily, NULL);
-g_print("serif-font-family is %s\n", serifFontFamily);
 	if (g_strcmp0(webkit_settings_get_serif_font_family((WebKitSettings*)settings), serifFontFamily))
 		webkit_settings_set_serif_font_family((WebKitSettings*)settings, serifFontFamily);
 	g_free(serifFontFamily);
 //sans-serif font family
 	char *sansSerifFontFamily = NULL;
 	g_object_get(settings, "sans-serif-font-family", &sansSerifFontFamily, NULL);
-g_print("sans-serif-font-family is %s\n", sansSerifFontFamily);
 	if (g_strcmp0(webkit_settings_get_sans_serif_font_family((WebKitSettings*)settings), sansSerifFontFamily))
 		webkit_settings_set_sans_serif_font_family((WebKitSettings*)settings, sansSerifFontFamily);
 	g_free(sansSerifFontFamily);
