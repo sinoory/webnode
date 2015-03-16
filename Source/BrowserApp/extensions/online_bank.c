@@ -49,7 +49,12 @@ online_bank_function_realization (GtkWidget* botton,MidoriBrowser* browser)
         }
    popup_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
    gtk_window_set_title(popup_window, _("CDOS secure online bank"));
-   gtk_window_set_default_size(popup_window, 350, 500);
+  //add by luyue 2015/3/16
+//   gtk_window_set_default_size(popup_window, 350, 500);
+    gtk_widget_set_size_request (popup_window, 350, 500);
+    gtk_window_set_resizable (GTK_WINDOW (popup_window), FALSE);
+  //add end
+   gtk_window_set_resizable(GTK_WINDOW(popup_window), FALSE);
    gtk_window_set_type_hint(popup_window,GDK_WINDOW_TYPE_HINT_DIALOG);
    GtkWidget* webview = webkit_web_view_new();
    gtk_container_add(GTK_CONTAINER(popup_window), webview);
