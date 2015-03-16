@@ -124,7 +124,12 @@ static void openNewpageCallback(GtkComboBox *widget, MidoriWebSettings *settings
 
 static void currentPageToHomePageCallback(GtkButton *button, MidoriWebSettings *settings) 
 {
-    gtk_entry_set_text(GTK_ENTRY(settings->entry1_general), settings->current_uri);
+    MidoriApp *app = midori_app_get_default();
+    MidoriBrowser *browser = midori_app_get_browser(app);
+		 GtkWidget* tab = midori_browser_get_current_tab(browser);
+		 const gchar* uri = midori_tab_get_uri (tab);
+//g_print("currentPageToHomePageCallback %s\n", uri);
+    gtk_entry_set_text(GTK_ENTRY(settings->entry1_general), /*settings->current_uri*/uri);
 }
 
 static void homePageCallback(GtkEntry *entry, MidoriWebSettings *settings) 
@@ -344,7 +349,7 @@ static void showImageCallback(GtkToggleButton *togglebutton, MidoriWebSettings *
 
 static void runJavascriptCallback(GtkToggleButton *togglebutton, MidoriWebSettings *settings)
 {
-g_print("lxx------%s(%d) %s----------\n", __FUNCTION__, __LINE__, __FILE__);
+//g_print("lxx------%s(%d) %s----------\n", __FUNCTION__, __LINE__, __FILE__);
     bool bvalue = gtk_toggle_button_get_active(togglebutton); 
 
     g_object_set(settings, "enable_scripts", bvalue, NULL);
@@ -352,7 +357,7 @@ g_print("lxx------%s(%d) %s----------\n", __FUNCTION__, __LINE__, __FILE__);
 
 static void JavascriptCanOpenWindowsAutomaticallyCallback(GtkToggleButton *togglebutton, MidoriWebSettings *settings)
 {
-g_print("lxx------%s(%d) %s----------\n", __FUNCTION__, __LINE__, __FILE__);
+//g_print("lxx------%s(%d) %s----------\n", __FUNCTION__, __LINE__, __FILE__);
     bool bvalue = gtk_toggle_button_get_active(togglebutton); 
 
 	 webkit_settings_set_javascript_can_open_windows_automatically(settings, bvalue);
@@ -476,15 +481,6 @@ static void trackLocationCallback(GtkComboBox *widget, MidoriWebSettings *settin
     g_object_set(settings,
              "track-location", CurrentSelect,
              NULL);
-
-	if(CurrentSelect == 2)
-	{
-		g_print("lxx currentSelect is 2\n");
-	}
-//	else
-//		webkit_settings_set_network_data_usage_tracking(settings, CurrentSelect);
-
-//	(WebKitSettings*)(settings)->fontNum = 5;
 }
 
 static void showPasswordManagerCallback(GtkButton* savedPasswordButton)

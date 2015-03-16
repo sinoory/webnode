@@ -837,11 +837,18 @@ midori_view_notify_uri_cb (GtkWidget*     widget,
         _action_set_sensitive (browser, "Back", midori_view_can_go_back (view));
         _action_set_sensitive (browser, "Forward", midori_tab_can_go_forward (MIDORI_TAB (view)));
         g_object_notify (G_OBJECT (browser), "uri");
-
+#if 0
         // ZRL 增加uri保护，待确认????
-        if (uri != NULL && strlen(uri) > 0) {
+        if (uri != NULL && strlen(uri) > 0) 
+					{
 	        browser->settings->current_uri = uri; //lxx add for uri
-        }
+			        }
+					else
+					{	
+//						browser->settings->current_uri = "about:blank";
+						g_print("\nmidori_view_notify_uri_cb\n");
+					}
+#endif
     }
 }
 
@@ -870,9 +877,23 @@ midori_view_notify_title_cb (GtkWidget*     widget,
     MidoriView* view = MIDORI_VIEW (widget);
     if (widget == midori_browser_get_current_tab (browser))
     {
+#if 0
+				const gchar* uri = midori_view_get_display_uri (view);
+        // ZRL 增加uri保护，待确认????
+        if (uri != NULL && strlen(uri) > 0) 
+					{
+	        browser->settings->current_uri = uri; //lxx add for uri
+			        }
+					else
+					{	
+						browser->settings->current_uri = "about:blank";
+						g_print("\nmidori_view_notify_title_cb\n");
+					}
+#endif
         midori_browser_set_title (browser, midori_view_get_display_title (view));
         g_object_notify (G_OBJECT (browser), "title");
     }
+
     midori_browser_step_history (browser, view);
 }
 
