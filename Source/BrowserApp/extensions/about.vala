@@ -293,6 +293,11 @@ namespace About {
             view.settings.get (property, out new_uri);
             if (uri == "about:search")
                 new_uri = Midori.URI.for_search (new_uri, "");
+  							//lxx, 20150317
+								string s = new_uri[0:4];
+								if( (s != "http") && (s != "file") && (s != "ftp:") ) 
+									new_uri = string.join ("", "http://", new_uri);
+									
             view.set_uri (new_uri);
         }
     }
