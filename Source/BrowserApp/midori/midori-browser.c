@@ -5785,7 +5785,7 @@ _action_pageinfo_activate ( GtkAction*     action,
     if (!strcmp(protocol, "file"))
         lab_text = gtk_label_new("Local");
     else
-        lab_text = gtk_label_new ("Ineternet");
+        lab_text = gtk_label_new ("Internet");
     gtk_box_pack_start (GTK_BOX(hbox), lab_text, FALSE, FALSE, 0);
     gtk_box_pack_start (GTK_BOX (content_area), hbox, FALSE, FALSE, 0);
     gtk_widget_show (lab_title);
