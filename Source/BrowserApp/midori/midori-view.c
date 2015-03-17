@@ -2299,7 +2299,8 @@ midori_view_web_view_button_press_event_cb (WebKitWebView*  web_view,
                                             GdkEventButton* event,
                                             MidoriView*     view)
 {
-    const gchar* link_uri;
+g_print("midori_view_web_view_button_press_event_cb   %d\n", __LINE__);
+	   const gchar* link_uri;
     gboolean background;
 
     event->state = event->state & MIDORI_KEYS_MODIFIER_MASK;
@@ -4920,12 +4921,20 @@ midori_view_set_uri (MidoriView*  view,
                 if (handled)
                     return;
             }
-
-            midori_tab_set_uri (MIDORI_TAB (view), uri);
+//lxx,20150317
+						gchar *new_uri = sokoke_magic_uri ( uri, TRUE, TRUE);
+          if (!new_uri)
+                        {
+           gchar* search = katze_object_get_string (view->settings, "location-entry-search");
+           new_uri = midori_uri_for_search (search, uri);
+           g_free (search);
+                        }
+ 
+            midori_tab_set_uri (MIDORI_TAB (view), new_uri);
             katze_item_set_uri (view->item, midori_tab_get_uri (MIDORI_TAB (view)));
             katze_assign (view->title, NULL);
             midori_tab_set_view_source (MIDORI_TAB (view), FALSE);
-            webkit_web_view_load_uri (WEBKIT_WEB_VIEW (view->web_view), uri);
+            webkit_web_view_load_uri (WEBKIT_WEB_VIEW (view->web_view), new_uri);
         }
     }
 }
