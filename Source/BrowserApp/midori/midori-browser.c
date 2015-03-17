@@ -3420,7 +3420,7 @@ _action_delete_activate (GtkAction*     action,
             gtk_text_buffer_delete_selection (
                 gtk_text_view_get_buffer (GTK_TEXT_VIEW (widget)), TRUE, FALSE);
     }
-
+}
 static void
 _action_select_all_activate (GtkAction*     action,
                              MidoriBrowser* browser)

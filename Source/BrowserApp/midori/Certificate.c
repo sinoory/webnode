@@ -6,7 +6,9 @@
 */
 
 #include "Certificate.h"
+#include "Certificate_Password.h"
 
+#include "openssl/pkcs12.h"
 #include "openssl/x509v3.h"
 #include "openssl/pem.h"
 
@@ -86,11 +88,17 @@ char *ce_chain_value2;
 //证书管理器的授权中心中的证书名称
 char *root_name;
 
+//证书管理器您的证书中的证书名称
+char *personal_name;
+
 //证书管理器window
 GtkWindow *manager_window;
 GtkButton *manager_rootshow_button;
 GtkButton *manager_rootexport_button;
 GtkButton *manager_rootdelete_button;
+GtkButton *personal_show_button; 
+GtkButton *personal_export_button;
+GtkButton *personal_delete_button;
 
 //单个证书window
 GtkWindow *certificate_window;
@@ -100,6 +108,14 @@ GtkTreeStore *tree_store1,*tree_store2,*tree_store3;
 GtkCellRenderer *renderer1,*renderer2,*renderer3;
 GtkWidget *scrolledwindow, *scrolledwindow1,*scrolledwindow2;
 
+//弹出密码window
+GtkWidget *popup_password_dialog;
+GtkWidget* entry;
+GtkWidget *personal_import_dialog;
+PKCS12 *p12;
+char *personal_certificate_path;
+char *certificate_password;
+char *export_personal_path;//导出时使用
 //ASN1_Time to SIZE_T_Time
 static char * asn1_gettime(ASN1_TIME* time,char *date)
 {
@@ -1314,6 +1330,9 @@ void get_single_certificate_data(const char *certificateData)
 {
    BIO *bio_mem=NULL;
    X509 *x509=NULL;
+   PKCS12 *pk12 = NULL; 
+   STACK_OF(X509)* ca = NULL;
+
    int i,Nid,entriesNum;
 
    X509_NAME_ENTRY *name_entry;
@@ -1336,17 +1355,37 @@ void get_single_certificate_data(const char *certificateData)
       free(ce_chain_value2);
       ce_chain_value2=NULL;
    }
-   if(!ce_chain_value)
+   //p12单独处理
+   if(certificate_password)
    {
-      ce_chain_value = (char *)malloc(strlen(certificateData)+1);
-      strcpy(ce_chain_value,certificateData);
+      if(ce_chain_value)
+                {
+         free(ce_chain_value);
+         ce_chain_value=NULL;
+                }
+      SSLeay_add_all_algorithms();  
+      ERR_load_crypto_strings();
+      bio_mem=BIO_new_file(certificateData,"r");
+      export_personal_path=(char *)malloc(strlen(certificateData)+1);
+      strcpy(export_personal_path,certificateData);
+      pk12 = d2i_PKCS12_bio(bio_mem, NULL);
+      BIO_free_all(bio_mem);
+      PKCS12_parse (pk12, certificate_password, &pkey, &x509, &ca);
+      PKCS12_free(pk12);
+      certificate_password = NULL;
+   } 
+   else
+   {
+      if(!ce_chain_value)
+      {
+         ce_chain_value = (char *)malloc(strlen(certificateData)+1);
+         strcpy(ce_chain_value,certificateData);
+      }
+      bio_mem = BIO_new(BIO_s_mem());
+      BIO_puts(bio_mem, certificateData);
+      x509 = PEM_read_bio_X509(bio_mem, NULL, NULL, NULL);
+      BIO_free(bio_mem);
    }
-
-   bio_mem = BIO_new(BIO_s_mem());
-   BIO_puts(bio_mem, certificateData);
-   x509 = PEM_read_bio_X509(bio_mem, NULL, NULL, NULL);
-   BIO_free(bio_mem);
-
    memset(&certificate,0,sizeof(struct Certificate));
   
    certificate.by = (struct Issued_By *)malloc(sizeof(struct Issued_By));
@@ -1528,7 +1567,12 @@ static void check_certificate_verfity(char **value)
    X509 *rootcert=NULL;
    int x509verify;
    long ncode;
-
+   //p12证书处理
+   if(!ce_chain_value)
+        {
+      *value = NULL;
+      return;
+        }
    bio_mem=BIO_new(BIO_s_mem());
    BIO_puts(bio_mem,ce_chain_value);
    cert=PEM_read_bio_X509(bio_mem, NULL, NULL, NULL);
@@ -2190,6 +2234,9 @@ static void export_certificates(GtkWidget *widget)
    GTlsCertificate* certificate1=NULL;
    GByteArray *certificateData=NULL;
    int i;
+   FILE *fp, *fp1;
+   int file_size;
+   char pem[DER_MAX_SIZE]={0};
 
    dialog=gtk_file_chooser_dialog_new ("保存证书至文件", NULL,
                                          GTK_FILE_CHOOSER_ACTION_SAVE,
@@ -2197,6 +2244,65 @@ static void export_certificates(GtkWidget *widget)
                                          GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
                                          NULL);
 
+   if(!ce_chain_value)
+   {
+      filter=gtk_file_filter_new(); 
+      gtk_file_filter_set_name (filter, "X.509 证书(PKCS#12)");
+      gtk_file_filter_add_pattern(filter,"*.[Pp][11][11]");
+      gtk_file_chooser_add_filter(GTK_FILE_CHOOSER (dialog),filter); 
+ 
+      filter=gtk_file_filter_new();
+      gtk_file_filter_set_name (filter, "所有文件");
+      gtk_file_filter_add_pattern(filter,"*");
+      gtk_file_chooser_add_filter(GTK_FILE_CHOOSER (dialog),filter);
+      while(1)
+      {
+         result=gtk_dialog_run (GTK_DIALOG (dialog));
+         if (result==GTK_RESPONSE_ACCEPT)  
+         {  
+            filter=gtk_file_chooser_get_filter(GTK_FILE_CHOOSER(dialog));
+            pathname=gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+            if(g_file_test(pathname,G_FILE_TEST_EXISTS))
+            {
+               dialog1=gtk_message_dialog_new((GtkWindow *)dialog,
+                                              GTK_DIALOG_MODAL,
+                                              GTK_MESSAGE_QUESTION,
+                                              GTK_BUTTONS_YES_NO,
+                                                                                                                          "文件名已经存在，是否想要替换?\n替换该文件将覆盖其中的内容.");
+               result1=gtk_dialog_run(GTK_DIALOG (dialog1));
+               if(result1==GTK_RESPONSE_YES)
+               {
+                  gtk_widget_destroy (dialog1);
+                  break;
+               }
+               else
+               {
+                  pathname=NULL;
+                  gtk_widget_destroy (dialog1);
+                  continue; 
+               }
+            }
+            else
+               break;
+         }
+         else
+         {
+            gtk_widget_destroy (dialog);
+            return;
+         }
+      }
+      fp=fopen(export_personal_path,"r");
+      fseek(fp,0,SEEK_END);   
+      file_size=ftell(fp);
+      fseek(fp,0,SEEK_SET);
+      fread(pem,file_size,1,fp);
+      fp1=fopen(pathname,"w");
+      fwrite(pem,file_size,1,fp1);
+      fclose(fp);
+      fclose(fp1);
+      gtk_widget_destroy (dialog);
+      return;
+   }
    filter=gtk_file_filter_new();
    gtk_file_filter_set_name (filter, "X.509 证书(PEM)");
    gtk_file_filter_add_pattern(filter,"*.[Pp][Ee][Mm]");
@@ -2345,6 +2451,8 @@ static int close_single_certificate_window()
    free(ce_chain_value2);
    ce_chain_value2=NULL;
    glade_num=0;
+   free(export_personal_path);
+   export_personal_path = NULL;
    return false;
 }
 
@@ -2692,6 +2800,64 @@ static void set_manager_certificate(char *root_cerpath,GtkListStore *store)
    }
 }
 
+static void get_manager_personal_certificate(char *root_path,GtkListStore *store)
+{
+   GtkTreeIter iter;
+   DIR *dir = NULL;
+   BIO *bio = NULL;
+   X509 *x = NULL;
+   PKCS12 *pk12 = NULL;
+   EVP_PKEY* pkey = NULL;  
+   STACK_OF(X509)* ca = NULL;
+   struct dirent *ptr=NULL;
+   char *path = NULL;
+   char *password = NULL;
+   char date[TIMELENGTH]={0};
+
+   if((dir=opendir(root_path))==NULL)
+      return;
+   while((ptr=readdir(dir))!=NULL)
+   {
+      if((strcmp(ptr->d_name,".")==0) || (strcmp(ptr->d_name,"..")==0))
+         continue;
+      password = certificate_secret_password_lookup (ptr->d_name);
+      if(!password) continue;                
+      path=(char *)malloc(strlen(ptr->d_name)+strlen(root_path)+1);
+      strcpy(path,root_path);
+      strcat(path,ptr->d_name);
+      SSLeay_add_all_algorithms();  
+      ERR_load_crypto_strings();
+      bio=BIO_new_file(path,"r");
+      pk12 = d2i_PKCS12_bio(bio, NULL);
+      BIO_free_all(bio);
+      PKCS12_parse (pk12, password, &pkey, &x, &ca);
+      PKCS12_free(pk12);
+      free(path);
+      path=NULL;
+      if(!x)
+         continue;
+      gtk_list_store_append(store,&iter);
+      gtk_list_store_set(store,&iter,
+                         0,ptr->d_name,
+                         1,asn1_gettime(X509_get_notAfter(x),date),
+                                                                   -1);
+      X509_free(x);
+      memset(date,0,sizeof(date));
+     }
+}
+//设置证书管理器的您的证书信息
+static GtkTreeModel* set_manager_personal_certificate()
+{
+   GtkListStore *store;
+   char root_cerpath[CERTITLELENGTH]={0};
+ 
+   store=gtk_list_store_new(2,G_TYPE_STRING,G_TYPE_STRING);
+   strcpy(root_cerpath,getenv("HOME"));
+   strcat(root_cerpath,"/.cache/webkitgtk/personal_certificate/");
+   get_manager_personal_certificate(root_cerpath,store);
+   return GTK_TREE_MODEL(store);
+}
+
 //设置证书管理器的授权中心中证书信息
 static GtkTreeModel* set_manager_root_certificate()
 {
@@ -2816,7 +2982,48 @@ static bool set_single_certificate_info()
    return true;
 }
 
-//证书管理器的授权中心中的查看按钮:显示单个证书详情
+static bool set_personal_single_certificate_info()
+{
+   DIR *dir = NULL;
+   struct dirent *ptr = NULL;
+   char *path = NULL;
+   char root_cerpath[CERTITLELENGTH] = {0};
+
+   strcpy(root_cerpath,getenv("HOME"));
+   strcat(root_cerpath,"/.cache/webkitgtk/personal_certificate/");
+   if((dir=opendir(root_cerpath))!=NULL)
+   {
+      while((ptr=readdir(dir))!=NULL)
+      {
+         if(strcmp(ptr->d_name,personal_name)==0)
+         {
+            path=(char *)malloc(strlen(ptr->d_name)+strlen(root_cerpath)+1);
+            strcpy(path,root_cerpath);
+            strcat(path,ptr->d_name);
+            certificate_password = certificate_secret_password_lookup (ptr->d_name);
+            break;
+         }
+      }
+   }
+   if(!path || !certificate_password)
+      return false;
+   get_single_certificate_data(path);
+   free(path);
+   path=NULL;
+   return true;
+}
+
+//证书管理器中您的证书的查看按钮:显示单个证书详情
+static void manager_showpersonal_certificate(GtkWidget *widget)
+{
+   bool check=false;
+
+   check=set_personal_single_certificate_info();
+   if(check)
+      display_single_certificate();       
+}
+
+//证书管理器中授权中心的查看按钮:显示单个证书详情
 static void show_root_certificate(GtkWidget *widget)
 {
    bool check=false;
@@ -2824,6 +3031,22 @@ static void show_root_certificate(GtkWidget *widget)
    check=set_single_certificate_info();
    if(check)
       display_single_certificate();       
+}
+
+//点击证书管理器中您的证书中的证书
+static void get_personal_certificate_name(GtkWidget *widget)
+{
+   GtkTreeIter iter;
+   GtkTreeModel *model; 
+   DIR *dir=NULL;
+
+   if(gtk_tree_selection_get_selected(GTK_TREE_SELECTION(widget), &model, &iter))
+   {
+      gtk_tree_model_get(model,&iter,0,&personal_name,-1);
+      gtk_widget_set_sensitive((GtkWidget *)personal_delete_button,TRUE);
+      gtk_widget_set_sensitive((GtkWidget *)personal_show_button,TRUE);
+//      gtk_widget_set_sensitive((GtkWidget *)personal_export_button,TRUE);
+   }
 }
 
 //点击证书管理器中授权中心中的证书
@@ -2945,6 +3168,456 @@ static bool check_root_certificate(char *root_path,char *byname)
    return false;
 } 
 
+//检查您的证书中导入的证书是否已存在
+static bool check_personal_certificate(char *root_path,char *byname,char *toname)
+{
+   DIR *dir = NULL;
+   BIO *bio = NULL;
+   X509 *x = NULL;
+   PKCS12 *pk12 = NULL;
+   EVP_PKEY* pkey = NULL;  
+   STACK_OF(X509)* ca = NULL;
+   X509_NAME *issuer,*subject;
+   int entriesNum,Nid;
+   X509_NAME_ENTRY *name_entry;
+   struct dirent *ptr=NULL;
+   int i;
+   char *path = NULL;
+   char *password = NULL;
+   char *toname1 = NULL;
+   char *byname1 = NULL;
+
+   if((dir=opendir(root_path))==NULL)
+      return false;
+   while((ptr=readdir(dir))!=NULL)
+   {
+      if((strcmp(ptr->d_name,".")==0) || (strcmp(ptr->d_name,"..")==0))
+         continue;
+      password = certificate_secret_password_lookup (ptr->d_name);
+      if(!password) continue;                
+      path=(char *)malloc(strlen(ptr->d_name)+strlen(root_path)+1);
+      strcpy(path,root_path);
+      strcat(path,ptr->d_name);
+      SSLeay_add_all_algorithms();  
+      ERR_load_crypto_strings();
+      bio=BIO_new_file(path,"r");
+      pk12 = d2i_PKCS12_bio(bio, NULL);
+      BIO_free_all(bio);
+      PKCS12_parse (pk12, password, &pkey, &x, &ca);
+      PKCS12_free(pk12);
+      free(path);
+      path=NULL;
+      if(!x)
+         continue;
+      subject=X509_get_subject_name(x);
+      entriesNum=sk_X509_NAME_ENTRY_num(subject->entries);
+      for(i=0;i<entriesNum;i++)
+      {
+         name_entry=sk_X509_NAME_ENTRY_value(subject->entries,i);
+         Nid=OBJ_obj2nid(name_entry->object);
+         if(Nid==NID_commonName)
+         { 
+            toname1=(char *)malloc(strlen(name_entry->value->data)+1);
+            strcpy(toname1,name_entry->value->data);
+            break;    
+         }
+      }
+      issuer=X509_get_issuer_name(x); 
+      entriesNum=sk_X509_NAME_ENTRY_num(issuer->entries);
+      for(i=0;i<entriesNum;i++)
+      {
+         name_entry=sk_X509_NAME_ENTRY_value(issuer->entries,i);
+         Nid=OBJ_obj2nid(name_entry->object);
+         if(Nid==NID_commonName)
+         {
+            byname1=(char *)malloc(strlen(name_entry->value->data)+1);
+            strcpy(byname1,name_entry->value->data);
+            break;
+         }
+      }
+      X509_free(x);
+      if(!byname1)
+         continue;
+      if (strcmp(g_locale_to_utf8(byname1,-1,0,0,0),g_locale_to_utf8(byname,-1,0,0,0)) == 0 &&
+          strcmp(g_locale_to_utf8(toname1,-1,0,0,0),g_locale_to_utf8(toname,-1,0,0,0)) == 0)
+      {
+         free(byname1);
+         free(toname1);
+         byname1 = toname1 = NULL;
+         return true;
+      }
+   }
+   return false;
+}
+
+static void on_button_clicked_password (GtkWidget* button,gpointer data)  
+{  
+   GtkWidget *dialog;
+   gint result;
+   X509 *x=NULL;
+   EVP_PKEY* pkey = NULL;  
+   STACK_OF(X509)* ca = NULL;
+   X509_NAME *issuer,*subject;
+   int entriesNum,Nid;
+   X509_NAME_ENTRY *name_entry;
+   int i;
+   char *byname=NULL;
+   char *toname=NULL;
+   char personal_cerpath[CERTITLELENGTH]={0};
+   bool check=false;
+   FILE *fp, *fp1;
+   int file_size;
+   char pem[DER_MAX_SIZE]={0};
+   char *p12_password = NULL;
+   DIR *dir=NULL;
+   struct dirent *ptr=NULL;
+
+   if((int)data == 1)
+   {    
+      PKCS12_free(p12);
+      personal_certificate_path=NULL;
+      gtk_widget_destroy(GTK_WIDGET(popup_password_dialog)); 
+      gtk_widget_destroy (personal_import_dialog); 
+   } 
+   else if ((int)data == 2)
+   {    
+      char *password = gtk_entry_get_text(GTK_ENTRY(entry));
+      p12_password = (char *)malloc(strlen(password)+1);
+      strcpy(p12_password,password);
+      PKCS12_parse (p12, password, &pkey, &x, &ca);
+      PKCS12_free(p12);
+      gtk_widget_destroy(GTK_WIDGET(popup_password_dialog));
+      if(!x)
+      {
+         dialog=gtk_message_dialog_new((GtkWindow *)personal_import_dialog,
+                                       GTK_DIALOG_MODAL,
+                                       GTK_MESSAGE_ERROR,
+                                       GTK_BUTTONS_OK,
+                                        "密码输入错误.\n无法导入文件.");
+         result=gtk_dialog_run(GTK_DIALOG (dialog));
+         if(result==GTK_RESPONSE_OK || result==GTK_RESPONSE_DELETE_EVENT)
+         {
+            personal_certificate_path=NULL;
+            free(p12_password);
+            p12_password = NULL;
+            gtk_widget_destroy (dialog);
+            gtk_widget_destroy (personal_import_dialog);
+            return;
+         }
+      }
+      subject=X509_get_subject_name(x);
+      entriesNum=sk_X509_NAME_ENTRY_num(subject->entries);
+      for(i=0;i<entriesNum;i++)
+      {
+         name_entry=sk_X509_NAME_ENTRY_value(subject->entries,i);
+         Nid=OBJ_obj2nid(name_entry->object);
+         if(Nid==NID_commonName)
+         { 
+            toname=(char *)malloc(strlen(name_entry->value->data)+1);
+            strcpy(toname,name_entry->value->data);
+            break;    
+         }
+      }
+      issuer=X509_get_issuer_name(x); 
+      entriesNum=sk_X509_NAME_ENTRY_num(issuer->entries);
+      for(i=0;i<entriesNum;i++)
+      {
+         name_entry=sk_X509_NAME_ENTRY_value(issuer->entries,i);
+         Nid=OBJ_obj2nid(name_entry->object);
+         if(Nid==NID_commonName)
+         {
+            byname=(char *)malloc(strlen(name_entry->value->data)+1);
+            strcpy(byname,name_entry->value->data);
+            break;
+         }
+      }
+      X509_free(x);
+      if(byname)
+      {
+         strcpy(personal_cerpath,getenv("HOME"));
+         strcat(personal_cerpath,"/.cache/webkitgtk/personal_certificate/");
+         check=check_personal_certificate(personal_cerpath,byname,toname);            
+         free(byname);
+         byname=NULL;
+         free(toname);
+         toname = NULL;
+      }
+      else
+      {
+         dialog=gtk_message_dialog_new((GtkWindow *)personal_import_dialog,
+                                        GTK_DIALOG_MODAL,
+                                        GTK_MESSAGE_ERROR,
+                                        GTK_BUTTONS_OK,
+                                        "颁发者未知，无法导入.");
+         result=gtk_dialog_run(GTK_DIALOG (dialog));
+         if(result==GTK_RESPONSE_OK || result==GTK_RESPONSE_DELETE_EVENT)
+         {
+            personal_certificate_path=NULL;
+            free(p12_password);
+            p12_password = NULL;
+            gtk_widget_destroy (dialog);
+            gtk_widget_destroy (personal_import_dialog);
+            return;
+         }             
+      }
+      if(check)
+      {
+         dialog=gtk_message_dialog_new((GtkWindow *)personal_import_dialog,
+                                        GTK_DIALOG_MODAL,
+                                        GTK_MESSAGE_ERROR,
+                                        GTK_BUTTONS_OK,
+                                        "此证书已安装为您的证书.");
+         result=gtk_dialog_run(GTK_DIALOG (dialog));
+         if(result==GTK_RESPONSE_OK || result==GTK_RESPONSE_DELETE_EVENT)
+         {
+            personal_certificate_path=NULL;
+            free(p12_password);
+            p12_password = NULL;
+            gtk_widget_destroy (dialog);
+            gtk_widget_destroy (personal_import_dialog);
+            return;
+         }             
+      }
+      dialog=gtk_message_dialog_new((GtkWindow *)personal_import_dialog,
+                                    GTK_DIALOG_MODAL,
+                                    GTK_MESSAGE_QUESTION,
+                                    GTK_BUTTONS_OK_CANCEL,
+                                    "确定要导入该证书吗?");
+      result=gtk_dialog_run(GTK_DIALOG (dialog));
+      if(result==GTK_RESPONSE_OK)
+      {
+         fp=fopen(personal_certificate_path,"r");
+         if(!fp)
+         {
+            free(p12_password);
+            p12_password = NULL;
+            personal_certificate_path=NULL;
+            gtk_widget_destroy (dialog);
+            gtk_widget_destroy (personal_import_dialog);
+            return;
+         }
+         fseek(fp,0,SEEK_END);   
+         file_size=ftell(fp);
+         fseek(fp,0,SEEK_SET);
+         if(file_size<sizeof(pem))
+            fread(pem,file_size,1,fp);
+         if(!strlen(pem))
+         {
+            fclose(fp);
+            personal_certificate_path=NULL;
+            free(p12_password);
+            p12_password = NULL;
+            gtk_widget_destroy (dialog);
+            gtk_widget_destroy (personal_import_dialog);
+            return;
+         }
+         if(!g_file_test(personal_cerpath, G_FILE_TEST_IS_DIR) || !g_access(personal_cerpath, 0755))
+            g_mkdir_with_parents(personal_cerpath,0755);
+         char *filename = strrchr(personal_certificate_path,'/');
+         filename++;
+         //如果重名，后导入的名字改成s_文件名。
+         dir=opendir(personal_cerpath);
+         while((ptr=readdir(dir))!=NULL)
+         {
+            if((strcmp(ptr->d_name,".")==0) || (strcmp(ptr->d_name,"..")==0))
+               continue;
+            if(strcmp(filename,ptr->d_name)==0)
+            {
+               filename =g_strdup_printf ("s_%s",filename);
+               dir=opendir(personal_cerpath);
+            }
+         } 
+         strcat(personal_cerpath,filename);
+         fp1=fopen(personal_cerpath,"w");
+         if(!fp1)
+         {
+            fclose(fp);
+            personal_certificate_path=NULL;
+            free(p12_password);
+            p12_password = NULL;
+            gtk_widget_destroy (dialog);
+            gtk_widget_destroy (personal_import_dialog);
+            return;
+         }
+         fwrite(pem,file_size,1,fp1);
+         fclose(fp);
+         fclose(fp1);                        
+         personal_certificate_path=NULL;
+         //保存密码
+         certificate_secret_password_removed(filename);
+         certificate_secret_password_store(filename,p12_password);
+         free(p12_password);
+         p12_password = NULL;
+         gtk_widget_destroy (dialog);
+         gtk_widget_destroy (personal_import_dialog);
+         return;                          
+      }
+      else
+      {
+         personal_certificate_path=NULL;
+         gtk_widget_destroy (dialog);
+         gtk_widget_destroy (personal_import_dialog);
+         return;
+      }      
+   }
+}  
+
+static void popup_password_dialog_function(void)
+{
+   char certificateglade_path[CERTITLELENGTH]={0};
+  
+   GtkBuilder *certificate_builder=gtk_builder_new();
+   strcat(certificateglade_path, midori_paths_get_res_dir());    
+   strcat(certificateglade_path,"/layout/get_password.glade");
+   gtk_builder_add_from_file(certificate_builder,certificateglade_path, NULL); 
+   popup_password_dialog = GTK_WIDGET (gtk_builder_get_object (certificate_builder, "dialog1"));
+   GtkWidget* label1 = GTK_WIDGET (gtk_builder_get_object (certificate_builder, "label1"));
+   gtk_label_set_text((GtkLabel *)label1,"请输入用于加密该证书的密码：");
+   GtkWidget* label2 = GTK_WIDGET (gtk_builder_get_object (certificate_builder, "label2"));
+   gtk_label_set_text((GtkLabel *)label2,"密码：");
+   entry = GTK_WIDGET (gtk_builder_get_object (certificate_builder, "entry1"));
+   gtk_entry_set_visibility(GTK_ENTRY(entry),FALSE);
+   GtkWidget* button1 = GTK_WIDGET (gtk_builder_get_object (certificate_builder, "button1"));
+   GtkWidget* button2 = GTK_WIDGET (gtk_builder_get_object (certificate_builder, "button2"));  
+   g_signal_connect(G_OBJECT(button1),"clicked",G_CALLBACK(on_button_clicked_password),(gpointer)1);   
+   g_signal_connect(G_OBJECT(button2),"clicked",G_CALLBACK(on_button_clicked_password),(gpointer)2); 
+   gint result=gtk_dialog_run (GTK_DIALOG (popup_password_dialog));
+   if(result==GTK_RESPONSE_DELETE_EVENT)
+        {
+      personal_certificate_path=NULL;
+      gtk_widget_destroy(GTK_WIDGET(popup_password_dialog)); 
+      gtk_widget_destroy (personal_import_dialog);
+        }
+   gtk_builder_connect_signals (certificate_builder, NULL);
+   g_object_unref (G_OBJECT (certificate_builder));   
+}
+
+//证书管理器的您的证书导入按钮:导入证书
+static void manager_personalimport_certificates(GtkWidget *widget)
+{
+   GtkWidget *dialog;
+   GtkFileFilter *filter;
+   gint result,result1;
+   BIO *bio = NULL;
+
+   personal_import_dialog=gtk_file_chooser_dialog_new ("请选择要导入的包含CA证书的文件", NULL,
+                                         GTK_FILE_CHOOSER_ACTION_OPEN,
+                                         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                                         GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+                                         NULL);
+   filter=gtk_file_filter_new();
+   gtk_file_filter_set_name (filter, "X.509 证书(P12)");
+   gtk_file_filter_add_pattern(filter,"*.[Pp][11][22]");
+   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER (personal_import_dialog),filter);
+
+   filter=gtk_file_filter_new();
+   gtk_file_filter_set_name (filter, "所有文件");
+   gtk_file_filter_add_pattern(filter,"*");
+   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER (personal_import_dialog),filter);
+
+   gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (personal_import_dialog),getenv("HOME"));
+   result=gtk_dialog_run (GTK_DIALOG (personal_import_dialog));
+   if(result==GTK_RESPONSE_ACCEPT)  
+        {  
+      filter=gtk_file_chooser_get_filter(GTK_FILE_CHOOSER(personal_import_dialog));
+      personal_certificate_path=gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(personal_import_dialog));
+      SSLeay_add_all_algorithms();  
+      ERR_load_crypto_strings();
+      bio=BIO_new_file(personal_certificate_path,"r");
+      p12 = d2i_PKCS12_bio(bio, NULL);
+      BIO_free_all(bio);
+      if (p12)
+         popup_password_dialog_function();          
+      else
+                {
+         dialog=gtk_message_dialog_new((GtkWindow *)personal_import_dialog,
+                                       GTK_DIALOG_MODAL,
+                                       GTK_MESSAGE_ERROR,
+                                       GTK_BUTTONS_OK,
+                                                                                                        "证书导入错误.\n无法解析文件.");
+         result1=gtk_dialog_run(GTK_DIALOG (dialog));
+         if(result1==GTK_RESPONSE_OK || result1==GTK_RESPONSE_DELETE_EVENT)
+                        {
+            personal_certificate_path=NULL;
+            gtk_widget_destroy (dialog);
+            gtk_widget_destroy (personal_import_dialog);
+                        }   
+                }
+        }
+   else
+      gtk_widget_destroy (personal_import_dialog);        
+}
+
+//证书管理器的您的证书删除按钮:删除证书
+static void manager_personaldelete_certificates(GtkWidget *widget)
+{
+   DIR *dir=NULL;
+   char root_cerpath[CERTITLELENGTH]={0};
+   struct dirent *ptr=NULL;
+   GtkWidget *dialog;
+   gint result;
+
+   strcpy(root_cerpath,getenv("HOME"));
+   strcat(root_cerpath,"/.cache/webkitgtk/personal_certificate/");
+   if((dir=opendir(root_cerpath))!=NULL)
+   {
+      while((ptr=readdir(dir))!=NULL)
+      {
+         if(strcmp(ptr->d_name,personal_name)==0)
+         {
+            strcat(root_cerpath,ptr->d_name);
+            dialog=gtk_message_dialog_new(NULL,
+                         GTK_DIALOG_MODAL,
+                         GTK_MESSAGE_QUESTION,
+                         GTK_BUTTONS_OK_CANCEL,
+                         "确定要删除该证书吗?\n\n如果您删除了你自己的证书,\n你将不能再通过该证书来识别你的身份.");
+            result=gtk_dialog_run(GTK_DIALOG (dialog));
+            if(result==GTK_RESPONSE_OK)
+                                {
+              remove(root_cerpath);
+              certificate_secret_password_removed(ptr->d_name);
+                                }   
+            gtk_widget_destroy (dialog);          
+            break;
+         }
+      }
+   }
+}
+
+//证书管理器的授权中心删除按钮:删除证书
+static void manager_rootdelete_certificates(GtkWidget *widget)
+{
+   DIR *dir=NULL;
+   char root_cerpath[CERTITLELENGTH]={0};
+   struct dirent *ptr=NULL;
+   GtkWidget *dialog;
+   gint result;
+
+   strcpy(root_cerpath,getenv("HOME"));
+   strcat(root_cerpath,"/.cache/webkitgtk/root_certificate/");
+   if((dir=opendir(root_cerpath))!=NULL)
+   {
+      while((ptr=readdir(dir))!=NULL)
+      {
+         if(strncmp(ptr->d_name,root_name,strlen(root_name))==0)
+         {
+            strcat(root_cerpath,ptr->d_name);
+            dialog=gtk_message_dialog_new(NULL,
+                         GTK_DIALOG_MODAL,
+                         GTK_MESSAGE_QUESTION,
+                         GTK_BUTTONS_OK_CANCEL,
+                         "确定要删除该证书吗?\n\n如果您删除了某个证书授权中心(CA)的证书,\n则浏览器不会再信任该CA颁发的任何证书.");
+            result=gtk_dialog_run(GTK_DIALOG (dialog));
+            if(result==GTK_RESPONSE_OK)
+               remove(root_cerpath);   
+            gtk_widget_destroy (dialog);          
+            break;
+         }
+      }
+   }
+}
+
+
 //证书管理器的授权中心导入按钮:导入证书
 static void manager_rootimport_certificates(GtkWidget *widget)
 {
@@ -2999,7 +3672,7 @@ static void manager_rootimport_certificates(GtkWidget *widget)
    filter=gtk_file_filter_new(); 
    gtk_file_filter_set_name (filter, "X.509 含链证书(PKCS#7)");
    gtk_file_filter_add_pattern(filter,"*.[Pp][77][Cc]");
-   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER (dialog),filter); 
+   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER (dialog),filter);
 
    filter=gtk_file_filter_new();
    gtk_file_filter_set_name (filter, "所有文件");
@@ -3023,7 +3696,7 @@ static void manager_rootimport_certificates(GtkWidget *widget)
          file_size=ftell(fp);
          fseek(fp,0,SEEK_SET);
          if(file_size<sizeof(pem))
-         {   
+         {
             fread(pem,file_size,1,fp);
             p=pem;
             x=d2i_X509(NULL,(const unsigned char ** )&p,file_size);
@@ -3225,39 +3898,6 @@ static void manager_rootimport_certificates(GtkWidget *widget)
    gtk_widget_destroy (dialog);
 }
 
-//证书管理器的授权中心删除按钮:删除证书
-static void manager_rootdelete_certificates(GtkWidget *widget)
-{
-   DIR *dir=NULL;
-   char root_cerpath[CERTITLELENGTH]={0};
-   struct dirent *ptr=NULL;
-   GtkWidget *dialog;
-   gint result;
-
-   strcpy(root_cerpath,getenv("HOME"));
-   strcat(root_cerpath,"/.cache/webkitgtk/root_certificate/");
-   if((dir=opendir(root_cerpath))!=NULL)
-   {
-      while((ptr=readdir(dir))!=NULL)
-      {
-         if(strncmp(ptr->d_name,root_name,strlen(root_name))==0)
-         {
-            strcat(root_cerpath,ptr->d_name);
-            dialog=gtk_message_dialog_new(NULL,
-                         GTK_DIALOG_MODAL,
-                         GTK_MESSAGE_QUESTION,
-                         GTK_BUTTONS_OK_CANCEL,
-                         "确定要删除该证书吗?\n\n如果您删除了某个证书授权中心(CA)的证书,\n则浏览器不会再信任该CA颁发的任何证书.");
-            result=gtk_dialog_run(GTK_DIALOG (dialog));
-            if(result==GTK_RESPONSE_OK)
-               remove(root_cerpath);   
-            gtk_widget_destroy (dialog);          
-            break;
-         }
-      }
-   }
-}
-
 //证书管理器的授权中心导出按钮:导出证书
 static void manager_rootexport_certificates(GtkWidget *widget)
 {
@@ -3296,6 +3936,7 @@ static void manager_rootexport_certificates(GtkWidget *widget)
 static void close_certificate_manager(GtkButton *button,GtkWindow *window)
 {
    root_name=NULL;
+   personal_name=NULL;
    gtk_widget_destroy(GTK_WIDGET(manager_window));
    manager_window=NULL;
 }
@@ -3304,6 +3945,7 @@ static void close_certificate_manager(GtkButton *button,GtkWindow *window)
 static int close_certificate_manager1()
 {
    root_name=NULL;
+   personal_name=NULL;
    manager_window=NULL;
    return false;
 }
@@ -3314,13 +3956,13 @@ void display_certificatemanager()
    GtkBuilder *builder;
    GtkWidget *scrolledwindow1, *scrolledwindow2, *scrolledwindow3, *scrolledwindow4;
    GtkWidget *list1, *list2, *list3, *list4;
-   GtkListStore *store1, *store2, *store4;
+   GtkListStore *store2, *store4;
    GtkCellRenderer *renderer;
    GtkTreeViewColumn *column;
-   GtkTreeSelection *selection;
+   GtkTreeSelection *selection, *selection1;
    GtkButton *ok_button, *ok_button1, *ok_button2, *ok_button3;
    GtkButton *manager_rootimport_button;
-   GtkButton *personal_show_button, *personal_export_button, *personal_import_button, *personal_delete_button;
+   GtkButton *personal_import_button;
    GtkButton *server_show_button, *server_export_button, *server_import_button, *server_delete_button;
    GtkButton *other_show_button, *other_export_button, *other_delete_button;
    char managerglade_path[CERTITLELENGTH]={0};
@@ -3342,24 +3984,28 @@ void display_certificatemanager()
    scrolledwindow4=GTK_WIDGET(gtk_builder_get_object(builder,"scrolledwindow4"));
    
    //您的证书
-   store1=gtk_list_store_new(2,G_TYPE_STRING,G_TYPE_STRING);
-   list1=gtk_tree_view_new_with_model(GTK_TREE_MODEL(store1));
+   list1=gtk_tree_view_new_with_model(set_manager_personal_certificate());
    personal_show_button=(GtkButton *)GTK_WIDGET(gtk_builder_get_object (builder,"button1"));
-   personal_export_button=(GtkButton *)GTK_WIDGET(gtk_builder_get_object (builder,"button2"));
-   personal_import_button=(GtkButton *)GTK_WIDGET(gtk_builder_get_object (builder,"button3"));
+   personal_export_button=(GtkButton *)GTK_WIDGET(gtk_builder_get_object (builder,"button3"));
+   personal_import_button=(GtkButton *)GTK_WIDGET(gtk_builder_get_object (builder,"button2"));
    personal_delete_button=(GtkButton *)GTK_WIDGET(gtk_builder_get_object (builder,"button4"));
    gtk_widget_set_sensitive((GtkWidget *)personal_show_button,FALSE);
    gtk_widget_set_sensitive((GtkWidget *)personal_export_button,FALSE);
-   gtk_widget_set_sensitive((GtkWidget *)personal_import_button,FALSE);
    gtk_widget_set_sensitive((GtkWidget *)personal_delete_button,FALSE);
    renderer=gtk_cell_renderer_text_new();
    column=gtk_tree_view_column_new_with_attributes("证书名称     ",renderer,"text",0,NULL);
    gtk_tree_view_append_column(GTK_TREE_VIEW(list1), column);
-   column=gtk_tree_view_column_new_with_attributes("过期时间",renderer,"text",0,NULL);
+   column=gtk_tree_view_column_new_with_attributes("过期时间",renderer,"text",1,NULL);
    gtk_tree_view_append_column(GTK_TREE_VIEW(list1), column);
    gtk_container_add(GTK_CONTAINER (scrolledwindow1),list1);
    gtk_tree_view_expand_all((GtkTreeView *)list1);
    gtk_widget_show(list1);
+   selection1=gtk_tree_view_get_selection(GTK_TREE_VIEW(list1));
+   g_signal_connect(selection1,"changed", G_CALLBACK(get_personal_certificate_name),NULL);
+   g_signal_connect(personal_show_button,"clicked",G_CALLBACK(manager_showpersonal_certificate),NULL);
+   g_signal_connect(personal_import_button,"clicked",G_CALLBACK(manager_personalimport_certificates),NULL);
+ //  g_signal_connect(personal_export_button,"clicked",G_CALLBACK(manager_personalexport_certificates),NULL);
+   g_signal_connect(personal_delete_button,"clicked",G_CALLBACK(manager_personaldelete_certificates),NULL);
 
    //服务器
    store2=gtk_list_store_new(3,G_TYPE_STRING,G_TYPE_STRING,G_TYPE_STRING);
