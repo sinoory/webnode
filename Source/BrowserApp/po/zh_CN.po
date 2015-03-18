@@ -3656,3 +3656,7 @@ msgstr "审核时间："
 
 msgid "in query"
 msgstr "正在查询..."
+
+#: ../midori/midori-browser.c:9500
+msgid "This operation will remove all history first, Are you sure?"
+msgstr "该操作将会清除所有的历史记录，确定要这样做吗？"

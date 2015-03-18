@@ -3604,3 +3604,6 @@ msgstr "Read mode"
 msgid "Let article is more conducive to reading"
 msgstr "Let article is more conducive to reading"
 
+#: ../midori/midori-browser.c:9500
+msgid "This operation will remove all history first, Are you sure?"
+msgstr "This operation will remove all history first, Are you sure?"
