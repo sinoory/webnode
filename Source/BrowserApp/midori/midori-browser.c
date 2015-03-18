@@ -4478,8 +4478,11 @@ _action_navigation_activate (GtkAction*     action,
             midori_browser_set_current_tab_smartly (browser, new_view);
         }
         else
-//zgh            midori_view_set_uri (view, "about:home");
-            midori_view_set_uri (view, "http://www.baidu.com/");
+					{
+								gchar *strval = katze_object_get_string(browser->settings, "homepage");
+            midori_view_set_uri (view, strval);
+								g_free (strval);
+					}
 
         return TRUE;
     }
