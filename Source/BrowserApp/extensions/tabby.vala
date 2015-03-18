@@ -606,12 +606,18 @@ namespace Tabby {
             public override Katze.Array get_saved_sessions () {
                 Katze.Array sessions = new Katze.Array (typeof (Session));
 
+#if 0//lxx,20150318
                 string sqlcmd = """
                     SELECT id, closed FROM sessions WHERE closed = 0
                     UNION
                     SELECT * FROM (SELECT id, closed FROM sessions WHERE closed = 1 ORDER BY tstamp DESC LIMIT 1)
                     ORDER BY closed;
                 """;
+#else
+                string sqlcmd = """
+																	SELECT id, closed FROM sessions WHERE closed = 1 ORDER BY tstamp DESC LIMIT 1;
+                """;
+#endif
                 try {
                     var statement = database.prepare (sqlcmd);
                     while (statement.step ()) {
