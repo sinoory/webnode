@@ -979,7 +979,7 @@ static void sendRequestCallback(GObject* object, GAsyncResult* result, gpointer 
        view->inputStream = soup_request_send_finish(view->soup_request, result, NULL);
        view->soup_request = NULL;
        if(view->inputStream)
-          g_input_stream_read_async(view->inputStream, view->once_read_buffer, 1024*10, G_PRIORITY_DEFAULT,NULL, readCallback, view);
+          g_input_stream_read_async(view->inputStream, view->once_read_buffer, 1024*10, G_PRIORITY_DEFAULT_IDLE,NULL, readCallback, view);
     }
 }
 
@@ -1100,7 +1100,7 @@ midori_view_web_view_navigation_decision_cb (WebKitWebView*             web_view
             {
                if( view->website_record_array)
                   katze_assign (view->website_record_array, NULL);
-               g_idle_add (midori_view_website_query_idle, view);
+       //        g_idle_add (midori_view_website_query_idle, view);
                if(view->tmp_uri)
                {
                   free(view->tmp_uri);
