@@ -647,5 +647,12 @@ midori_normal_app_on_quit (MidoriApp* app)
         gchar* config_file = midori_paths_get_config_filename_for_writing ("session.xbel");
         g_unlink (config_file);
     }
+//lxx, 20150318
+	bool bValue = 0;
+	g_object_get(app->settings, "reset-browser-settings", &bValue, NULL);
+	if(bValue)
+	{
+		DeletePreferencesFile();
+	}
 }
 

@@ -589,13 +589,11 @@ static void networkSettingCallback(GtkButton *button, MidoriWebSettings *setting
 	printf("function networkSettingCallback has been called\n");
 }
 
-static void do_reset_browser()
+static void do_reset_browser(MidoriWebSettings *settings)
 {
-	if(DeletePreferencesFile())
-	{
-		printf("PreferencesFile has been deleted\n");
-//		return;
-	};
+//删除config文件
+	g_object_set(settings, "reset-browser-settings", true, NULL);
+
 //删除历史记录的
 	MidoriApp *app = midori_app_get_default();
 	MidoriBrowser *browser = midori_app_get_browser(app);
@@ -628,7 +626,7 @@ static void resetNetworkSettingCallback(GtkButton *button, MidoriWebSettings *se
 	}
 	else if(result == GTK_RESPONSE_OK)
 	{
-		do_reset_browser();
+		do_reset_browser(settings);
 		gtk_widget_destroy(dialog);
 	}
 }
