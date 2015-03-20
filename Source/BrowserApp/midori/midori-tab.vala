@@ -90,7 +90,8 @@ namespace Midori {
         protected set {
             /* When we are finished, we don't want to *see* progress anymore */
             if (load_status == LoadStatus.FINISHED)
-                current_progress = 0.0;
+            //    current_progress = 0.0;
+                  current_progress = 0.5; //modify by luyue 2015/3/9
             /* Full progress but not finished: presumably all loaded */
             else if (value == 1.0)
                 current_progress = 0.0;
@@ -143,7 +144,7 @@ namespace Midori {
             web_view = new WebKit.WebView ();
 #endif
             /* Load something to avoid a bug where WebKit might not set a main frame */
-            web_view.load_uri ("");
+       //     web_view.load_uri ("");
         }
 
         public void inject_stylesheet (string stylesheet) {

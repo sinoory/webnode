@@ -112,6 +112,7 @@ target_link_libraries(${LIBMIDORI}
                       sqlite3
                       m
                       X11
+                      pthread
                       )
 set_target_properties(${LIBMIDORI} PROPERTIES
                       COMPILE_FLAGS ${CFLAGS}
@@ -155,6 +156,7 @@ target_link_libraries(${MIDORI_PROJECT_NAME}
                       sqlite3
                       m
                       X11
+                      pthread
                       )
 set_target_properties(${MIDORI_PROJECT_NAME} PROPERTIES
                       COMPILE_FLAGS ${CFLAGS}

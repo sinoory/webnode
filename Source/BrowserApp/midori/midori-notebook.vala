@@ -181,8 +181,6 @@ namespace Midori {
 		index = ihost.index_of_char('/');
 		string host = ihost[0:index];
 
-		stdout.printf("%s   %s\n", uriHost, host);
-
 		if(track_location)
 		{
 			string output = string.join ("\n", "此网页包含来自以下网站的元素，这些网站正在跟踪您的位置：", host,"如需阻止，请到首选项中的隐私界面进行设置。");
@@ -202,12 +200,7 @@ namespace Midori {
 		dialog.add_buttons (/*"管理位置设置", Gtk.ResponseType.CANCEL,*/ "完成",  Gtk.ResponseType.ACCEPT);
 		bool cancel = dialog.run () != Gtk.ResponseType.ACCEPT;
 		dialog.destroy ();
-		if(cancel)
-		{
-			stdout.printf("this is vala printing\n");
-		}
                 
-		stdout.printf("start_dl_clicked end\n");
 	}
 
         void uri_changed (GLib.ParamSpec pspec) {

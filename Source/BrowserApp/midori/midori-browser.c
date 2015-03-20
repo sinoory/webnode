@@ -102,6 +102,8 @@ struct _MidoriBrowser
    //luyue add by 2015/1/20
     GtkWidget* smart_zoom_button;
     GtkWidget* smart_zoom_image;
+    char * forward_url;
+   //add end
 };
 
 G_DEFINE_TYPE (MidoriBrowser, midori_browser, GTK_TYPE_WINDOW)
@@ -330,6 +332,26 @@ midori_browser_update_secondary_icon (MidoriBrowser* browser,
     }
 #endif
 }
+//add by luyue 2015/3/16
+static void
+midori_view_forward_url_cb(GtkWidget*     view,
+                           char *         uri,
+                           MidoriBrowser* browser)
+{
+   if(browser->forward_url)
+   {
+      free(browser->forward_url);
+      browser->forward_url = NULL;
+   }
+   if(!uri)
+   {
+      browser->forward_url = NULL;
+      return;
+   }
+   browser->forward_url = (char *)malloc(strlen(uri)+1);
+   strcpy(browser->forward_url,uri);
+}
+//add end
 
 static void
 _midori_browser_update_interface (MidoriBrowser* browser,
@@ -338,8 +360,20 @@ _midori_browser_update_interface (MidoriBrowser* browser,
     GtkAction* action;
 
     _action_set_sensitive (browser, "Back", midori_view_can_go_back (view));
-    _action_set_sensitive (browser, "Forward", midori_tab_can_go_forward (MIDORI_TAB (view)));
-    _action_set_visible (browser, "Forward", midori_tab_can_go_forward (MIDORI_TAB (view)));    //zgh
+    //add by luyue 2015/3/11
+    GtkWidget* current_web_view = midori_view_get_web_view (view);
+    gchar *uri = webkit_web_view_get_uri (current_web_view);
+    if(!browser->forward_url || (uri && strcmp(uri,browser->forward_url)))
+    {
+       _action_set_sensitive (browser, "Forward", midori_tab_can_go_forward (MIDORI_TAB (view)));
+       _action_set_visible (browser, "Forward", midori_tab_can_go_forward (MIDORI_TAB (view)));    //zgh
+    }
+    else
+    {
+       _action_set_sensitive (browser, "Forward", NULL);
+       _action_set_visible (browser, "Forward", NULL);
+    }
+    //add end
     _action_set_sensitive (browser, "Previous",
         midori_view_get_previous_page (view) != NULL);
     _action_set_sensitive (browser, "Next",
@@ -2226,6 +2260,8 @@ midori_browser_connect_tab (MidoriBrowser* browser,
                       midori_view_new_window_cb, browser,
                       "signal::new-view",
                       midori_view_new_view_cb, browser,
+                      "signal::forward-url",                //add by luyue 2015/3/16
+                      midori_view_forward_url_cb, browser,       //add by luyue 2015/3/16
 #if TRACK_LOCATION_TAB_ICON //lxx, 20150202
                       "signal::track-location",
                       midori_track_location_cb, browser,
@@ -7263,6 +7299,7 @@ midori_browser_init (MidoriBrowser* browser)
     browser->search_engines = NULL;
     browser->dial = NULL;
     browser->sari_panel_windows = NULL; //zgh 20150212
+    browser->forward_url = NULL; //luyue 2015/3/17
 
     /* Setup the window metrics */
     g_signal_connect (browser, "realize",
@@ -7704,6 +7741,7 @@ midori_browser_finalize (GObject* object)
 
 //ZRL 2014.12.09
     katze_object_assign (browser->bookmarks, NULL);
+    katze_assign (browser->forward_url,NULL);//add by luyue 2015/3/17
     g_idle_remove_by_data (browser);
 
     G_OBJECT_CLASS (midori_browser_parent_class)->finalize (object);
@@ -8362,6 +8400,15 @@ midori_browser_settings_notify (MidoriWebSettings* web_settings,
            midori_view_set_doublezoom_level (tabs->data, browser->settings);
         g_list_free (tabs);
     }
+    //luyue add by 2015/3/18
+    else if(name == g_intern_string("danger-url"))
+    {
+        GList* tabs = midori_browser_get_tabs (browser);
+        for (; tabs; tabs = g_list_next (tabs))
+           midori_view_set_dangerous_url (tabs->data, browser->settings);
+        g_list_free (tabs);
+    }
+    //add end
 
 #endif
     g_value_unset (&value);

@@ -195,7 +195,7 @@ namespace Midori {
 		  public string serif_font_family {get; set; default = "serif"; } //lianxx add, 20141211
 		  public string sans_serif_font_family {get; set; default = "Lohit Tamil"; } //lianxx add, 20141211 
 		  public int default_font_size {get; set; default = 16; } //lianxx add, 20141211 
-        public bool page_content_cache {get; set; default = true;} //lianxx add, 20141212
+                  public bool page_content_cache {get; set; default = true;} //lianxx add, 20141212
 		  public int history_setting {get; set; default = 0;} //lianxx add, 20141212
 		  public bool clear_browse_record {get; set; default = false;} //lianxx add, 20141212
 		  public bool clear_download_record {get; set; default = false;} //lianxx add, 20141212
@@ -209,7 +209,8 @@ namespace Midori {
 		  public bool do_not_track {get; set; default = true;} //lianxx add, 20150120
 		  public bool reset_browser_settings {get; set; default = false;} //lianxx add, 20150120
 		  public double smart_zoom_level {get; set; default = 1.0;} //lianxx add, 20150120 
-        public bool save_form_user_password {get; set; default = true;} //wangjy for GUI save username
+                  public bool danger_url {get; set; default = false;} //luyue add, 20150318
+                  public bool save_form_user_password {get; set; default = true;} //wangjy for GUI save username
 
         // [IntegerType (min = 0, int.max)]
         public int maximum_cookie_age { get; set; default = 30; }

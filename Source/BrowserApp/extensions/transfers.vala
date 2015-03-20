@@ -330,8 +330,6 @@ namespace Transfers {
                         downloadt.get_request();
                     }
                 }
-                
-                stdout.printf("start_dl_clicked end\n");
             }            
         }
 

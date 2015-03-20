@@ -137,7 +137,6 @@ namespace Midori {
                || (uri.has_prefix ("data:") && uri.chr (-1, ';') != null));
         }
         public static bool is_location (string? uri) {
-		stdout.printf("\nstart_dl_clicked end\n");
             /* file:// is not considered a location for security reasons */
             return uri != null
              && (uri.str ("://") != null /*&& uri.chr (-1, ' ') == null*/ //lxx alter for whitespace in local file

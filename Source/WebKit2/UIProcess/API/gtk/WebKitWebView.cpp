@@ -1710,6 +1710,7 @@ void webkitWebViewLoadChanged(WebKitWebView* webView, WebKitLoadEvent loadEvent)
         priv->waitingForMainResource = false;
     } else if (loadEvent == WEBKIT_LOAD_COMMITTED) {
         WebKitFaviconDatabase* database = webkit_web_context_get_favicon_database(priv->context);
+        if(!priv->activeURI.data()) return;  //add by luyue 2015/3/9
         GUniquePtr<char> faviconURI(webkit_favicon_database_get_favicon_uri(database, priv->activeURI.data()));
         webkitWebViewUpdateFaviconURI(webView, faviconURI.get());
 

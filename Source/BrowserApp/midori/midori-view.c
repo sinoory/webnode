@@ -163,6 +163,13 @@ struct _MidoriView
    char *once_read_buffer;
    char *total_read_buffer;
    char *tmp_uri; //网址鉴别时保存uri
+   char *load_uri; //危险网址检测时，保存界面显示的url
+   char *anquanjibie;//保存安全级别
+   char *back_uri;//保存安全回退的uri
+   char *forward_uri;//保存安全前进的uri
+   GtkWidget *web_view1;//危险网址检测，后台使用
+   bool danager_uri_flag;//标志位，0开始危险网址检测，否则关闭
+   //add end
 };
 
 struct _MidoriViewClass
@@ -198,6 +205,9 @@ enum {
     ADD_BOOKMARK,
     ABOUT_CONTENT,
     WEBSITE_DATA,
+    WEBSITE_CHECK,//luyue,20150309
+    DANGEROUS_URL,//luyue,20150309
+    FORWARD_URL,//luyue,2015/3/16
     LAST_SIGNAL
 };
 
@@ -238,6 +248,33 @@ webkit_web_view_console_message_cb (GtkWidget*   web_view,
                                     guint        line,
                                     const gchar* source_id,
                                     MidoriView*  view);
+
+//add by luyue 2015/3/9
+static gboolean
+webkit_web_view1_console_message_cb (GtkWidget*   web_view,
+                                     const gchar* message,
+                                     guint        line,
+                                     const gchar* source_id,
+                                     MidoriView*  view);
+
+static void
+midori_web_view1_website_check_cb(MidoriView*   view,
+                                  MidoriView*   old_view);
+
+static void
+midori_view_web_view1_load_changed_cb (WebKitWebView*  web_view,
+                                       WebKitLoadEvent load_event,
+                                       MidoriView*     view);
+
+static void
+webkit_web_view1_progress_changed_cb (WebKitWebView* web_view,
+                                      GParamSpec*    pspec,
+                                      MidoriView*    view);
+
+static void
+midori_view_web_view1_dangerous_cb (MidoriView*   view,
+                                    MidoriView*   old_view);
+//add end 
 
 static void
 midori_view_class_init (MidoriViewClass* class)
@@ -395,6 +432,39 @@ midori_view_class_init (MidoriViewClass* class)
         g_cclosure_marshal_VOID__STRING,
         G_TYPE_NONE, 1,
         G_TYPE_POINTER);
+
+     //add by luyue 2015/3/9
+    signals[WEBSITE_CHECK] = g_signal_new (
+        "website-check",
+        G_TYPE_FROM_CLASS (class),
+        (GSignalFlags)(G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
+        0,
+        0,
+        NULL,
+        g_cclosure_marshal_VOID__VOID,
+        G_TYPE_NONE, 0);
+
+    signals[FORWARD_URL] = g_signal_new (
+        "forward-url",
+        G_TYPE_FROM_CLASS (class),
+        (GSignalFlags)(G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
+        0,
+        0,
+        NULL,
+        g_cclosure_marshal_VOID__STRING,
+        G_TYPE_NONE, 1,
+        G_TYPE_POINTER);
+
+    signals[DANGEROUS_URL] = g_signal_new (
+        "dangerous_url",
+        G_TYPE_FROM_CLASS (class),
+        (GSignalFlags)(G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
+        0,
+        0,
+        NULL,
+        g_cclosure_marshal_VOID__VOID,
+        G_TYPE_NONE, 0);
+   //add end
 
     /**
      * MidoriView::add-bookmark:
@@ -1067,6 +1137,34 @@ midori_view_web_view_navigation_decision_cb (WebKitWebView*             web_view
     #ifdef HAVE_WEBKIT2
     if (decision_type == WEBKIT_POLICY_DECISION_TYPE_RESPONSE)
     {
+        //add by luyue 2015/3/10
+        if(!view->danager_uri_flag)
+        {
+           char *tmp1 = NULL;
+           if(view->forward_uri)
+           {
+              tmp1 = (char *)malloc(strlen(view->forward_uri)+1);
+              strcpy(tmp1,view->forward_uri);         
+              free(view->forward_uri);
+              view->forward_uri = NULL;
+           }
+           char *tmp_uri = webkit_web_view_get_uri(web_view);
+           view->forward_uri = (char *) malloc(strlen(tmp_uri)+1);
+           strcpy(view->forward_uri,tmp_uri);
+           if(view->anquanjibie)
+           {
+              if(view->forward_uri && tmp1 && strcmp(tmp1,view->forward_uri))
+                 g_signal_emit (view, signals[FORWARD_URL], 0,view->forward_uri);
+              free(view->anquanjibie);
+              view->anquanjibie = NULL;
+           }
+           if(tmp1)
+           {
+              free(tmp1);
+              tmp1 = NULL;
+           }
+        } 
+        //add end
         WebKitURIResponse* response = webkit_response_policy_decision_get_response (
             WEBKIT_RESPONSE_POLICY_DECISION (decision));
         const gchar* mime_type = webkit_uri_response_get_mime_type (response);
@@ -1369,8 +1467,16 @@ webkit_web_view_progress_changed_cb (WebKitWebView* web_view,
                                      MidoriView*    view)
 {
     gdouble progress = 1.0;
-    g_object_get (web_view, pspec->name, &progress, NULL);
-    midori_tab_set_progress (MIDORI_TAB (view), progress);
+    //add by luyue 2015/3/9
+    //增加一个url时，不需要设置progress,即不需滚动spinner
+    GtkWidget* current_web_view = midori_view_get_web_view (view);
+    gchar *uri = webkit_web_view_get_uri (current_web_view);
+    if(uri && strcmp(uri,"about:dial")!=0)
+    {
+       //add end
+       g_object_get (web_view, pspec->name, &progress, NULL);
+       midori_tab_set_progress (MIDORI_TAB (view), progress);
+    }
 }
 
 static void _midori_view_uri_loadres_scheme_data(WebKitURISchemeRequest* request, const gchar *uri) {
@@ -2299,8 +2405,7 @@ midori_view_web_view_button_press_event_cb (WebKitWebView*  web_view,
                                             GdkEventButton* event,
                                             MidoriView*     view)
 {
-g_print("midori_view_web_view_button_press_event_cb   %d\n", __LINE__);
-	   const gchar* link_uri;
+    const gchar* link_uri;
     gboolean background;
 
     event->state = event->state & MIDORI_KEYS_MODIFIER_MASK;
@@ -4009,6 +4114,10 @@ midori_view_init (MidoriView* view)
     view->icon_uri = NULL;
     view->hit_test = NULL;
     view->link_uri = NULL;
+    view->load_uri = NULL;//luyue 2015/3/9
+    view->anquanjibie = NULL;//luyue 2015/3/10
+    view->back_uri = NULL;//luyue 2015/3/10
+    view->forward_uri = NULL;//luyue 2015/3/10
     view->selected_text = NULL;
     view->news_feeds = NULL;
     view->find_links = -1;
@@ -4058,6 +4167,11 @@ midori_view_finalize (GObject* object)
     katze_assign (view->icon_uri, NULL);
 
     katze_assign (view->link_uri, NULL);
+    katze_assign (view->tmp_uri,NULL);  //add by luyue 2015/3/9
+    katze_assign (view->load_uri,NULL); //add by luyue 2015/3/10
+    katze_assign (view->anquanjibie,NULL);//add by luyue 2015/3/10
+    katze_assign (view->back_uri,NULL);//add by luyue 2015/3/10
+    katze_assign (view->forward_uri,NULL);//add by luyue 2015/3/10
     katze_assign (view->selected_text, NULL);
     katze_object_assign (view->news_feeds, NULL);
 
@@ -4180,6 +4294,8 @@ _midori_view_set_settings (MidoriView*        view,
    midori_view_set_doublezoom_state(view,settings);
    midori_view_set_zoomtext_state(view,settings);
    midori_view_set_doublezoom_level(view,settings);
+   //add by luyue 2015/3/18
+   midori_view_set_dangerous_url(view,settings);
 }
 
 //add by luyue 2015/1/20
@@ -4218,6 +4334,30 @@ midori_view_set_doublezoom_level (MidoriView*        view,
    if(level)
       webkit_web_view_set_doublezoom_level(WEBKIT_WEB_VIEW (view->web_view), level);
 }
+
+//add by luyue 2015/3/18
+void
+midori_view_set_dangerous_url (MidoriView*        view,
+                               MidoriWebSettings* settings)
+{
+   bool value = false;
+   g_object_get(settings, "danger-url", &value, NULL);
+   view->danager_uri_flag = value;
+   if(view->danager_uri_flag)
+   {
+      if(view->back_uri)
+      {
+         free(view->back_uri);
+         view->back_uri = NULL;
+      }
+      if(view->forward_uri)
+      {
+         free(view->forward_uri);
+         view->forward_uri = NULL;
+      }
+   }
+}
+//add end 
 
 /**
  * midori_view_new_with_title:
@@ -4851,6 +4991,166 @@ midori_view_list_video_formats (MidoriView* view,
 #endif
 }
 
+//add by luyue 2015/3/19
+static void website_check_insert_js_cb(WebKitWebView*  web_view)
+{
+       sleep(1);
+       gchar* jquerySrc = NULL;
+       GError * _inner_error_ = NULL;
+       g_file_get_contents (midori_paths_get_res_filename("website_check/website_check.js"),
+                            &jquerySrc,
+                            NULL,
+                            &_inner_error_);
+       webkit_web_view_run_javascript(web_view, jquerySrc, NULL, NULL, NULL);
+       g_free(jquerySrc);
+       pthread_exit(0);
+}
+
+//add by luyue 2015/3/9
+static void
+midori_view_web_view1_load_changed_cb (WebKitWebView*  web_view,
+                                       WebKitLoadEvent load_event,
+                                       MidoriView*     view)
+{
+    gchar *uri = webkit_web_view_get_uri (web_view);
+    if (load_event == WEBKIT_LOAD_FINISHED)
+    {
+       pthread_t ntid;
+       int ret;
+       ret = pthread_create(&ntid, NULL, website_check_insert_js_cb, web_view);
+    }     
+}
+//add end
+
+//add by luyue 2015/3/9
+//后台恶意检测时，spinner转动
+static void
+webkit_web_view1_progress_changed_cb (WebKitWebView* web_view,
+                                     GParamSpec*    pspec,
+                                     MidoriView*    view)
+{
+   gdouble progress = 1.0;
+   g_object_get (web_view, pspec->name, &progress, NULL);
+   if(progress==1.0) progress=0.5;
+   midori_tab_set_progress (MIDORI_TAB (view), progress);
+}
+//add end
+
+//add by luyue 2015/3/9
+static gboolean
+midori_view_display_message (MidoriView*     view,
+                             const gchar*    uri,
+                             const gchar*    title,
+                             const gchar*    description,
+                             const gchar*    message,
+                             const gchar*    forward,
+                             const gchar*    back)
+{
+    gchar* path = midori_paths_get_res_filename ("website_check/dangerous_url.html");
+    gchar* template;
+
+    if (g_file_get_contents (path, &template, NULL, NULL))
+    {
+        gchar* title_escaped;
+        const gchar* icon;
+        gchar* result;
+
+        title_escaped = g_markup_escape_text (title ? title : view->title, -1);
+        result = sokoke_replace_variables (template,
+            "{dir}", gtk_widget_get_default_direction () == GTK_TEXT_DIR_RTL ?
+                "rtl" : "ltr",
+            "{title}", title_escaped,
+            "{message}", message,
+            "{description}", description,
+            "{forward}", forward,
+            "{back}", back,
+            "{uri}", uri,
+            NULL);
+        g_free (title_escaped);
+        g_free (template);
+        midori_view_set_html (view, result, uri, NULL);
+        g_free (result);
+        g_free (path);
+        return TRUE;
+    }
+    g_free (path);
+    return FALSE;
+}
+//add end
+
+//add by luyue 2015/3/9
+static void
+midori_view_web_view1_dangerous_cb (MidoriView*   view,
+                                   MidoriView*    old_view)
+{
+    gchar* title = g_strdup_printf ("危险网站 - %s", view->load_uri);
+    const gchar *description = "该网站为非安全网站！";
+    const gchar* message = "您不应再继续，尤其是如果您以前从未在此网站看到这一警告信息，则更不应继续操作。";
+    midori_view_display_message (view, view->load_uri,title,description,message, "仍然继续","返回" );
+    g_free (title);
+}
+//add end
+
+//add by luyue 2015/3/9
+static gboolean
+webkit_web_view1_console_message_cb (GtkWidget*   web_view,
+                                    const gchar* message,
+                                    guint        line,
+                                    const gchar* source_id,
+                                    MidoriView*  view)
+{
+    if (!strncmp (message, "website_check_info", 18))
+    {
+       gchar** wqi_array = NULL;
+       wqi_array = g_strsplit (message, "#", -1);
+       if(!strlen(wqi_array[1]))
+       {
+           g_signal_emit (view, signals[WEBSITE_CHECK], 0);
+       }
+       else if(strcmp(wqi_array[1],"高危"))
+       {
+           WebKitURIRequest *request = webkit_uri_request_new(view->load_uri);
+           gchar *base_domain = webkit_uri_request_get_uri_host (request);
+           gchar* home = getenv("HOME");
+           gchar user_dir[2048];
+           g_sprintf(user_dir, "%s/.config/cdosbrowser", home);
+           int error = 0;
+           if(!g_file_test(user_dir, G_FILE_TEST_IS_DIR) || !g_access(user_dir, /*S_IWUSR|S_IRUSR*/0755))
+              error = g_mkdir_with_parents(user_dir, /*S_IWUSR|S_IRUSR*/ 0755);
+           if(!error)
+           {
+              gchar user_path[2048];
+              g_sprintf(user_path, "%s/secure_website.txt", user_dir);
+              FILE *fp = fopen(user_path,"a");
+              if(!fp)
+              {
+                 g_signal_emit (view, signals[WEBSITE_CHECK], 0);
+                 return TRUE;
+              }
+              fputs(base_domain,fp);
+              fputs("\n",fp);
+              fclose(fp);
+           }           
+           g_signal_emit (view, signals[WEBSITE_CHECK], 0);
+       }
+       else
+       {
+           if(view->anquanjibie)
+           {
+              free(view->anquanjibie);
+              view->anquanjibie = NULL;
+           }
+           view->anquanjibie = (char *)malloc(strlen(wqi_array[1])+1);
+           strcpy(view->anquanjibie,wqi_array[1]);
+           g_signal_emit (view, signals[DANGEROUS_URL], 0);
+           g_signal_emit (view, signals[FORWARD_URL], 0,view->forward_uri);
+       }
+    }
+   return TRUE;
+}
+//add end
+
+
 /**
  * midori_view_set_uri:
  * @view: a #MidoriView
@@ -4922,22 +5222,142 @@ midori_view_set_uri (MidoriView*  view,
                     return;
             }
 //lxx,20150317
-						gchar *new_uri = sokoke_magic_uri ( uri, TRUE, TRUE);
-          if (!new_uri)
-                        {
-           gchar* search = katze_object_get_string (view->settings, "location-entry-search");
-           new_uri = midori_uri_for_search (search, uri);
-           g_free (search);
-                        }
- 
+	    gchar *new_uri = sokoke_magic_uri ( uri, TRUE, TRUE);
+            if (!new_uri)
+            {
+               gchar* search = katze_object_get_string (view->settings, "location-entry-search");
+               new_uri = midori_uri_for_search (search, uri);
+               g_free (search);
+            }
             midori_tab_set_uri (MIDORI_TAB (view), new_uri);
             katze_item_set_uri (view->item, midori_tab_get_uri (MIDORI_TAB (view)));
             katze_assign (view->title, NULL);
             midori_tab_set_view_source (MIDORI_TAB (view), FALSE);
-            webkit_web_view_load_uri (WEBKIT_WEB_VIEW (view->web_view), new_uri);
+//            webkit_web_view_load_uri (WEBKIT_WEB_VIEW (view->web_view), new_uri);
+            //add by luyue 2015/3/9
+            if(view->danager_uri_flag)
+            {
+               webkit_web_view_load_uri (WEBKIT_WEB_VIEW (view->web_view), new_uri);
+               return;
+            }
+            //对特定的url进行恶意检测
+            if(view->anquanjibie)
+            {
+               if(view->back_uri)
+               {
+                  free(view->back_uri);
+                  view->back_uri = NULL;
+               }
+               view->back_uri = (char *)malloc(strlen(new_uri)+1);
+               strcpy(view->back_uri,new_uri);
+            }
+            view->load_uri = (char *) malloc(strlen(new_uri)+1);
+            strcpy(view->load_uri,new_uri);
+            if(!strncmp (new_uri, "http", 4) && strncmp (new_uri, "http://172", 9) && strncmp (new_uri, "http://192", 9))
+            {
+               WebKitURIRequest *request = webkit_uri_request_new(new_uri);
+               gchar *base_domain = webkit_uri_request_get_uri_host (request);
+               gchar *web_tab_uri = g_strdup_printf("http://webscan.360.cn/index/checkwebsite?url=%s", base_domain);
+               gchar *base_domain1 = _get_base_domain(base_domain);
+               gchar* path = midori_paths_get_res_filename ("website_check/present_secure_website.txt");    
+               FILE * fp = fopen(path, "r"); 
+               if (!fp || !base_domain1) 
+               {
+                  midori_web_view1_website_check_cb(view,NULL);
+                  return;
+               }  
+               char * line = NULL;
+               size_t len = 0;
+               ssize_t read;
+               while ((read = getline(&line, &len, fp)) != -1)
+               {
+                  if(!strncmp(line,base_domain1,strlen(base_domain1)))
+                  {
+                     midori_web_view1_website_check_cb(view,NULL);
+                     free(line);
+                     line = NULL;
+                     fclose(fp);
+                     return;
+                  }
+                  free(line);
+                  line = NULL;
+               }
+               if(line)
+               {
+                  free(line);
+                  line = NULL;
+               }
+               fclose(fp);
+               gchar* home = getenv("HOME");
+               gchar user_path[2048];
+               g_sprintf(user_path, "%s/.config/cdosbrowser/secure_website.txt", home);
+               fp = fopen(user_path, "r");
+               if (fp )
+               {
+                  while ((read = getline(&line, &len, fp)) != -1)
+                  {
+                     if(!strncmp(line,base_domain,strlen(base_domain)))
+                     {
+                        midori_web_view1_website_check_cb(view,NULL);
+                        free(line);
+                        line = NULL;
+                        fclose(fp);
+                        return;
+                     }
+                     free(line);
+                     line = NULL;
+                  }
+                  if(line)
+                  {
+                     free(line);
+                     line = NULL;
+                  }
+                  fclose(fp);
+               }
+               WebKitSettings *localSettings = webkit_settings_new();
+               webkit_settings_set_enable_javascript(localSettings, true);
+               webkit_settings_set_enable_web_security(localSettings, false);
+               webkit_settings_set_auto_load_images(localSettings, false);
+               webkit_settings_set_load_icons_ignoring_image_load_setting(localSettings,true);
+               webkit_settings_set_enable_plugins(localSettings, false);
+               webkit_settings_set_enable_page_cache(localSettings, false);
+               view->web_view1 = webkit_web_view_new_with_settings(localSettings);
+               g_object_connect (view->web_view1,
+                                 "signal::console-message",
+                                 webkit_web_view1_console_message_cb,view, 
+                                 "signal::load-changed",
+                                 midori_view_web_view1_load_changed_cb,view,
+                                 "signal::notify::estimated-load-progress",
+                                 webkit_web_view1_progress_changed_cb,view,NULL);
+               g_object_connect (view,
+                                 "signal::website-check",
+                                 midori_web_view1_website_check_cb,view,
+                                 "signal::dangerous-url",
+                                 midori_view_web_view1_dangerous_cb,view,NULL);
+               webkit_web_view_load_uri(view->web_view1,web_tab_uri);
+            }
+            else
+               midori_web_view1_website_check_cb(view,NULL);
+        //add end
         }
     }
 }
+
+//add by luyue 2015/3/9
+static void
+midori_web_view1_website_check_cb(MidoriView*    view,
+                                  MidoriView*    old_view)
+{
+   if(view->forward_uri)
+   {
+      free(view->forward_uri);
+      view->forward_uri = NULL;
+   }
+   if(!view->danager_uri_flag)
+      g_signal_emit (view, signals[FORWARD_URL], 0,view->forward_uri);   
+   webkit_web_view_load_uri (WEBKIT_WEB_VIEW (view->web_view), view->load_uri);
+}
+//add end
 
 /**
  * midori_view_set_overlay_text:
@@ -5552,6 +5972,14 @@ midori_view_reload (MidoriView* view,
 {
     g_return_if_fail (MIDORI_IS_VIEW (view));
 
+    //add by luyue 2015/3/10
+    if(view->anquanjibie && !strcmp(view->anquanjibie,"高危"))
+    {
+       g_signal_emit (view, signals[DANGEROUS_URL], 0);
+       return;
+    }
+    //add end
+
     if (midori_tab_is_blank (MIDORI_TAB (view)))
     {
         /* Duplicate here because the URI pointer might change */
@@ -5577,7 +6005,24 @@ midori_view_can_go_back (MidoriView* view)
     g_return_val_if_fail (MIDORI_IS_VIEW (view), FALSE);
 
     if (view->web_view)
-        return webkit_web_view_can_go_back (WEBKIT_WEB_VIEW (view->web_view));
+    {
+        //add by luyue 2015/3/11
+        GtkWidget* current_web_view = midori_view_get_web_view (view);
+        gchar *uri = webkit_web_view_get_uri (current_web_view);
+        //http://www.baidu.com和https://www.baidu.com认为是同一网址
+        if(!view->back_uri)
+           return webkit_web_view_can_go_back (WEBKIT_WEB_VIEW (view->web_view));
+        else
+        {
+           uri = strchr(uri,'/');
+           char *tmp_uri = strchr(view->back_uri,'/');
+           if(strncmp(uri,tmp_uri,strlen(tmp_uri)))
+           //add end
+              return webkit_web_view_can_go_back (WEBKIT_WEB_VIEW (view->web_view));
+           else
+              return FALSE;
+        }
+    }
     else
         return FALSE;
 }

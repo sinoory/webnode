@@ -297,6 +297,16 @@ static void zoomTextOnlyCallback(GtkToggleButton *togglebutton, MidoriWebSetting
              NULL);
 }
 
+//add by luyue 2015/3/18
+static void dangerUrlCallback(GtkToggleButton *togglebutton, MidoriWebSettings *settings)
+{
+    bool bvalue = gtk_toggle_button_get_active(togglebutton);
+    g_object_set(settings,
+             "danger-url", !bvalue,
+             NULL);
+}
+//add end
+
 static void smartZoomCallback(GtkToggleButton *togglebutton, MidoriWebSettings *settings)
 {
     bool bvalue = gtk_toggle_button_get_active(togglebutton); 
@@ -823,13 +833,13 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
 	g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(showMenubarCallback), settings);
 	bvalue = katze_object_get_boolean(settings, "show_menubar");
 	if(TRUE == bvalue)
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
+           gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
 	gtk_grid_attach_next_to(grid, button, widget, GTK_POS_BOTTOM, 1, 1);
 //	gtk_grid_attach(grid,button,1,8,1,1);
 
 	//label = gtk_label_new ("常规");
 	gchar *general_pic = midori_paths_get_res_filename("settings-icons/general.png");
-   label = xpm_label_box( general_pic, "常 规" );
+        label = xpm_label_box( general_pic, "常 规" );
 	g_free(general_pic);
 
 	gtk_notebook_append_page (GTK_NOTEBOOK (notebook), GTK_WIDGET(grid), GTK_WIDGET(label));
@@ -938,7 +948,7 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
 //	gtk_grid_attach(grid,widget,2,2,1,1);
 
 	gchar *content_pic = midori_paths_get_res_filename("settings-icons/fonts.png");
-   label = xpm_label_box( content_pic, "字体" );
+        label = xpm_label_box( content_pic, "字体" );
 	g_free(content_pic);
 	gtk_notebook_append_page (GTK_NOTEBOOK (notebook), GTK_WIDGET(grid), label);
 
@@ -1075,7 +1085,7 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
 
 //	label = gtk_label_new ("内容");
 	gchar *font_pic = midori_paths_get_res_filename("settings-icons/content.png");
-   label = xpm_label_box( font_pic, "内 容" );
+        label = xpm_label_box( font_pic, "内 容" );
 	g_free(font_pic);
 	gtk_notebook_append_page (GTK_NOTEBOOK (notebook), GTK_WIDGET(grid), label);
 
@@ -1247,7 +1257,7 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
 	gtk_grid_attach(grid, button, 2, 12, 2, 1);
 
 	gchar *privacy_pic = midori_paths_get_res_filename("settings-icons/privacy.png");
-   label = xpm_label_box( privacy_pic, "隐 私" );
+        label = xpm_label_box( privacy_pic, "隐 私" );
 	g_free(privacy_pic);
 //	label = gtk_label_new ("隐私");
 	gtk_notebook_append_page (GTK_NOTEBOOK (notebook), GTK_WIDGET(grid), label);
@@ -1275,7 +1285,7 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
 
 	button = gtk_button_new_with_label("　已保存密码　");
 	gtk_grid_attach(grid, button, 3, 3, 1, 1);
-    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(showPasswordManagerCallback), NULL);
+        g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(showPasswordManagerCallback), NULL);
 
 	widget = gtk_label_new("HTTPS/SSL:");
 	gtk_grid_attach(grid, widget, 1, 4, 1, 1);
@@ -1287,9 +1297,19 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
 	button = gtk_check_button_new_with_label("检查服务器证书吊销状态");
 	g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(certificateRevocationCallback), settings);
 	gtk_grid_attach(grid, button, 2, 6, 2, 1);
-
+        //add by luyue 2015/3/18
+        widget = gtk_label_new("高危网址检测：");
+        gtk_grid_attach(grid, widget, 1, 7, 1, 1);
+        button = gtk_check_button_new_with_label("打开高危网址检测功能");
+        g_object_get(settings, "danger-url", &bvalue, NULL);
+        if(!bvalue)
+           gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
+        g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(dangerUrlCallback), settings);
+        gtk_grid_attach(grid,button,2,8,2,1);
+        //add end
+        
 	gchar *security_pic = midori_paths_get_res_filename("settings-icons/security.png");
-   label = xpm_label_box( security_pic, "安 全" );
+        label = xpm_label_box( security_pic, "安 全" );
 	g_free(security_pic);
 //	label = gtk_label_new ("安全");
 	gtk_notebook_append_page (GTK_NOTEBOOK (notebook), GTK_WIDGET(grid), label);
@@ -1365,11 +1385,11 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);     
 	else 
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), FALSE); 
-   g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(askEverytimeBeforeDownloadCallback), settings);
+        g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(askEverytimeBeforeDownloadCallback), settings);
 	gtk_grid_attach(grid, button, 2, 11, 3, 1);
 
 	gchar *advanced_pic = midori_paths_get_res_filename("settings-icons/advanced.png");
-   label = xpm_label_box( advanced_pic, "高 级" );
+        label = xpm_label_box( advanced_pic, "高 级" );
 	g_free(advanced_pic);
 //	label = gtk_label_new ("高级");
 	gtk_notebook_append_page (GTK_NOTEBOOK (notebook), GTK_WIDGET(grid), label);
