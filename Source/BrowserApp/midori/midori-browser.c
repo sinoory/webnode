@@ -555,8 +555,12 @@ _midori_browser_update_progress (MidoriBrowser* browser,
     action = _action_by_name (browser, "ReloadStop");
     if (!loading)
     {
+//        g_object_set (action,
+//                      "stock-id", GTK_STOCK_REFRESH,
+//                      "tooltip", _("Reload the current page"), NULL);
         g_object_set (action,
-                      "stock-id", GTK_STOCK_REFRESH,
+                      "stock-id", NULL,
+                      "icon_name", STOCK_REFRESH,
                       "tooltip", _("Reload the current page"), NULL);
                       
         //zgh 20150106
@@ -4120,7 +4124,7 @@ _action_reload_stop_activate (GtkAction*     action,
     g_object_get (action, "stock-id", &stock_id, NULL);
 
     /* Refresh or stop, depending on the stock id */
-    if (!strcmp (stock_id, GTK_STOCK_REFRESH))
+    if (!stock_id || !strcmp (stock_id, GTK_STOCK_REFRESH))
     {
         GdkModifierType state = (GdkModifierType)0;
         gint x, y;
@@ -6653,7 +6657,7 @@ static const GtkActionEntry entries[] =
         NULL, G_CALLBACK (_action_undo_tab_close_activate) },
 #endif
     //by sunh     
-    { "DownloadDialog", STOCK_DOWNLOAD,
+    { "DownloadDialog", "gtk-go-down",//STOCK_DOWNLOAD,
         "Download", "<Ctrl>l",
         N_("Transfers"), G_CALLBACK (midori_browser_actiave_transfer_in_window) },
     //by sunh end
@@ -7270,6 +7274,27 @@ web_view_navigation_decision_cb (WebKitWebView*             web_view,
     return FALSE;
 }
 
+//zgh 20150319 修改工具栏图标
+static void _midori_browser_set_action_icon_name(MidoriBrowser *browser, gchar* action_name, gchar* icon_name)
+{
+    GtkAction *action = gtk_action_group_get_action(browser->action_group, action_name);
+    g_object_set (action, 
+            "stock-id", NULL,
+            "icon_name", icon_name,
+            NULL);
+}
+
+static void midori_browser_set_action_icon_name (MidoriBrowser *browser)
+{
+    _midori_browser_set_action_icon_name (browser, "Back", STOCK_GO_BACK);
+    _midori_browser_set_action_icon_name (browser, "Forward", STOCK_GO_FORWARD);
+    _midori_browser_set_action_icon_name (browser, "Homepage", STOCK_HOME_PAGE);
+    _midori_browser_set_action_icon_name (browser, "DownloadDialog", STOCK_DOWNLOAD);
+    _midori_browser_set_action_icon_name (browser, "Preferences", STOCK_SETTING);
+    _midori_browser_set_action_icon_name (browser, "ReloadUncached", STOCK_REFRESH);
+    _midori_browser_set_action_icon_name (browser, "CompactMenu", STOCK_COMPACTMENU);
+}
+
 static void
 midori_browser_init (MidoriBrowser* browser)
 {
@@ -7525,6 +7550,8 @@ midori_browser_init (MidoriBrowser* browser)
                       NULL);
     gtk_action_group_add_action (browser->action_group, action);
     g_object_unref (action);
+    
+    midori_browser_set_action_icon_name (browser);//zgh 30150319    替换工具栏图标
 
     /* Create the menubar */
     browser->menubar = gtk_ui_manager_get_widget (ui_manager, "/menubar");
@@ -7601,7 +7628,8 @@ midori_browser_init (MidoriBrowser* browser)
     /* Create the navigationbar */
     browser->navigationbar = gtk_ui_manager_get_widget (
         ui_manager, "/toolbar_navigation");
-    katze_widget_add_class (browser->navigationbar, "primary-toolbar");
+//    katze_widget_add_class (browser->navigationbar, "primary-toolbar");
+    #if 1
     /* FIXME: Settings should be connected with screen changes */
     gtk_settings = gtk_widget_get_settings (GTK_WIDGET (browser));
     if (gtk_settings)
@@ -7609,6 +7637,7 @@ midori_browser_init (MidoriBrowser* browser)
             G_CALLBACK (midori_browser_navigationbar_notify_style_cb), browser);
     gtk_toolbar_set_show_arrow (GTK_TOOLBAR (browser->navigationbar), TRUE);
 //zgh    g_object_set (_action_by_name (browser, "Back"), "is-important", TRUE, NULL);  //工具栏上显示字符
+#endif
     gtk_widget_hide (browser->navigationbar);
     g_signal_connect (browser->navigationbar, "popup-context-menu",
         G_CALLBACK (midori_browser_toolbar_popup_context_menu_cb), browser);
@@ -7779,7 +7808,7 @@ _midori_browser_set_toolbar_style (MidoriBrowser*     browser,
     }
     gtk_toolbar_set_style (GTK_TOOLBAR (browser->navigationbar),
                            gtk_toolbar_style);
-    gtk_toolbar_set_icon_size (GTK_TOOLBAR (browser->navigationbar), icon_size);
+    gtk_toolbar_set_icon_size (GTK_TOOLBAR (browser->navigationbar), MIDORI_TOOLBAR_SMALL_ICONS/*icon_size*/);
     midori_panel_set_toolbar_style (MIDORI_PANEL (browser->panel),
                                     gtk_toolbar_style);
 }
@@ -9367,7 +9396,8 @@ static void midori_browser_actiave_transfer_in_window(GtkAction*     action,
     GtkActionGroup *action_group = midori_browser_get_action_group (browser);
     GtkAction *download_action = gtk_action_group_get_action(action_group, "DownloadDialog");
     g_object_set (download_action, 
-            "stock-id", STOCK_DOWNLOAD,
+            "stock-id", NULL,
+            "icon_name", STOCK_DOWNLOAD,
             NULL);
 }
 

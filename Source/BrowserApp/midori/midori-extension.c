@@ -730,6 +730,7 @@ midori_extension_activate (GObject*     extension,
 {
     if (MIDORI_IS_EXTENSION (extension))
     {
+    
         if (filename != NULL)
             midori_extension_add_to_list (app, MIDORI_EXTENSION (extension), filename);
         if (activate && !midori_extension_is_active (MIDORI_EXTENSION (extension)))
