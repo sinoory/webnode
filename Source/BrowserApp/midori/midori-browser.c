@@ -1416,8 +1416,8 @@ midori_browser_edit_bookmark_dialog_new (MidoriBrowser* browser,
     hbox = gtk_hbox_new (FALSE, 6);
     gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
     check_toolbar = gtk_check_button_new_with_mnemonic (_("Show in Bookmarks _Bar"));
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (check_toolbar),
-        katze_item_get_meta_boolean (bookmark, "toolbar"));
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (check_toolbar), TRUE);
+//zgh 20150324        katze_item_get_meta_boolean (bookmark, "toolbar"));
     gtk_box_pack_start (GTK_BOX (hbox), check_toolbar, FALSE, FALSE, 0);
 
     if (new_bookmark && !is_folder)
