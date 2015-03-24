@@ -20,6 +20,22 @@ express_query_deactivated_cb (MidoriExtension* extension,
       gtk_widget_destroy (express_query_button);
 }
 
+static GtkWidget*
+webkit_web_view_create_web_view_cb (GtkWidget*      web_view,
+                                    WebKitNavigationAction* navigationAction,
+                                    MidoriBrowser*     browser)
+{
+    WebKitURIRequest *naviationRequest = webkit_navigation_action_get_request(navigationAction);
+    gchar *destUri = webkit_uri_request_get_uri(naviationRequest);
+    midori_browser_open_new_tab_from_extension(browser, destUri, false);
+    if(popup_window)
+           {
+       gtk_widget_destroy(popup_window);
+       popup_window = NULL;
+          }
+    return NULL;
+}
+
 static void
 express_query_function_realization (GtkWidget* botton,MidoriBrowser* browser)
 {
@@ -41,7 +57,8 @@ express_query_function_realization (GtkWidget* botton,MidoriBrowser* browser)
    gtk_widget_show(webview);
    gtk_widget_show(popup_window);
    webkit_web_view_load_uri(webview, uri);
-   g_object_connect (webview, "signal::decide-policy",web_view_navigation_decision_cb, browser);
+//   g_object_connect (webview, "signal::decide-policy",web_view_navigation_decision_cb, browser);
+   g_object_connect (webview, "signal::create",webkit_web_view_create_web_view_cb, browser);
    g_signal_connect(G_OBJECT(popup_window),"delete_event", G_CALLBACK(close_popup_window),NULL);
 }
 
