@@ -1,7 +1,7 @@
 body {
 	font-family: "微软雅黑", "Microsoft YaHei","宋体", Verdana, Geneva, sans-serif;
 	margin: 0px;
-	color: #000;
+	color: #FFF;
 	text-shadow: 1px 1px 3px #000;
 	width: 504px;
 	height: 219px;
@@ -142,7 +142,7 @@ select {
 	border: none;
 	background-color: #bec8d0;
 	border-radius: 2px;
-	color: #ffffff;
+	color: #000000;
 }
 
 #set .button {
