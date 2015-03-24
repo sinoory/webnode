@@ -5,10 +5,12 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<title>快递单号查询</title>
-	<script src="js/jquery.min.js"></script>
-	<link rel="stylesheet" href="css/bootstrap.min.css">
-	<link rel="stylesheet" href="css/bootstrap-theme.min.css">	
-	<script src="js/bootstrap.min.js"></script>
+	<script src="jquery.min.js"></script>
+	<link rel="stylesheet" href="bootstrap.min.css">
+	<link rel="stylesheet" href="bootstrap-theme.min.css">	
+	<link rel="stylesheet" href="select2.min.css">
+	<script src="bootstrap.min.js"></script>
+	<script src="select2.min.js"></script>
 </head>
 <body>
 <div style="height:100px;background:#7FC299 url(title_express.png) no-repeat center 0px; border-bottom:#FFCA05 5px solid;margin-bottom:40px;">
@@ -23,7 +25,7 @@
 		 <select id="selectType" class="form-control input-lg" name="type" data-selected="">
 			 <optgroup title="常用快递" label="常用快递">
 			 <option value="shunfeng">顺丰速运</option>
-			 <option value="zhongtong">中通速递</option>
+			 <option value="zhongtong"  selected="true">中通速递</option>
 			 <option value="yuantong">圆通速递</option>
 			 <option value="shentong">申通快递</option>
 			 <option value="yunda">韵达快运</option>
@@ -85,7 +87,24 @@
 				<option value="meiguokuaidi">美国快递 (m)</option>
 				<option value="menduimen">门对门 (m)</option>
 				<option value="minghangkuaidi">民航快递 (m)</option>
-				<option value="nanjing">南京100快递 (n)</option>
+				<option value="nanjing">南	<option value="anxindakuaixi">安信达快递 (a)</option>
+				<option value="baifudongfang">百福东方国际物流 (b)</option>
+				<option value="bht">bht (b)</option>
+				<option value="biaojikuaidi">彪记快递 (b)</option>
+				<option value="cces">cces快递 (c)</option>
+				<option value="changyuwuliu">长宇物流 (c)</option>
+				<option value="coe">中国东方（COE） (c)</option>
+				<option value="datianwuliu">大田物流 (d)</option>
+				<option value="debangwuliu">德邦物流 (d)</option>
+				<option value="dhl">DHL (d)</option>
+				<option value="disifang">递四方 (d)</option>
+				<option value="dpex">dpex (d)</option>
+				<option value="dsukuaidi">d速快递 (d)</option>
+				<option value="ems">ems快递 (e)</option>
+				<option value="emsguoji">ems国际快递 (e)</option>
+				<option value="feikangda">飞康达快递 (f)</option>
+				<option value="feikuaida">飞快达 (f)</option>
+				<option value="fenghuangku京100快递 (n)</option>
 				<option value="ocs">OCS (o)</option>
 				<option value="peisihuoyunkuaidi">配思快递 (p)</option>
 				<option value="quanchenkuaidi">全晨快递 (q)</option>
@@ -113,25 +132,7 @@
 				<option value="xinfengwuliu">信丰物流 (x)</option>
 				<option value="xingchengjibian">星辰急便 (x)</option>
 				<option value="xinhongyukuaidi">鑫飞鸿物流快递 (x)</option>
-				<option value="yafengsudi">亚风速递 (y)</option>
-				<option value="yibangwuliu">一邦物流 (y)</option>
-				<option value="yinjiesudi">银捷速递 (y)</option>
-				<option value="youshuwuliu">优速物流 (y)</option>
-				<option value="youzhengguoji">邮政国际包裹挂号信 (y)</option>
-				<option value="yuananda">源安达 (y)</option>
-				<option value="yuanchengwuliu">远成物流 (y)</option>
-				<option value="yuanfeihangwuliu">原飞航物流 (y)</option>
-				<option value="yuanweifeng">源伟丰快递 (y)</option>
-				<option value="yuanzhijiecheng">元智捷诚快递 (y)</option>
-				<option value="yuefengwuliu">越丰物流 (y)</option>
-				<option value="yuntongkuaidi">运通快递 (y)</option>
-				<option value="zhengzhoujianhua">郑州建华快递 (z)</option>
-				<option value="zhimakaimen">芝麻开门 (z)</option>
-				<option value="zhongtiewuliu">中铁物流 (z)</option>
-				<option value="zhongtong">中通速递 (z)</option>
-				<option value="zhongxinda">忠信达 (z)</option>
-				<option value="zhongyouwuliu">中邮物流 (z)</option>
-				<option value="ztky">中铁物流 (z)</option>
+			
 			</optgroup>
 		 </select>
 		<script type="text/javascript">
@@ -155,6 +156,7 @@
         <script type="text/javascript" src="http://s20.cnzz.com/stat.php?id=5892679&web_id=5892679&show=pic" language="JavaScript"></script>
 </div>
 <script>
+$('select').select2();
     var _hmt = _hmt || [];
     (function () {
         var hm = document.createElement("script");
