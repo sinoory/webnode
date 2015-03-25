@@ -14,24 +14,23 @@ night_mode_tabs_view_notify_uri_cb (MidoriView*      view,
                                     GParamSpec*      pspec,
                                     MidoriExtension* extension)
 {
-   gchar* exception = NULL;
+   GtkWidget* current_web_view;
    gchar *script=NULL;
    FILE *fp;
    int file_size;
-   gboolean result;
 
    const gchar* uri = midori_view_get_display_uri (view);
    if (!*uri)
       return;
    if (g_night_mode)
-        {
+   {
       if (!midori_uri_is_blank (uri))
-                {
+      {
          gchar* hostname = midori_uri_parse_hostname (uri, NULL);
          if (hostname)
-                        {
+         {
             if((fp=fopen(midori_paths_get_res_filename("night_mode/nightingale_view_content.js"),"r"))!=NULL)
-                               {
+            {
                fseek(fp,0,SEEK_END);
                file_size=ftell(fp);
                fseek(fp,0,SEEK_SET);
@@ -39,19 +38,20 @@ night_mode_tabs_view_notify_uri_cb (MidoriView*      view,
                fread(script,file_size,sizeof(char),fp);
                script[file_size*sizeof(char)]='\0';
                fclose(fp);
-               result = midori_view_execute_script (view, script, &exception);
+               current_web_view = midori_view_get_web_view (view);
+               webkit_web_view_run_javascript(WEBKIT_WEB_VIEW (current_web_view), script, NULL, NULL, NULL);
                free(script);
                script=NULL;
-                               }         
+            }         
             g_free (hostname);
-                         }
-               }
-        }
+         }
+      }
+   }
    else
-        {
-      GtkWidget* current_web_view = midori_view_get_web_view (MIDORI_VIEW (view));
+   {
+      current_web_view = midori_view_get_web_view (MIDORI_VIEW (view));
       webkit_web_view_run_javascript(WEBKIT_WEB_VIEW (current_web_view), night_mode_remove, NULL, NULL, NULL);
-        }
+    }
 }
 
 static void

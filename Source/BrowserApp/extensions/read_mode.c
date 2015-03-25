@@ -15,11 +15,10 @@ read_mode_deactivated_cb (MidoriExtension* extension,
 static void
 read_mode_function_realization (GtkWidget* botton,MidoriBrowser* browser)
 {
-   gchar* exception = NULL;
+   GtkWidget* current_web_view;
    char *script=NULL;
    FILE *fp;
    unsigned int file_size;
-   gboolean result;
 
   MidoriView* view = MIDORI_VIEW (midori_browser_get_current_tab (browser));
   if((fp=fopen(midori_paths_get_res_filename("read_mode/readability.js"),"r"))!=NULL)
@@ -33,8 +32,9 @@ read_mode_function_realization (GtkWidget* botton,MidoriBrowser* browser)
      fclose(fp);
       }
   char *insert_js = "(function(){readConvertLinksToFootnotes=false;readStyle='style-newspaper';readSize='size-medium';readMargin='margin-wide';})();";
-  result = midori_view_execute_script (view, insert_js, &exception);
-  result = midori_view_execute_script (view, script, &exception);
+  current_web_view = midori_view_get_web_view (view);
+  webkit_web_view_run_javascript(WEBKIT_WEB_VIEW (current_web_view), insert_js, NULL, NULL, NULL);
+  webkit_web_view_run_javascript(WEBKIT_WEB_VIEW (current_web_view), script, NULL, NULL, NULL);
   free(script);
   script=NULL;
 }

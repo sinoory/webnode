@@ -17,13 +17,19 @@ youdao_translation_deactivated_cb (MidoriExtension* extension,
 static void
 youdao_translation_function_realization (GtkWidget* botton,MidoriBrowser* browser)
 {
-   gchar* exception = NULL;
    gchar *script=NULL;
    FILE *fp;
    int file_size;
-   gboolean result;
+   GtkWidget* current_web_view;
 
   MidoriView* view = MIDORI_VIEW (midori_browser_get_current_tab (browser));
+  //对www.baidu.com/s进行特别处理，使得翻译在该模式下无效
+  //add start
+  gchar* uri = midori_tab_get_uri (MIDORI_TAB (view)); 
+  if(strncmp(uri,"https://www.baidu.com",strlen("https://www.baidu.com"))==0 ||
+     strncmp(uri,"http://www.baidu.com",strlen("http://www.baidu.com"))==0)
+     return;
+  //add end
   if((fp=fopen(midori_paths_get_res_filename("fanyi/seed.js"),"r"))!=NULL)
   {
      fseek(fp,0,SEEK_END);
@@ -33,7 +39,8 @@ youdao_translation_function_realization (GtkWidget* botton,MidoriBrowser* browse
      fread(script,file_size,sizeof(char),fp);
      script[file_size*sizeof(char)]='\0';
      fclose(fp);
-     result = midori_view_execute_script (view, script, &exception);
+     current_web_view = midori_view_get_web_view (view);
+     webkit_web_view_run_javascript(WEBKIT_WEB_VIEW (current_web_view), script, NULL, NULL, NULL);
      g_free(script);
      script=NULL;
   }

@@ -6318,9 +6318,7 @@ midori_view_execute_script (MidoriView*  view,
     g_free (result);
     return success;
 #else
-    //add by luyue 2014/12/22
-    //return FALSE;
-    webkit_web_view_run_javascript(WEBKIT_WEB_VIEW (view->web_view), script, NULL, NULL, NULL);
+    return FALSE;
 #endif
 }
 
