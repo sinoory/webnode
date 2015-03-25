@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.8)
 project(WebKit)
 
-set(BROWSER_PROJECT_NAME "cdosbrowser") # ZRL define this
+set(BROWSER_PROJECT_NAME "basicbrowser") # ZRL define this
 set(BROWSER_LIB_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/lib/${BROWSER_PROJECT_NAME}) # 动态库安装位置
 set(BROWSER_EXTENSION_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib/${BROWSER_PROJECT_NAME}/web-extension") #扩展动态库安装路径
 # -----------------------------------------------------------------------------
