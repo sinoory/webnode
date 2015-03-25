@@ -15,7 +15,7 @@
 #include "midori-searchaction.h"
 #include "midori-app.h"
 #include "midori-platform.h"
-#include <midori/cdosbrowser-core.h>
+#include <midori/basicbrowser-core.h>
 
 #include "config.h"
 #include <string.h>

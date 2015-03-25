@@ -357,7 +357,7 @@ midori_frontend_diagnostic_dialog (MidoriApp*         app,
 
     dialog = gtk_message_dialog_new (
         NULL, 0, GTK_MESSAGE_WARNING, GTK_BUTTONS_NONE,
-        _("CDOS crashed the last time it was opened. You can report the problem at %s."),
+        _("BASIC browser crashed the last time it was opened. You can report the problem at %s."),
         PACKAGE_BUGREPORT);
     gtk_window_set_skip_taskbar_hint (GTK_WINDOW (dialog), FALSE);
     gtk_window_set_title (GTK_WINDOW (dialog), g_get_application_name ());

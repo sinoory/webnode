@@ -5,7 +5,7 @@
 #include "midori/midori-download-db.h"
 
 #include <glib/gi18n-lib.h>
-#include <midori/cdosbrowser-core.h>
+#include <midori/basicbrowser-core.h>
 
 static void
 midori_download_db_clear_cb (KatzeArray* array,

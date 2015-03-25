@@ -6,7 +6,7 @@
 
 #include "katze-utils.h"
 #include "katze-array.h"
-#include "cdosbrowser-core.h"
+#include "basicbrowser-core.h"
 
 #include <glib/gstdio.h>
 #include <glib/gi18n.h>

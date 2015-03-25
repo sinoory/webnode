@@ -1,7 +1,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cdosbrowser\n"
+"Project-Id-Version: basicbrowser\n"
 "Report-Msgid-Bugs-To: \n"
 "Last-Translator: cdosrepobuild <cdosrepobuild@iscas.ac.cn>\n"
 "MIME-Version: 1.0\n"
@@ -15,15 +15,15 @@ msgstr ""
 #: ../data/midori.desktop.in.h:1 ../midori/main.c:142
 #: ../midori/midori-websettings.c:227
 msgid "Midori"
-msgstr "CDOS桌面浏览器"
+msgstr "基础版浏览器"
 
 #: ../data/midori.desktop.in.h:2
 msgid "Web Browser"
-msgstr "CDOS网络浏览器"
+msgstr "基础版浏览器"
 
 #: ../data/midori.desktop.in.h:3
 msgid "Midori Web Browser"
-msgstr "CDOS 网络浏览器"
+msgstr "基础版浏览器"
 
 #: ../data/midori.desktop.in.h:4
 msgid "Browse the Web"
@@ -445,7 +445,7 @@ msgstr "Firefox(%s)"
 
 #: ../midori/midori-browser.c:4358
 msgid "Midori 0.2.6"
-msgstr "CDOSBrowser 0.0.1"
+msgstr "BASICBrowser 0.0.1"
 
 #: ../midori/midori-browser.c:4376
 msgid "Import bookmarks…"
@@ -2766,7 +2766,7 @@ msgstr "扩展程序实例"
 #: ../extensions/nojs/nojs.c:722
 #: ../extensions/cookie-permissions/cookie-permission-manager.c:1007
 msgid "The Midori extension instance for this extension"
-msgstr "这个扩展程序的 cdosbrowser 扩展程序实例"
+msgstr "这个扩展程序的 basicbrowser 扩展程序实例"
 
 #: ../extensions/nojs/nojs.c:728
 #: ../extensions/cookie-permissions/cookie-permission-manager.c:1013
@@ -3028,8 +3028,8 @@ msgstr "未能保存回收站。%s"
 #: ../midori/midori-frontend.c:335
 #, c-format
 msgid ""
-"CDOS crashed the last time it was opened. You can report the problem at %s."
-msgstr "Midori 上次在打开后崩溃了。你可以到 %s 报告问题。"
+"BASIC browser crashed the last time it was opened. You can report the problem at %s."
+msgstr "浏览器 上次在打开后崩溃了。你可以到 %s 报告问题。"
 
 #: ../midori/midori-frontend.c:344
 msgid "Modify _preferences"
@@ -3223,7 +3223,7 @@ msgstr "无法获取应用程序图标 - %s: %s"
 #: ../extensions/apps.vala:100
 #, c-format
 msgid "Midori (%s)"
-msgstr "CDOS浏览器 (%s)"
+msgstr "基础版浏览器 (%s)"
 
 #: ../extensions/apps.vala:119 ../extensions/apps.vala:150
 #: ../extensions/apps.vala:154
@@ -3600,8 +3600,8 @@ msgid "Translate English web pages into Chinese"
 msgstr "将英文网页翻译成中文"
 
 #: ../extensions/online_bank.c:25
-msgid "CDOS secure online bank"
-msgstr "CDOS 安全网银"
+msgid "BASIC browser secure online bank"
+msgstr "浏览器安全网银"
 
 #: ../extensions/online_bank.c:45
 msgid "Online bank"

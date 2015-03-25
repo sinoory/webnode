@@ -4,7 +4,7 @@
  
 #include "katze-item.h"
 #include "katze-utils.h"
-#include "midori/cdosbrowser-core.h"
+#include "midori/basicbrowser-core.h"
 
 #include <glib/gi18n.h>
 

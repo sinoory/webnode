@@ -1,35 +1,35 @@
 [Desktop Entry]
 Version=0.2
 Type=Application
-_Name=CDOS Browser
-Name[zh_CN]=CDOS网络浏览器
-_GenericName=Web Browser
-_X-GNOME-Fullname=CDOS Web Browser
-_Comment=Browse the Web
-_X-GNOME-Keywords=Internet;WWW;Explorer
-_X-AppInstall-Keywords=Internet;WWW;Explorer
+Name=BASIC Browser
+Name[zh_CN]=基础版浏览器
+GenericName=Web Browser
+X-GNOME-Fullname=BASIC Web Browser
+Comment=Browse the Web
+X-GNOME-Keywords=Internet;WWW;Explorer
+X-AppInstall-Keywords=Internet;WWW;Explorer
 Comment[zh_CN]=访问互联网
 Categories=GTK;Network;WebBrowser;
 MimeType=text/html;application/xhtml+xml;x-scheme-handler/http;x-scheme-handler/https;x-scheme-handler/geo;image/svg+xml;
-Exec=cdosbrowser %U
-Icon=cdosbrowser
+Exec=basicbrowser %U
+Icon=basicbrowser
 Terminal=false
 StartupNotify=true
 X-Osso-Type=application/x-executable
-X-Osso-Service=cdosbrowser
+X-Osso-Service=basicbrowser
 Actions=TabNew;WindowNew;Private;
 
 [Desktop Action TabNew]
-_Name=New Tab
-Exec=cdosbrowser -e TabNew
+Name=New Tab
+Exec=basicbrowser -e TabNew
 
 [Desktop Action WindowNew]
-_Name=New Window
+Name=New Window
 Name[zh_CN]=新建窗口
-Exec=cdosbrowser -e WindowNew
+Exec=basicbrowser -e WindowNew
 
 [Desktop Action Private]
-_Name=New Private Browsing Window
+Name=New Private Browsing Window
 Name[zh_CN]=新建隐私浏览窗口
-Exec=cdosbrowser --private
+Exec=basicbrowser --private
 

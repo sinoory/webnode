@@ -21,7 +21,7 @@
 #include "midori-findbar.h"
 #include "midori-platform.h"
 #include "midori-privatedata.h"
-#include "cdosbrowser-core.h"
+#include "basicbrowser-core.h"
 #include "midori-privatedata.h"
 #include "midori-bookmarks-db.h"
 #include "katze-cellrenderercomboboxtext.h"
@@ -630,7 +630,7 @@ midori_browser_update_history (KatzeItem*   item,
 
     zeitgeist_log_insert_events_no_reply (zeitgeist_log_get_default (),
         zeitgeist_event_new_full (inter, ZEITGEIST_ZG_USER_ACTIVITY,
-                                  "application://cdosbrowser.desktop",
+                                  "application://basicbrowser.desktop",
                                   zeitgeist_subject_new_full (
             katze_item_get_uri (item),
             strstr (type, "bookmark") ? ZEITGEIST_NFO_BOOKMARK : ZEITGEIST_NFO_WEBSITE,

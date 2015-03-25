@@ -4,7 +4,7 @@
 
 #include "sokoke.h"
 
-#include "cdosbrowser-core.h"
+#include "basicbrowser-core.h"
 #include "midori-platform.h"
 #include "midori-app.h"
 

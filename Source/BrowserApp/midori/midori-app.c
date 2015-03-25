@@ -4,7 +4,7 @@
 
 #include "midori-app.h"
 #include "midori-platform.h"
-#include "cdosbrowser-core.h"
+#include "basicbrowser-core.h"
 #include "midori-web-extension-names.h"
 
 #include <string.h>

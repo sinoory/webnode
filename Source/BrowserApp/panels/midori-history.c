@@ -9,7 +9,7 @@
 #include "midori-browser.h"
 #include "midori-platform.h"
 #include "midori-view.h"
-#include "cdosbrowser-core.h"
+#include "basicbrowser-core.h"
 
 #include <glib/gi18n.h>
 #include <string.h>

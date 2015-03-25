@@ -23,7 +23,7 @@ msgstr ""
 #: ../data/midori.desktop.in.h:1 ../midori/main.c:142
 #: ../midori/midori-websettings.c:227
 msgid "Midori"
-msgstr "CDOS Browser"
+msgstr "BASIC Browser"
 
 #: ../data/midori.desktop.in.h:2
 msgid "Web Browser"
@@ -31,7 +31,7 @@ msgstr "Web Browser"
 
 #: ../data/midori.desktop.in.h:3
 msgid "Midori Web Browser"
-msgstr "CDOS Web Browser"
+msgstr "BASIC Web Browser"
 
 #: ../data/midori.desktop.in.h:4
 msgid "Browse the Web"
@@ -3053,9 +3053,9 @@ msgstr "The Bin couldn't be saved. %s"
 #: ../midori/midori-frontend.c:335
 #, c-format
 msgid ""
-"CDOS crashed the last time it was opened. You can report the problem at %s."
+"BASIC browser crashed the last time it was opened. You can report the problem at %s."
 msgstr ""
-"CDOS crashed the last time it was opened. You can report the problem at %s."
+"BASIC browser the last time it was opened. You can report the problem at %s."
 
 #: ../midori/midori-frontend.c:344
 msgid "Modify _preferences"
@@ -3577,8 +3577,8 @@ msgid "Quick inquiry Express"
 msgstr "Quick inquiry Express"
 
 #: ../extensions/online_bank.c:25
-msgid "CDOS secure online bank"
-msgstr "CDOS secure online bank"
+msgid "BASIC browser secure online bank"
+msgstr "BASIC browser secure online bank"
 
 #: ../extensions/online_bank.c:45
 msgid "Online bank"

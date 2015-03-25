@@ -18,11 +18,11 @@ file(REMOVE_RECURSE ${CMAKE_CURRENT_SOURCE_DIR}/CMakeFiles/)
 
 file(GLOB_RECURSE DATA_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *)
 list(REMOVE_ITEM DATA_FILES "CMakeLists.txt")
-list(REMOVE_ITEM DATA_FILES "cmake_install.cmake" "CTestTestfile.cmake" "Makefile" "cdosbrowser.appdata.xml.in" "cdosbrowser-private.desktop" "cdosbrowser.desktop"
+list(REMOVE_ITEM DATA_FILES "cmake_install.cmake" "CTestTestfile.cmake" "Makefile" "basicbrowser.appdata.xml.in" "basicbrowser-private.desktop" "basicbrowser.desktop"
                             "faq.html" "faq.css")
 
 # 去掉隐私模式外部启动标志
-list(REMOVE_ITEM DATA_FILES "cdosbrowser-private.desktop.in")
+list(REMOVE_ITEM DATA_FILES "basicbrowser-private.desktop.in")
 
 foreach(FILE ${DATA_FILES})
     if (${FILE} MATCHES "faq.")

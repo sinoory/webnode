@@ -1,7 +1,7 @@
 
 #include "midori/midori-session.h"
 
-#include <midori/cdosbrowser-core.h>
+#include <midori/basicbrowser-core.h>
 #include "midori-array.h"
 #include "midori-extension.h"
 #include "sokoke.h"

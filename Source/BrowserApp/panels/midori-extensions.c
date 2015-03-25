@@ -7,7 +7,7 @@
 #include "midori-app.h"
 #include "midori-extension.h"
 #include "midori-platform.h"
-#include "cdosbrowser-core.h"
+#include "basicbrowser-core.h"
 
 #include <glib/gi18n.h>
 

@@ -579,7 +579,7 @@ static bool isCdosbrowserDefault()
 //	g_print("result is [%s]\n", result);
 	fclose(fp);
 	
-	if(0 == strncmp(result, "cdosbrowser.desktop", 19))
+	if(0 == strncmp(result, "basicbrowser.desktop", 19))
 		return 1;
 
 	return 0;
@@ -587,9 +587,9 @@ static bool isCdosbrowserDefault()
 
 static void setCdosDefaultBrowserCallback(GtkButton *button, MidoriWebSettings *settings)
 {
-	system("xdg-settings set default-web-browser cdosbrowser.desktop");//	system("xdg-settings set default-web-browser cuprumbrowser.desktop");
+	system("xdg-settings set default-web-browser basicbrowser.desktop");//	system("xdg-settings set default-web-browser cuprumbrowser.desktop");
 	gtk_widget_hide(GTK_WIDGET(button));
-	gtk_label_set_text (GTK_LABEL(settings->label1_advanced), "目前的默认浏览器是cdosbrowser."); 
+	gtk_label_set_text (GTK_LABEL(settings->label1_advanced), "目前的默认浏览器是basicbrowser."); 
 	printf("function setCuprumDefaultBrowserCallback has been called\n");
 }
 
@@ -1326,7 +1326,7 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
 	widget = gtk_label_new("默认浏览器：");
 	gtk_grid_attach(grid, widget, 1, 1, 1, 1);
 
-	//check cdosbrowser default
+	//check basicbrowser default
 	if( isCdosbrowserDefault() )
 	{
 		label = gtk_label_new("目前的默认浏览器是本浏览器.");

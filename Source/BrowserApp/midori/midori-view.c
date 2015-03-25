@@ -25,7 +25,7 @@
 #include "midori-searchaction.h"
 #include "midori-app.h"
 #include "midori-platform.h"
-#include "cdosbrowser-core.h"
+#include "basicbrowser-core.h"
 #include "midori-findbar.h"
 #include "midori-web-extension-proxy.h"
 
@@ -5113,7 +5113,7 @@ webkit_web_view1_console_message_cb (GtkWidget*   web_view,
            gchar *base_domain = webkit_uri_request_get_uri_host (request);
            gchar* home = getenv("HOME");
            gchar user_dir[2048];
-           g_sprintf(user_dir, "%s/.config/cdosbrowser", home);
+           g_sprintf(user_dir, "%s/.config/basicbrowser", home);
            int error = 0;
            if(!g_file_test(user_dir, G_FILE_TEST_IS_DIR) || !g_access(user_dir, /*S_IWUSR|S_IRUSR*/0755))
               error = g_mkdir_with_parents(user_dir, /*S_IWUSR|S_IRUSR*/ 0755);
@@ -5290,7 +5290,7 @@ midori_view_set_uri (MidoriView*  view,
                fclose(fp);
                gchar* home = getenv("HOME");
                gchar user_path[2048];
-               g_sprintf(user_path, "%s/.config/cdosbrowser/secure_website.txt", home);
+               g_sprintf(user_path, "%s/.config/basicbrowser/secure_website.txt", home);
                fp = fopen(user_path, "r");
                if (fp )
                {

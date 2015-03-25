@@ -7,7 +7,7 @@
 #include "midori-privatedata.h"
 #include "midori-searchaction.h"
 #include "midori/midori-session.h"
-#include <midori/cdosbrowser-core.h>
+#include <midori/basicbrowser-core.h>
 
 #include <config.h>
 #if HAVE_UNISTD_H
