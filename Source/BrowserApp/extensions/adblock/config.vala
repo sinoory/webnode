@@ -20,7 +20,8 @@ namespace Adblock {
         public Config (string? path, string? presets) {
             should_save = false;
             subscriptions = new GLib.List<Subscription> ();
-            enabled = true;
+ //           enabled = true;
+            enabled = false;
             this.path = path;
             size = 0;
             load_file (path);
