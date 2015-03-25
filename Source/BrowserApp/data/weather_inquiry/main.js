@@ -470,10 +470,10 @@ var view = {
 			n = i < 10? "0"+i : i;
 			minSelHtml+="<option>"+ n +"分</option>"
 		}
-		$set.find(".hour-select").append($(hSelHtml));
-		$set.find(".minute-select").append($(minSelHtml));
-		var noticeTime = storage.get("notice-time", true);
-		if(noticeTime){
+	//	$set.find(".hour-select").append($(hSelHtml));
+	//	$set.find(".minute-select").append($(minSelHtml));
+	//	var noticeTime = storage.get("notice-time", true);
+	/*	if(noticeTime){
 			$set.find(".tianqitishi input:eq(0)")[0].checked = noticeTime[0].on;
 			$set.find(".hour-select:eq(0)").val(noticeTime[0].hour);
 			$set.find(".minute-select:eq(0)").val(noticeTime[0].minute);
@@ -481,9 +481,9 @@ var view = {
 			$set.find(".tianqitishi input:eq(1)")[0].checked = noticeTime[1].on;
 			$set.find(".hour-select:eq(1)").val(noticeTime[1].hour);
 			$set.find(".minute-select:eq(1)").val(noticeTime[1].minute);
-		}
+		}*/
 		var cityInfo = storage.get("city-info", true);
-		if(cityInfo){
+/*		if(cityInfo){
 			$set.find(".tianqitishi input:eq(0)")[0].checked = noticeTime[0].on;
 			$set.find(".hour-select:eq(0)").val(noticeTime[0].hour);
 			$set.find(".minute-select:eq(0)").val(noticeTime[0].minute);
@@ -491,7 +491,7 @@ var view = {
 			$set.find(".tianqitishi input:eq(1)")[0].checked = noticeTime[1].on;
 			$set.find(".hour-select:eq(1)").val(noticeTime[1].hour);
 			$set.find(".minute-select:eq(1)").val(noticeTime[1].minute);
-		}
+		}*/
 		$(".version").text(cif._version);
 		function bindEvents(){
 			$set.find(".selectCity .button").bind("click",function(){
@@ -524,8 +524,8 @@ var view = {
 					changeFlg = true;
 				}
 
-				var timeSels = $set.find(".tianqitishi select");
-				var noticeTime = [
+			//	var timeSels = $set.find(".tianqitishi select");
+			/*	var noticeTime = [
 					{
 						on: $set.find(".tianqitishi input:eq(0)")[0].checked,
 						hour: timeSels.eq(0).val(),
@@ -536,13 +536,13 @@ var view = {
 						hour: timeSels.eq(2).val(),
 						minute: timeSels.eq(3).val()
 					}
-				]
-				var t = storage.get("notice-time", true);
+				]*/
+		/*		var t = storage.get("notice-time", true);
 				if(noticeTime[0].on != t[0].on || noticeTime[0].hour != t[0].hour || noticeTime[0].minute != t[0].minute ||
 					noticeTime[1].on != t[1].on || noticeTime[1].hour != t[1].hour || noticeTime[1].minute != t[1].minute){
 					storage.set("notice-time", noticeTime, true);
 					changeFlg = true;
-				}
+				}*/
 				if(changeFlg){
 					$set.find(".selectCity .tip").show();
 					setTimeout(
