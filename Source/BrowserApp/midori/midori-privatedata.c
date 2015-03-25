@@ -6,7 +6,7 @@
 
 #include "marshal.h"
 #include "midori-platform.h"
-#include "basicbrowser-core.h"
+#include "cdosbrowser-core.h"
 
 #include "config.h"
 #include <string.h>

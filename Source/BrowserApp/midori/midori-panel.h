@@ -5,7 +5,7 @@
 #ifndef __MIDORI_PANEL_H__
 #define __MIDORI_PANEL_H__
 
-#include "basicbrowser-core.h"
+#include "cdosbrowser-core.h"
 
 G_BEGIN_DECLS
 

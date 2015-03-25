@@ -10,7 +10,7 @@
 #include "midori-browser.h"
 #include "midori-platform.h"
 #include "midori-view.h"
-#include "basicbrowser-core.h"
+#include "cdosbrowser-core.h"
 #include "midori-bookmarks-db.h"
 
 #include <glib/gi18n.h>

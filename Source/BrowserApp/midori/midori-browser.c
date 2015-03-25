@@ -21,7 +21,7 @@
 #include "midori-findbar.h"
 #include "midori-platform.h"
 #include "midori-privatedata.h"
-#include "basicbrowser-core.h"
+#include "cdosbrowser-core.h"
 #include "midori-privatedata.h"
 #include "midori-bookmarks-db.h"
 #include "katze-cellrenderercomboboxtext.h"
@@ -630,7 +630,7 @@ midori_browser_update_history (KatzeItem*   item,
 
     zeitgeist_log_insert_events_no_reply (zeitgeist_log_get_default (),
         zeitgeist_event_new_full (inter, ZEITGEIST_ZG_USER_ACTIVITY,
-                                  "application://basicbrowser.desktop",
+                                  "application://cdosbrowser.desktop",
                                   zeitgeist_subject_new_full (
             katze_item_get_uri (item),
             strstr (type, "bookmark") ? ZEITGEIST_NFO_BOOKMARK : ZEITGEIST_NFO_WEBSITE,
@@ -6147,8 +6147,8 @@ _action_about_activate (GtkAction*     action,
         "copyright", "Copyright © 2013-2014 cdosrepobuild <cdosrepobuild@iscas.ac.cn>",
 #endif
         "transient-for", browser,
-        "logo-icon-name", PACKAGE_NAME,
-        "program-name", PACKAGE_NAME,
+        "logo-icon-name", "基础版浏览器",
+        "program-name", "基础版浏览器",
         "version", PACKAGE_VERSION,
         "comments", comments,
         "website", "http://www.baidu.com",

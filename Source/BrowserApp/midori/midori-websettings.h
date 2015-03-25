@@ -7,7 +7,7 @@
 
 #include <katze/katze.h>
 
-#include <midori/basicbrowser-core.h>//lxx add,20141208
+#include <midori/cdosbrowser-core.h>//lxx add,20141208
 
 G_BEGIN_DECLS
 

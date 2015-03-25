@@ -7,7 +7,7 @@
 
 #include <katze/katze.h>
 #include "midori-platform.h"
-#include "basicbrowser-core.h"
+#include "cdosbrowser-core.h"
 #include <glib/gi18n.h>
 
 G_DEFINE_TYPE (MidoriExtension, midori_extension, G_TYPE_OBJECT);

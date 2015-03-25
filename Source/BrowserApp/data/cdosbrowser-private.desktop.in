@@ -1,16 +1,16 @@
 [Desktop Entry]
 Version=0.2
 Type=Application
-_Name=BISIC Private Browsing
+_Name=Security Net Private Browsing
 Name[zh_CN]=启动隐私浏览模式
 _GenericName=Private Browsing
 _Comment=Open a new private browsing window
 Categories=GTK;Network;WebBrowser;
-Exec=basicbrowser --private %U
-Icon=basicbrowser
+Exec=cdosbrowser --private %U
+Icon=cdosbrowser
 Terminal=false
 StartupNotify=true
 NotShowIn=Pantheon;
 X-Osso-Type=application/x-executable
-X-Osso-Service=basicbrowser
+X-Osso-Service=cdosbrowser
 

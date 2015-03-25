@@ -1,5 +1,5 @@
 # Copyright (C) 2013 Olivier Duchateau
-# ZRL 将config下文件安装到/usr/local/basicbrowser/路径下,目前从config中只安装adblock的配置文件
+# ZRL 将config下文件安装到/usr/local/cdosbrowser/路径下,目前从config中只安装adblock的配置文件
 
 set (SYSCONFDIR ${CMAKE_INSTALL_FULL_SYSCONFDIR})
 set (XDG_CONFIG_DIR "${MIDORI_PROJECT_NAME}")

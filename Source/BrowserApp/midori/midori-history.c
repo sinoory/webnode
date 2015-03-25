@@ -5,7 +5,7 @@
 #include "midori/midori-history.h"
 
 #include <glib/gi18n-lib.h>
-#include <midori/basicbrowser-core.h>
+#include <midori/cdosbrowser-core.h>
 
 static void
 midori_history_clear_cb (KatzeArray* array,

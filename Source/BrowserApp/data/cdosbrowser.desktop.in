@@ -1,35 +1,35 @@
 [Desktop Entry]
 Version=0.2
 Type=Application
-Name=BASIC Browser
+_Name=Security Net Browser
 Name[zh_CN]=基础版浏览器
-GenericName=Web Browser
-X-GNOME-Fullname=BASIC Web Browser
-Comment=Browse the Web
-X-GNOME-Keywords=Internet;WWW;Explorer
-X-AppInstall-Keywords=Internet;WWW;Explorer
+_GenericName=Web Browser
+_X-GNOME-Fullname=Security Net Browser
+_Comment=Browse the Web
+_X-GNOME-Keywords=Internet;WWW;Explorer
+_X-AppInstall-Keywords=Internet;WWW;Explorer
 Comment[zh_CN]=访问互联网
 Categories=GTK;Network;WebBrowser;
 MimeType=text/html;application/xhtml+xml;x-scheme-handler/http;x-scheme-handler/https;x-scheme-handler/geo;image/svg+xml;
-Exec=basicbrowser %U
-Icon=basicbrowser
+Exec=cdosbrowser %U
+Icon=cdosbrowser
 Terminal=false
 StartupNotify=true
 X-Osso-Type=application/x-executable
-X-Osso-Service=basicbrowser
+X-Osso-Service=cdosbrowser
 Actions=TabNew;WindowNew;Private;
 
 [Desktop Action TabNew]
-Name=New Tab
-Exec=basicbrowser -e TabNew
+_Name=New Tab
+Exec=cdosbrowser -e TabNew
 
 [Desktop Action WindowNew]
-Name=New Window
+_Name=New Window
 Name[zh_CN]=新建窗口
-Exec=basicbrowser -e WindowNew
+Exec=cdosbrowser -e WindowNew
 
 [Desktop Action Private]
-Name=New Private Browsing Window
+_Name=New Private Browsing Window
 Name[zh_CN]=新建隐私浏览窗口
-Exec=basicbrowser --private
+Exec=cdosbrowser --private
 

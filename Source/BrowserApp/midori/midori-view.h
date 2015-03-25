@@ -6,7 +6,7 @@
 #define __MIDORI_VIEW_H__
 
 #include "midori-websettings.h"
-#include "basicbrowser-core.h"
+#include "cdosbrowser-core.h"
 
 #include <katze/katze.h>
 

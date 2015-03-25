@@ -5,7 +5,7 @@
 #include "midori-preferences.h"
 
 #include "midori-app.h"
-#include "basicbrowser-core.h"
+#include "cdosbrowser-core.h"
 #include "midori-extension.h"
 #include "panels/midori-extensions.h"
 #include "midori-platform.h"

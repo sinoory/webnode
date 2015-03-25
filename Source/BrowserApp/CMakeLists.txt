@@ -8,14 +8,14 @@ cmake_policy(VERSION 2.6)
 if ("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" VERSION_LESS "2.8.8")
     cmake_policy(SET CMP0002 OLD)
 endif ()
-project(basicbrowser C)
+project(cdosbrowser C)
 
 set(MIDORI_PROJECT_NAME "${BROWSER_PROJECT_NAME}") # ZRL ${BROWSER_PROJECT_NAME}定义在主工程的CMakeLists.txt
 add_definitions("-DPACKAGE_NAME=\"${MIDORI_PROJECT_NAME}\"")
-add_definitions("-DPACKAGE_BUGREPORT=\"https://bugs.launchpad.net/basicbrowser\"")
+add_definitions("-DPACKAGE_BUGREPORT=\"https://bugs.launchpad.net/cdosbrowser\"")
 
 # ZRL all generated objects be build in  DerivedSources/
-set(DERIVED_SOURCES_MIDORI_DIR "${CMAKE_BINARY_DIR}/DerivedSources/basicbrowser")
+set(DERIVED_SOURCES_MIDORI_DIR "${CMAKE_BINARY_DIR}/DerivedSources/cdosbrowser")
 file(MAKE_DIRECTORY ${DERIVED_SOURCES_MIDORI_DIR})
 
 set(VERSION 0.1.9)
@@ -254,7 +254,7 @@ else ()
 endif ()
 
 # dh_translations detects this if there's no variable used
-set (GETTEXT_PACKAGE "basicbrowser")
+set (GETTEXT_PACKAGE "cdosbrowser")
 add_definitions("-DGETTEXT_PACKAGE=\"${GETTEXT_PACKAGE}\"")
 
 set(CFLAGS "${CFLAGS} -Wall -Wundef -Wno-deprecated-declarations -g")

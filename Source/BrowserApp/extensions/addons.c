@@ -5,7 +5,7 @@
 /* This extensions add support for user addons: userscripts and userstyles */
 
 #include <midori/midori.h>
-#include "basicbrowser-core.h"
+#include "cdosbrowser-core.h"
 #include <glib/gstdio.h>
 
 #include "config.h"

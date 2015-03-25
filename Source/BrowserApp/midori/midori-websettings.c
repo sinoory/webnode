@@ -8,7 +8,7 @@
 #include "midori-app.h"
 #include "midori-extension.h"
 #include "sokoke.h"
-#include <midori/basicbrowser-core.h> /* Vala API */
+#include <midori/cdosbrowser-core.h> /* Vala API */
 
 #include <glib/gi18n.h>
 #include <glib/gstdio.h>

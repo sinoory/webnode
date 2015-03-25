@@ -7,7 +7,7 @@
 #include "midori-app.h"
 #include "midori-array.h"
 #include "sokoke.h"
-#include "basicbrowser-core.h"
+#include "cdosbrowser-core.h"
 
 #include <glib/gstdio.h>
 #include <glib/gi18n.h>

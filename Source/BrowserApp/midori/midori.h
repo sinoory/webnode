@@ -19,7 +19,7 @@
 #include "midori-view.h"
 #include "midori-websettings.h"
 #include "midori-platform.h"
-#include <midori/basicbrowser-core.h> /* Vala API */
+#include <midori/cdosbrowser-core.h> /* Vala API */
 #include <function_control.h>
 
 /* For convenience, include localization header */
