@@ -138,7 +138,7 @@ namespace About {
 
             GLib.StringBuilder versions = new GLib.StringBuilder ();
             Midori.View.list_versions (versions, false);
-
+            string version = versions.str.substring(19,5);
             string ident; 
             unowned string architecture;
             unowned string platform;
@@ -155,6 +155,7 @@ namespace About {
 
             this.load_html (view, contents.printf (
                 encoded ?? "",
+                version,
                 platform, sys_name, architecture != null ? architecture : "",
                 versions.str,
                 video_formats.str,
