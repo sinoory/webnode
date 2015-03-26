@@ -162,8 +162,9 @@ namespace About {
                 ident,
                 Midori.Paths.get_command_line_str (true),
 		"",
+               ""
 /*                ns_plugins.str, */
-                this.list_about_uris ()
+            //    this.list_about_uris ()
             ), uri);
         }
     }
