@@ -197,6 +197,7 @@ midori_private_app_new (const gchar* config,
                   "enable-dns-prefetching", FALSE,
                   "strip-referer", TRUE,
                   "show-panel", FALSE,
+                  "is-private", TRUE,   //zgh 20150327
                   "last-window-state", MIDORI_WINDOW_NORMAL,
                   "inactivity-reset", inactivity_reset,
                   "block-uris", block_uris,

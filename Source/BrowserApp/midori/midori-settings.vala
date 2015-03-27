@@ -137,6 +137,7 @@ namespace Midori {
         public bool show_navigationbar { get; set; default = true; }
         public bool show_bookmarkbar { get; set; default = true; } // ZRL 默认显示书签栏
         public bool show_panel { get; set; default = false; }
+        public bool is_private { get; set; default = false; }   //zgh 20150327
         public bool show_statusbar { get; set; default = true; }
         /* Since: 0.1.2 */
         public bool show_crash_dialog { get; set; default = true; }

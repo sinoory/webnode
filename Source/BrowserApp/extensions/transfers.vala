@@ -76,7 +76,7 @@ namespace Transfers {
                 }
         }
 
-        internal void set_download(WebKit.Download download)
+        internal void set_download(WebKit.Download download, bool is_browser_private_model)
         {
             this.download = download;
             this.destination = download.destination;
@@ -85,14 +85,16 @@ namespace Transfers {
             #if HAVE_WEBKIT2
             download.notify["estimated-progress"].connect (transfer_changed);
             download.finished.connect (() => {
-            //zgh 更新数据库
                 this.filename = Midori.Download.get_basename_for_display (download.destination);
                 this.filesize = Midori.Download.get_size (download);
                 this.download_progress = (int64)(this.progress * 100);
-                update_database();
-                
-                succeeded = finished = true;
-                changed ();
+                if (!is_browser_private_model)
+                    {
+                    //zgh 更新数据库
+                    update_database();
+                    }
+            succeeded = finished = true;
+            changed ();
             });
             download.failed.connect (() => {
                 succeeded = false;
@@ -141,7 +143,7 @@ namespace Transfers {
         Gtk.TreeView treeview;
         Katze.Array array;
         
-        Midori.Database database;
+//        Midori.Database database;
 
         public unowned string get_stock_id () {
             return Midori.Stock.TRANSFER;
@@ -358,7 +360,7 @@ namespace Transfers {
             start_dl.sensitive = true;
         }
 
-        public Sidebar (Katze.Array array) {
+        public Sidebar (Katze.Array array, bool is_browser_private_model) {
             //Gtk.Widget 
             var scrolled = new Gtk.ScrolledWindow(null, null);
             Gtk.TreeViewColumn column;
@@ -467,12 +469,16 @@ gtk_tree_view_column_set_sizing (GtkTreeViewColumn       *tree_column,
             array.remove_item.connect_after (transfer_removed);
             foreach (GLib.Object item in array.get_items ())
                 transfer_added (item);
-                
-            try {
-                database = new Midori.Database ("download.db");
-            } catch (Midori.DatabaseError schema_error) {
-                error (schema_error.message);
+              /*  
+            if (!is_browser_private_model)
+            {
+                try {
+                    database = new Midori.Database ("download.db");
+                } catch (Midori.DatabaseError schema_error) {
+                    error (schema_error.message);
+                }
             }
+            */
         }
 
         void row_activated (Gtk.TreePath path, Gtk.TreeViewColumn column) {
@@ -566,7 +572,7 @@ gtk_tree_view_column_set_sizing (GtkTreeViewColumn       *tree_column,
             if (treeview.get_selection ().get_selected (null, out iter)) {
                 Transfer transfer;
                 store.get (iter, 0, out transfer);
-                if (transfer.finished)
+                if (transfer.finished && transfer.download_progress == 100)
                     open_file.sensitive = true;
                 else
                     open_file.sensitive = false;
@@ -845,30 +851,33 @@ gtk_tree_view_column_set_sizing (GtkTreeViewColumn       *tree_column,
 
 //            var transfer = new Transfer (download);
             var transfer = new Transfer ();
-            transfer.set_download (download);
+            transfer.set_download (download, get_app().settings.is_private);
             
             transfer.remove.connect (transfer_remove);
             transfer.changed.connect (transfer_changed);
             array.remove_item.connect (transfer_removed);
             array.add_item (transfer);
-            //zgh todo 写数据库，插入新的下载数据
-            
-//            int64 create_time = transfer.get_createtime_i();
-            string sqlcmd = "INSERT INTO `download` (`name`, `destination`, `file_size`, `uri`, `create_time`, `content_type`, `download_progress`) VALUES  (:name, :destination, :file_size, :uri, :create_time, :content_type, :download_progress);";
-            
-            try {
-                    int64 download_progress = 0;
-                    var statement = database.prepare (sqlcmd,
-                        ":name", typeof (string), Midori.Download.get_basename_for_display (download.destination),
-                        ":destination", typeof (string), transfer.destination,
-                        ":file_size", typeof (string), "0",
-                        ":uri", typeof (string), Midori.Download.get_website(download),
-                        ":create_time", typeof (int64), transfer.crtime_i,
-                        ":content_type", typeof (string), Midori.Download.get_content_type (transfer.download, null),
-                        ":download_progress", typeof (int64), download_progress);
-                    statement.exec ();
-                } catch (Error error) {
-                    critical (_("Failed to update database: %s"), error.message);
+            if (!get_app().settings.is_private)
+            {
+                //zgh todo 写数据库，插入新的下载数据
+                
+    //            int64 create_time = transfer.get_createtime_i();
+                string sqlcmd = "INSERT INTO `download` (`name`, `destination`, `file_size`, `uri`, `create_time`, `content_type`, `download_progress`) VALUES  (:name, :destination, :file_size, :uri, :create_time, :content_type, :download_progress);";
+                
+                try {
+                        int64 download_progress = 0;
+                        var statement = database.prepare (sqlcmd,
+                            ":name", typeof (string), Midori.Download.get_basename_for_display (download.destination),
+                            ":destination", typeof (string), transfer.destination,
+                            ":file_size", typeof (string), "0",
+                            ":uri", typeof (string), Midori.Download.get_website(download),
+                            ":create_time", typeof (int64), transfer.crtime_i,
+                            ":content_type", typeof (string), Midori.Download.get_content_type (transfer.download, null),
+                            ":download_progress", typeof (int64), download_progress);
+                        statement.exec ();
+                    } catch (Error error) {
+                        critical (_("Failed to update database: %s"), error.message);
+                    }
                 }
         }
 
@@ -924,14 +933,17 @@ gtk_tree_view_column_set_sizing (GtkTreeViewColumn       *tree_column,
         void transfer_remove (Transfer transfer) {
             array.remove_item (transfer);
             
-            //zgh delete from database
-            string sqlcmd = "DELETE FROM download WHERE destination = :destination";
-            try{
-                var statement = database.prepare(sqlcmd,
-                ":destination", typeof (string), transfer.destination);
-                statement.exec();
-            }catch (Error error){
-                critical(_("Failed to delete database: %s"), error.message);
+            if (!get_app().settings.is_private)
+            {
+                //zgh delete from database
+                string sqlcmd = "DELETE FROM download WHERE destination = :destination";
+                try{
+                    var statement = database.prepare(sqlcmd,
+                    ":destination", typeof (string), transfer.destination);
+                    statement.exec();
+                }catch (Error error){
+                    critical(_("Failed to delete database: %s"), error.message);
+                }
             }
             
         }
@@ -966,7 +978,7 @@ gtk_tree_view_column_set_sizing (GtkTreeViewColumn       *tree_column,
         }
 
         void browser_added (Midori.Browser browser) {
-            var viewable = new Sidebar (array);
+            var viewable = new Sidebar (array, get_app().settings.is_private);
             viewable.show ();
             browser.panel.append_page (viewable);
             widgets.append (viewable);
@@ -1015,7 +1027,15 @@ gtk_tree_view_column_set_sizing (GtkTreeViewColumn       *tree_column,
 
         void activated (Midori.App app) {
             array = new Katze.Array (typeof (Transfer));
+            if (!app.settings.is_private)
+            {
+                try {
+                    database = new Midori.Database ("download.db");
+                } catch (Midori.DatabaseError schema_error) {
+                    error (schema_error.message);
+                }
             get_download_array();
+            }
             widgets = new GLib.List<Gtk.Widget> ();
             notifications = new GLib.List<string> ();
             notification_timeout = 0;
@@ -1041,18 +1061,13 @@ gtk_tree_view_column_set_sizing (GtkTreeViewColumn       *tree_column,
                          description: _("View downloaded files"),
                          version: "0.1" + Midori.VERSION_SUFFIX,
                          authors: "Christian Dywan <christian@twotoasts.de>");
-            try {
-                    database = new Midori.Database ("download.db");
-                } catch (Midori.DatabaseError schema_error) {
-                    error (schema_error.message);
-                }
 
             this.activate.connect (activated);
             this.deactivate.connect (deactivated);
         }
     }
 }
-
+ 
 public Midori.Extension extension_init () {
     return new Transfers.Manager ();
 }
