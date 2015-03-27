@@ -210,6 +210,7 @@ namespace Midori {
 		  public bool reset_browser_settings {get; set; default = false;} //lianxx add, 20150120
 		  public double smart_zoom_level {get; set; default = 1.0;} //lianxx add, 20150120 
                   public bool danger_url {get; set; default = false;} //luyue add, 20150318
+                  public bool remember_web_password {get; set; default = false;} //luyue add, 20150326
                   public bool save_form_user_password {get; set; default = true;} //wangjy for GUI save username
 
         // [IntegerType (min = 0, int.max)]
