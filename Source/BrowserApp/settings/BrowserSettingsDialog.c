@@ -307,6 +307,20 @@ static void dangerUrlCallback(GtkToggleButton *togglebutton, MidoriWebSettings *
 }
 //add end
 
+//add by luyue 2015/3/26
+static void rememberWebPasswordCallback(GtkToggleButton *togglebutton, MidoriWebSettings *settings)
+{
+    bool bvalue = gtk_toggle_button_get_active(togglebutton);
+    if(1 == !bvalue)
+       gtk_widget_set_sensitive(GTK_WIDGET(settings->remember_password_button),false);
+    else if(0 == !bvalue)
+       gtk_widget_set_sensitive(GTK_WIDGET(settings->remember_password_button),true);
+    g_object_set(settings,
+             "remember-web-password", !bvalue,
+             NULL);
+}
+//add end
+
 static void smartZoomCallback(GtkToggleButton *togglebutton, MidoriWebSettings *settings)
 {
     bool bvalue = gtk_toggle_button_get_active(togglebutton); 
@@ -1276,8 +1290,11 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
 
 	button = gtk_check_button_new_with_label("记住网站密码");
 	gtk_grid_attach(grid, button, 2, 2, 1, 1);
-
-	button = gtk_check_button_new_with_label("使用主密码");
+        g_object_get(settings, "remember-web-password", &bvalue, NULL);
+        if(!bvalue)
+           gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
+        g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(rememberWebPasswordCallback), settings);
+/*	button = gtk_check_button_new_with_label("使用主密码");
 	gtk_grid_attach(grid, button, 2, 3, 1, 1);
 
 	button = gtk_button_new_with_label("　修改主密码　");
@@ -1286,26 +1303,33 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
 	button = gtk_button_new_with_label("　已保存密码　");
 	gtk_grid_attach(grid, button, 3, 3, 1, 1);
         g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(showPasswordManagerCallback), NULL);
+*/
+        settings->remember_password_button = gtk_button_new_with_label("已保存密码信息");
+        gtk_grid_attach(grid, settings->remember_password_button, 3, 2, 1, 1);
+        g_object_get(settings, "remember-web-password", &bvalue, NULL);
+        if(1 == bvalue)
+                gtk_widget_set_sensitive(GTK_WIDGET(settings->remember_password_button),FALSE);
+        g_signal_connect(G_OBJECT(settings->remember_password_button), "clicked", G_CALLBACK(showPasswordManagerCallback), NULL);
 
 	widget = gtk_label_new("HTTPS/SSL:");
-	gtk_grid_attach(grid, widget, 1, 4, 1, 1);
+	gtk_grid_attach(grid, widget, 1, 3, 1, 1);
 
 	button = gtk_button_new_with_label("管理证书");
 	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(certificateManagerCallback), settings);
-	gtk_grid_attach(grid, button, 2, 5, 1, 1);
+	gtk_grid_attach(grid, button, 2, 4, 1, 1);
 
 	button = gtk_check_button_new_with_label("检查服务器证书吊销状态");
 	g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(certificateRevocationCallback), settings);
-	gtk_grid_attach(grid, button, 2, 6, 2, 1);
+	gtk_grid_attach(grid, button, 2, 5, 2, 1);
         //add by luyue 2015/3/18
         widget = gtk_label_new("高危网址检测：");
-        gtk_grid_attach(grid, widget, 1, 7, 1, 1);
+        gtk_grid_attach(grid, widget, 1, 6, 1, 1);
         button = gtk_check_button_new_with_label("打开高危网址检测功能");
         g_object_get(settings, "danger-url", &bvalue, NULL);
         if(!bvalue)
            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
         g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(dangerUrlCallback), settings);
-        gtk_grid_attach(grid,button,2,8,2,1);
+        gtk_grid_attach(grid,button,2,7,2,1);
         //add end
         
 	gchar *security_pic = midori_paths_get_res_filename("settings-icons/security.png");

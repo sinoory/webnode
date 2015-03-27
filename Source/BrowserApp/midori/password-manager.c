@@ -340,14 +340,15 @@ void password_manager_display(void)
   gtk_box_pack_start ((GtkBox*)hbox,(GtkWidget*)button, false, false, (guint)0);
   g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(delete_all_auth_data_cb), passwordManager->priv);
 
-  button = GTK_BUTTON(gtk_button_new_with_label("显示/隐藏"));
+/*  button = GTK_BUTTON(gtk_button_new_with_label("显示/隐藏"));
   gtk_box_pack_start ((GtkBox*)hbox,(GtkWidget*)button, false, false, (guint)0);
-  g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(ask_for_show_password_cb), passwordManager->priv);
+  g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(ask_for_show_password_cb), passwordManager->priv);*/
  
-  button = GTK_BUTTON(gtk_button_new_with_label("关    闭"));
+/*  button = GTK_BUTTON(gtk_button_new_with_label("关    闭"));
   gtk_box_pack_end ((GtkBox*)hbox,(GtkWidget*)button, false, false, (guint)0);
-  g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(gtk_window_close), passwordManager->priv->p_auth_data_manager_window);
-  
+//  g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(gtk_window_close), passwordManager->priv->p_auth_data_manager_window);
+  g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(close_password_manager), NULL);*/
+
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 1);
 
   gtk_box_pack_start ((GtkBox*)vbox,(GtkWidget*)hbox, false, false, (guint)0);

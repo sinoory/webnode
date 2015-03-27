@@ -19,7 +19,9 @@
  */
 
 #include "config.h"
-
+#include<stdio.h>
+#include<string.h>
+#include <stdlib.h>
 #include "ephy-web-extension.h"
 #include "ephy-web-extension-names.h"
 //#include "ephy-debug.h"
@@ -41,8 +43,38 @@ webkit_web_extension_initialize_with_user_data(WebKitWebExtension *extension, GV
   const char *extension_id;
   gboolean is_save_pass_word;
   GError *error = NULL;
+  char * line = NULL;
+  size_t len = 0;
+  ssize_t read;
 
   g_variant_get (user_data, "(&sb)", &extension_id, &is_save_pass_word);
+  //add by luyue 2015/3/27
+  gchar* home = getenv("HOME");
+  gchar user_path[2048];
+  g_sprintf(user_path, "%s/.config/cdosbrowser/config", home);
+  FILE * fp = fopen(user_path, "r");
+  if(fp)
+  {
+     while ((read = getline(&line, &len, fp)) != -1)
+     {
+        if(strncmp(line,"remember-web-password=true",20)==0)
+        {
+           is_save_pass_word = true;
+           break;
+        }
+        free(line);
+        line = NULL;
+     }
+     if(line)
+     {
+        free(line);
+        line = NULL;
+     }
+     fclose(fp);
+  }
+  printf("is_save_pass_word==%d\n",is_save_pass_word);
+  if(is_save_pass_word) return;
+  //add end
 
   web_extension = ephy_web_extension_get ();
   ephy_web_extension_initialize (web_extension, extension, /*dot_dir*/NULL, is_save_pass_word);
