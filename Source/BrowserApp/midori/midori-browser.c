@@ -7275,24 +7275,25 @@ web_view_navigation_decision_cb (WebKitWebView*             web_view,
 }
 
 //zgh 20150319 修改工具栏图标
-static void _midori_browser_set_action_icon_name(MidoriBrowser *browser, gchar* action_name, gchar* icon_name)
+static void _midori_browser_set_action_icon_name(MidoriBrowser *browser, gchar* action_name, gchar* icon_name, char* label)
 {
     GtkAction *action = gtk_action_group_get_action(browser->action_group, action_name);
     g_object_set (action, 
             "stock-id", NULL,
             "icon_name", icon_name,
+            "label", label,
             NULL);
 }
 
 static void midori_browser_set_action_icon_name (MidoriBrowser *browser)
 {
-    _midori_browser_set_action_icon_name (browser, "Back", STOCK_GO_BACK);
-    _midori_browser_set_action_icon_name (browser, "Forward", STOCK_GO_FORWARD);
-    _midori_browser_set_action_icon_name (browser, "Homepage", STOCK_HOME_PAGE);
-    _midori_browser_set_action_icon_name (browser, "DownloadDialog", STOCK_DOWNLOAD);
-    _midori_browser_set_action_icon_name (browser, "Preferences", STOCK_SETTING);
-    _midori_browser_set_action_icon_name (browser, "ReloadUncached", STOCK_REFRESH);
-    _midori_browser_set_action_icon_name (browser, "CompactMenu", STOCK_COMPACTMENU);
+    _midori_browser_set_action_icon_name (browser, "Back", STOCK_GO_BACK, NULL);
+    _midori_browser_set_action_icon_name (browser, "Forward", STOCK_GO_FORWARD, NULL);
+    _midori_browser_set_action_icon_name (browser, "Homepage", STOCK_HOME_PAGE, _("homepage"));
+    _midori_browser_set_action_icon_name (browser, "DownloadDialog", STOCK_DOWNLOAD, NULL);
+    _midori_browser_set_action_icon_name (browser, "Preferences", STOCK_SETTING, _("preferences"));
+    _midori_browser_set_action_icon_name (browser, "ReloadUncached", STOCK_REFRESH, NULL);
+    _midori_browser_set_action_icon_name (browser, "CompactMenu", STOCK_COMPACTMENU, NULL);
 }
 
 static void

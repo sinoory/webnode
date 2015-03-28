@@ -1084,7 +1084,6 @@ void _midori_panel_open_in_window(MidoriPanel* panel,
                                 gboolean     open_in_window)
 {
     if(open_in_window){
-        g_print("zgh 20150213 current_page-1: %d\n\n", gtk_notebook_get_current_page(GTK_NOTEBOOK (panel->notebook)));
         gtk_tool_button_set_stock_id (GTK_TOOL_BUTTON (panel->button_openinwindow),GTK_STOCK_LEAVE_FULLSCREEN);
         panel->open_panels_in_windows = TRUE;
 //        gtk_container_remove(panel->labelbar,panel->button_close);
@@ -1111,9 +1110,7 @@ void midori_panel_open_in_window(MidoriPanel* panel,
                                 gint page_n)
 {    
     if(page_n >= 0 && page_n <= 2){
-    g_print("zgh 20150213 notebook_pages: %d, page_n: %d\n\n", gtk_notebook_get_n_pages(GTK_NOTEBOOK(panel->notebook)), page_n);
         gtk_notebook_set_current_page (GTK_NOTEBOOK (panel->notebook), page_n);
-        g_print("zgh 20150213 current_page: %d\n\n", gtk_notebook_get_current_page(GTK_NOTEBOOK (panel->notebook)));
     }
     
     _midori_panel_open_in_window(panel, open_in_window);
