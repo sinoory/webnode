@@ -142,7 +142,7 @@ namespace Tabby {
                     if (load_on_startup == Midori.MidoriStartup.BLANK_PAGE) {
                         item.uri = "about:blank";
                     } else {
-                        item.uri = "http://www.baidu.com";
+                        item.uri = "about:home";
                     }
 
                     tabs.add_item (item);

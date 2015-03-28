@@ -1198,7 +1198,7 @@ midori_view_web_view_navigation_decision_cb (WebKitWebView*             web_view
             {
                if( view->website_record_array)
                   katze_assign (view->website_record_array, NULL);
-       //        g_idle_add (midori_view_website_query_idle, view);
+               g_idle_add (midori_view_website_query_idle, view);
                if(view->tmp_uri)
                {
                   free(view->tmp_uri);
