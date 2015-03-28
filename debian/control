@@ -98,13 +98,13 @@ Build-Depends: debhelper (>= 8.0.0),
 	libgcr-3-dev,
 	libnotify-dev,
 	libsoup-gnome2.4-dev (>=2.27.90)
-Standards-Version: 0.1.9
+Standards-Version: 0.2.0
 Homepage: <insert the upstream URL, if relevant>
 #Vcs-Git: git://git.debian.org/collab-maint/zrltest.git
 #Vcs-Browser: http://git.debian.org/?p=collab-maint/zrltest.git;a=summary
 
 Package:cdosbrowser
-Version:0.1.9
+Version:0.2.0
 Section:web
 Architecture:any
 Pre-Depends: dpkg (>= 1.16.10)
@@ -118,6 +118,6 @@ Depends:libgtk-3-0(>=3.6.4),
 	libatk1.0-0,
 	libgdk-pixbuf2.0-0(>=2.26.5)
 Maintainer:cdosrepobuild <cdosrepobuild@iscas.ac.cn>
-Description: CDOS Security Browser
-  This package contains the CDOS Browser based on WebKit
+Description: Security Browser
+  This package contains the Security Browser based on WebKit
 
