@@ -112,8 +112,8 @@ namespace Midori {
             icon = new Gtk.Image.from_gicon (new ThemedIcon.with_default_fallbacks ("text-html-symbolic"), Gtk.IconSize.MENU);
             box.pack_start (icon, false, false, 0);
             box.show_all ();
-//				loc_simbo.hide();//lxx,20150130
-
+	    loc_simbo.hide();//lxx,20150130
+            block_simbo.hide();//lxxx,2015/3/27
             tab.notify["uri"].connect (uri_changed);
             tab.notify["title"].connect (title_changed);
             tab.notify["icon"].connect (icon_changed);

@@ -140,9 +140,9 @@ namespace Tabby {
                     Katze.Item item = new Katze.Item ();
 
                     if (load_on_startup == Midori.MidoriStartup.BLANK_PAGE) {
-                        item.uri = "about:dial";
+                        item.uri = "about:blank";
                     } else {
-                        item.uri = "about:home";
+                        item.uri = "http://www.baidu.com";
                     }
 
                     tabs.add_item (item);
