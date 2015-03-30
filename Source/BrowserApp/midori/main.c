@@ -152,7 +152,10 @@ main (int    argc,
                     G_CALLBACK (initialize_web_extensions),
                     NULL);
     
-    if(!single_process)
+//    if(!single_process)
+//add by luyue 2015/3/30
+//保证用户名密码登录功能能够正常使用，暂时屏蔽多进程 
+    if(single_process)
     {
         webkit_web_context_set_process_model(context, WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_PROCESSES);
     }
