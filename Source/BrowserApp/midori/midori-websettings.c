@@ -778,13 +778,14 @@ static gchar*
 generate_ident_string (MidoriWebSettings* web_settings,
                        MidoriIdentity     identify_as)
 {
-    const gchar* appname = "Cuprum/"
+    const gchar* appname = "CDOSBrowser/"
         G_STRINGIFY (MIDORI_MAJOR_VERSION) "."
         G_STRINGIFY (MIDORI_MINOR_VERSION);
 
     const gchar* lang = pango_language_to_string (gtk_get_default_language ());
     gchar* platform;
-    const gchar* os = midori_web_settings_get_system_name (NULL, &platform);
+    gchar* architecture;
+    const gchar* os = midori_web_settings_get_system_name (&architecture, &platform);
 
     #ifndef HAVE_WEBKIT2
     const int webcore_major = WEBKIT_USER_AGENT_MAJOR_VERSION;
@@ -796,7 +797,6 @@ generate_ident_string (MidoriWebSettings* web_settings,
 
     g_object_set (web_settings, "enable-site-specific-quirks",
         identify_as != MIDORI_IDENT_GENUINE, NULL);
-
     switch (identify_as)
     {
     case MIDORI_IDENT_GENUINE:
@@ -804,9 +804,9 @@ generate_ident_string (MidoriWebSettings* web_settings,
             platform, os, webcore_major, webcore_minor, appname);
     case MIDORI_IDENT_MIDORI:
     case MIDORI_IDENT_CHROME:
-        return g_strdup_printf ("Mozilla/5.0 (%s %s) AppleWebKit/%d.%d "
+        return g_strdup_printf ("Mozilla/5.0 (%s %s %s) AppleWebKit/%d.%d "
             "(KHTML, like Gecko) Chrome/18.0.1025.133 Safari/%d.%d %s",
-            platform, os, webcore_major, webcore_minor, webcore_major, webcore_minor, appname);
+            platform, os, architecture,webcore_major, webcore_minor, webcore_major, webcore_minor, appname);
     case MIDORI_IDENT_SAFARI:
         return g_strdup_printf ("Mozilla/5.0 (Macintosh; U; Intel Mac OS X; %s) "
             "AppleWebKit/%d+ (KHTML, like Gecko) Version/5.0 Safari/%d.%d+ %s",

@@ -30,6 +30,8 @@
 
 #include <glib/gi18n.h>
 #include <glib/gstdio.h>
+//#include <gdk/gdk.h>
+//#include <gdk-pixbuf/gdk-pixbuf.h>
 #include <gdk/gdkkeysyms.h>
 #include <string.h>
 
@@ -6142,16 +6144,19 @@ _action_about_activate (GtkAction*     action,
         "copyright", "2007-2013 Christian Dywan",
 #else
     GtkWidget* dialog = gtk_about_dialog_new ();
+    GError *error = NULL;
+    GdkPixbuf *logo = gdk_pixbuf_new_from_file(midori_paths_get_res_filename("about_logo.png"),&error);
+    gtk_about_dialog_set_logo(GTK_ABOUT_DIALOG(dialog),logo);
     g_object_set (dialog,
         "wrap-license", FALSE,
-        "copyright", "Copyright © 2013-2014 cdosrepobuild <cdosrepobuild@iscas.ac.cn>",
+        "copyright", "Copyright © 2014-2015 cdosrepobuild <cdosrepobuild@iscas.ac.cn>",
 #endif
         "transient-for", browser,
-        "logo-icon-name", "基础版浏览器",
-        "program-name", "基础版浏览器",
+//        "logo-icon-name", "基础版浏览器",
+//        "program-name", "基础版浏览器",
         "version", PACKAGE_VERSION,
         "comments", comments,
-        "website", "http://www.baidu.com",
+//        "website", "http://www.baidu.com", //暂时屏蔽　add by luyue 2015/3/30
         NULL);
     g_free (comments);
     #ifdef HAVE_GRANITE
@@ -6800,9 +6805,11 @@ static const GtkRadioActionEntry encoding_entries[] =
     { "EncodingWestern", NULL,
         N_("Western (ISO-8859-1)"), "",
         NULL, 1 },
+#if 0
     { "EncodingCustom", NULL,
         N_("Custom…"), "",
         NULL, 1 },
+#endif
 };
 static const guint encoding_entries_n = G_N_ELEMENTS (encoding_entries);
 
@@ -7026,7 +7033,7 @@ static const gchar* ui_markup =
                     "<menuitem action='EncodingRussian'/>"
                     "<menuitem action='EncodingUnicode'/>"
                     "<menuitem action='EncodingWestern'/>"
-                    "<menuitem action='EncodingCustom'/>"
+             //       "<menuitem action='EncodingCustom'/>"  luyue
                 "</menu>"
                 "<menuitem action='SourceView'/>"
 //                "<menuitem action='SourceViewDom'/>"  //zgh
@@ -7607,7 +7614,8 @@ midori_browser_init (MidoriBrowser* browser)
     g_signal_connect (forward, "button-press-event",
         G_CALLBACK (midori_browser_menu_item_middle_click_event_cb), browser);
 #endif
-    _action_set_sensitive (browser, "EncodingCustom", FALSE);
+//    _action_set_sensitive (browser, "EncodingCustom", FALSE);//luyue
+    _action_set_sensitive (browser, "HelpBugs", FALSE); //add by luyue 2015/3/30 暂时屏蔽
     _action_set_visible (browser, "LastSession", FALSE);
 
     _action_set_visible (browser, "Bookmarks", browser->bookmarks != NULL);

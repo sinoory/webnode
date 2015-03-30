@@ -3341,7 +3341,7 @@ midori_view_get_page_context_action (MidoriView*          view,
         midori_context_action_add_by_name (encodings, "EncodingRussian");
         midori_context_action_add_by_name (encodings, "EncodingUnicode");
         midori_context_action_add_by_name (encodings, "EncodingWestern");
-        midori_context_action_add_by_name (encodings, "EncodingCustom");
+//        midori_context_action_add_by_name (encodings, "EncodingCustom"); //luyue
 
         midori_context_action_add (menu, NULL);
         midori_context_action_add_by_name (menu, "BookmarkAdd");
