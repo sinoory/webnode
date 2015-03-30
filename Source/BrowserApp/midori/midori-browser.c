@@ -4976,6 +4976,14 @@ midori_browser_bookmark_delete_activate_cb (GtkWidget*     menuitem,
     midori_bookmarks_db_remove_item (browser->bookmarks, item);
     midori_location_action_set_secondary_icon_tooltip (
                 MIDORI_LOCATION_ACTION (action), STOCK_UNBOOKMARK, _("Add to Bookmarks bar"));  //add by zgh 1224
+
+    //zghtodo 更新书签菜单项
+    GtkAction *bookmarkAction = gtk_action_group_get_action(browser->action_group, "Bookmarks");
+    KatzeArray* array = katze_array_action_get_array (KATZE_ARRAY_ACTION(bookmarkAction));
+    GtkWidget* proxy = (GtkWidget*)g_object_get_data (G_OBJECT (menuitem), "Proxy");
+    GtkWidget* menu = gtk_widget_get_parent(proxy);
+    _action_bookmarks_populate_folder(KATZE_ARRAY_ACTION(bookmarkAction), menu, array, browser);
+    
 }
 
 static void
@@ -5028,6 +5036,7 @@ midori_browser_bookmark_popup (GtkWidget*      widget,
     midori_context_action_add (menu, action);
     action = gtk_action_new ("BookmarkDelete", NULL, NULL, GTK_STOCK_DELETE);
     g_object_set_data (G_OBJECT (action), "KatzeItem", item);
+    g_object_set_data (G_OBJECT (action), "Proxy", widget);
     g_signal_connect (action, "activate",
         G_CALLBACK (midori_browser_bookmark_delete_activate_cb), browser);
     midori_context_action_add (menu, action);
