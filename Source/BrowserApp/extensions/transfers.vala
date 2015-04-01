@@ -350,10 +350,13 @@ namespace Transfers {
             if (treeview.get_selection ().get_selected (null, out iter)) {
                 Transfer transfer;
                 store.get (iter, 0, out transfer);
-                if (transfer.finished && transfer.download_progress == 100) {
-                    open_file.sensitive = true;
+                if (transfer.finished) {
                     cancel_dl.label = "删除记录";
                     cancel_dl.set_tooltip_text("删除记录");
+                
+                    if (transfer.finished && transfer.download_progress == 100) {
+                        open_file.sensitive = true;
+                    }
                 }
                 else{
                     open_file.sensitive = false;
@@ -579,13 +582,16 @@ gtk_tree_view_column_set_sizing (GtkTreeViewColumn       *tree_column,
             if (treeview.get_selection ().get_selected (null, out iter)) {
                 Transfer transfer;
                 store.get (iter, 0, out transfer);
-                if (transfer.finished && transfer.download_progress == 100) {
-                    open_file.sensitive = true;
+                if(transfer.finished) {
                     cancel_dl.label = "删除记录";
                     cancel_dl.set_tooltip_text("删除记录");
+                     if (transfer.download_progress == 100) {
+                        open_file.sensitive = true;
+                    }
                 }
-                else
+                else {
                     open_file.sensitive = false;
+                }
             }
             
             treeview.queue_draw ();
