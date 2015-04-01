@@ -1011,7 +1011,12 @@ static void readCallback(GObject* object, GAsyncResult* asyncResult, gpointer da
 {
    MidoriView *view = MIDORI_VIEW (data);
    gssize bytesRead = g_input_stream_read_finish(view->inputStream, asyncResult, NULL);
-   if (!bytesRead) {
+   if (bytesRead == -1)
+   {
+      //error happen
+      return;
+   }
+   else if (bytesRead == 0) {
        g_input_stream_close(view->inputStream, 0, 0);
        char *tmp_str = strstr(view->total_read_buffer,"</html>");
        if(tmp_str)
