@@ -191,11 +191,11 @@ namespace Transfers {
                 //toolbar.insert (separator, 0);      
                 
                 cancel_dl = new Gtk.ToolButton.from_stock (Gtk.STOCK_CANCEL);
-                cancel_dl.label = "取消\\删除";
+                cancel_dl.label = "删除记录";
                 cancel_dl.is_important = true;
                 cancel_dl.clicked.connect (cancel_dl_clicked);
-		cancel_dl.set_tooltip_text("暂停\\删除");
-		cancel_dl.sensitive = false;
+                cancel_dl.set_tooltip_text("删除记录");
+	     cancel_dl.sensitive = false;
                 toolbar.insert (cancel_dl, 0);
                 //toolbar.insert (separator, 0);      
                 
@@ -222,6 +222,9 @@ namespace Transfers {
 
         void clear_clicked () {
             stdout.printf("clear_dir_clicked\n");
+            cancel_dl.label = "删除记录";
+            cancel_dl.set_tooltip_text("删除记录");
+            cancel_dl.sensitive = false;
             foreach (GLib.Object item in array.get_items ()) {
                 var transfer = item as Transfer;
                 if (transfer.finished)
@@ -349,9 +352,13 @@ namespace Transfers {
                 store.get (iter, 0, out transfer);
                 if (transfer.finished && transfer.download_progress == 100) {
                     open_file.sensitive = true;
+                    cancel_dl.label = "删除记录";
+                    cancel_dl.set_tooltip_text("删除记录");
                 }
                 else{
                     open_file.sensitive = false;
+                    cancel_dl.label = "取消下载";
+                    cancel_dl.set_tooltip_text("取消下载");
                 }
             }
             open_dir.sensitive = true;
@@ -572,8 +579,11 @@ gtk_tree_view_column_set_sizing (GtkTreeViewColumn       *tree_column,
             if (treeview.get_selection ().get_selected (null, out iter)) {
                 Transfer transfer;
                 store.get (iter, 0, out transfer);
-                if (transfer.finished && transfer.download_progress == 100)
+                if (transfer.finished && transfer.download_progress == 100) {
                     open_file.sensitive = true;
+                    cancel_dl.label = "删除记录";
+                    cancel_dl.set_tooltip_text("删除记录");
+                }
                 else
                     open_file.sensitive = false;
             }
