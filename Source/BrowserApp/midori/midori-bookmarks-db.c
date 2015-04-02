@@ -928,7 +928,7 @@ midori_bookmarks_db_query_recursive (MidoriBookmarksDb*  bookmarks,
     g_return_val_if_fail (condition, NULL);
 
     sqlcmd = g_strdup_printf ("SELECT %s FROM bookmarks WHERE %s "
-                              "ORDER BY (uri='') ASC, title DESC", fields, condition);
+                              "ORDER BY created ASC, title DESC", fields, condition);
     if (strstr (condition, "%q"))
     {
         sqlcmd_value = sqlite3_mprintf (sqlcmd, value ? value : "");
