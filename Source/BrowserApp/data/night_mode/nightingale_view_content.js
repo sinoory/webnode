@@ -3570,7 +3570,7 @@ function a()
 window.addEventListener("keydown",
 function(h)
 {
-   if(h.altKey&&h.keyCode==38) //UP
+   if(h.altKey&&h.keyCode==109 || h.altKey&&h.keyCode==189) //UP
        {
          if(!f||d.style.opacity<=0.15)
          {return}
@@ -3581,7 +3581,7 @@ function(h)
        }
   else
      {
-     if(h.altKey&&h.keyCode==40) //down
+     if(h.altKey&&h.keyCode==107 || h.altKey&&h.keyCode==187) //down
              {
          if(!f||d.style.opacity>=0.95){return}
          var g=Number(d.style.opacity);
@@ -3591,7 +3591,7 @@ function(h)
              }
     else
             {
-        if(h.altKey&&h.keyCode==37) //左
+        if(h.altKey&&h.keyCode==8) //左
                      {
               localStorage.coverOpacity=0.45;
               a();
