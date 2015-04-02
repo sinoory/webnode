@@ -7,7 +7,7 @@
 GtkWidget *night_mode_button;
 GtkWidget *night_mode_image;
 gboolean g_night_mode = false;
-gchar *night_mode_remove = "jQuery(\"#__nightingale_view_cover\").remove()";
+gchar *night_mode_remove = "jQuery(\"#__nightingale_view_cover\").remove();f=false;";
 
 static void
 night_mode_tabs_view_notify_uri_cb (MidoriView*      view,
@@ -49,6 +49,7 @@ night_mode_tabs_view_notify_uri_cb (MidoriView*      view,
    }
    else
    {
+printf("night_mode_tabs_view_notify_uri_cb\n");
       current_web_view = midori_view_get_web_view (MIDORI_VIEW (view));
       webkit_web_view_run_javascript(WEBKIT_WEB_VIEW (current_web_view), night_mode_remove, NULL, NULL, NULL);
     }

@@ -3502,10 +3502,10 @@
     }))
 })(window);
 
-
+var f=true;
 (function(c)
 {var d=null;
-var f=true;
+
 if(document.readyState=="complete")
 {a()}
 else{
@@ -3566,7 +3566,6 @@ function a()
                  d.style.zIndex=h();d.style.opacity=f?localStorage.coverOpacity:0;
                  document.body.appendChild(d)
 }
-
 window.addEventListener("keydown",
 function(h)
 {
