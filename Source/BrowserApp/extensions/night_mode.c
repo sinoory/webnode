@@ -49,7 +49,6 @@ night_mode_tabs_view_notify_uri_cb (MidoriView*      view,
    }
    else
    {
-printf("night_mode_tabs_view_notify_uri_cb\n");
       current_web_view = midori_view_get_web_view (MIDORI_VIEW (view));
       webkit_web_view_run_javascript(WEBKIT_WEB_VIEW (current_web_view), night_mode_remove, NULL, NULL, NULL);
     }
