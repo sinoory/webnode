@@ -209,9 +209,14 @@ namespace Adblock {
             int height;
             treeview.create_pango_layout ("a\nb").get_pixel_size (null, out height);
             scrolled.set_size_request (-1, height * 5);
-
             foreach (Subscription sub in config)
+            {
+                //add by luyue 2015/3/8
+                if(sub.path.has_prefix("/usr/local/share/"))
+                  continue;
+                //add end
                 liststore.insert_with_values (null, 0, 0, sub);
+            }
             treeview.button_release_event.connect (button_released);
 
             entry.activate.connect (() => {
