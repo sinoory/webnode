@@ -8,6 +8,13 @@ GtkWidget *night_mode_button;
 GtkWidget *night_mode_image;
 gboolean g_night_mode = false;
 gchar *night_mode_remove = "jQuery(\"#__nightingale_view_cover\").remove();f=false;";
+gchar *night_level = NULL;
+MidoriBrowser* browser1;
+
+static void
+night_mode_console_message_cb (MidoriView*   web_view,
+                               const gchar* message,
+                               MidoriView*  view);
 
 static void
 night_mode_tabs_view_notify_uri_cb (MidoriView*      view,
@@ -15,9 +22,6 @@ night_mode_tabs_view_notify_uri_cb (MidoriView*      view,
                                     MidoriExtension* extension)
 {
    GtkWidget* current_web_view;
-   gchar *script=NULL;
-   FILE *fp;
-   int file_size;
 
    const gchar* uri = midori_view_get_display_uri (view);
    if (!*uri)
@@ -29,20 +33,21 @@ night_mode_tabs_view_notify_uri_cb (MidoriView*      view,
          gchar* hostname = midori_uri_parse_hostname (uri, NULL);
          if (hostname)
          {
-            if((fp=fopen(midori_paths_get_res_filename("night_mode/nightingale_view_content.js"),"r"))!=NULL)
-            {
-               fseek(fp,0,SEEK_END);
-               file_size=ftell(fp);
-               fseek(fp,0,SEEK_SET);
-               script=(char *)malloc(file_size * sizeof(char)+1);
-               fread(script,file_size,sizeof(char),fp);
-               script[file_size*sizeof(char)]='\0';
-               fclose(fp);
-               current_web_view = midori_view_get_web_view (view);
-               webkit_web_view_run_javascript(WEBKIT_WEB_VIEW (current_web_view), script, NULL, NULL, NULL);
-               free(script);
-               script=NULL;
-            }         
+            gchar *backgroundSrc = NULL;
+            GError * _inner_error_ = NULL;
+            gchar *queryStr = NULL;
+            g_file_get_contents (midori_paths_get_res_filename("night_mode/nightingale_view_content.js"),
+                                 &backgroundSrc,
+                                 NULL,
+                                 &_inner_error_);
+            if(!night_level)
+               queryStr = g_strdup_printf(backgroundSrc,"0.45");
+            else
+               queryStr = g_strdup_printf(backgroundSrc, night_level);
+            current_web_view = midori_view_get_web_view (view);
+            webkit_web_view_run_javascript(WEBKIT_WEB_VIEW (current_web_view), queryStr, NULL, NULL, NULL);
+            g_free(queryStr);
+            g_free(backgroundSrc); 
             g_free (hostname);
          }
       }
@@ -55,10 +60,35 @@ night_mode_tabs_view_notify_uri_cb (MidoriView*      view,
 }
 
 static void
+night_mode_console_message_cb (MidoriView*   web_view,
+                               const gchar* message,
+                               MidoriView*  view)
+{
+   if (!strncmp (message, "cdosExtension_night_mode_info", 20))
+       {
+printf("night_mode_console_message_cb\n");
+      gchar** wqi_array = NULL;
+      wqi_array = g_strsplit (message, "#", -1);
+      if(strlen(wqi_array[1]))
+          night_level = wqi_array[1];
+      GList* children;
+      children = midori_browser_get_tabs (MIDORI_BROWSER (browser1));
+      for (; children; children = g_list_next (children))
+                {
+         MidoriView* view1 =  MIDORI_VIEW (children->data);
+         night_mode_tabs_view_notify_uri_cb (view1, NULL, NULL);
+                }
+      g_list_free (children);
+          
+       }
+}
+
+static void
 night_mode_extension_browser_add_tab_cb (MidoriBrowser*   browser,
                                          GtkWidget*       view,
                                          MidoriExtension* extension)
-{
+{ 
+   g_object_connect (view,"signal::cdosextension-message",night_mode_console_message_cb,view,NULL);
    night_mode_tabs_view_notify_uri_cb (MIDORI_VIEW (view), NULL, extension);
    g_signal_connect (view, "notify::icon",
       G_CALLBACK (night_mode_tabs_view_notify_uri_cb), extension);
@@ -68,6 +98,7 @@ static void
 night_mode_function_realization (GtkWidget*     botton,
                                  MidoriBrowser* browser)
 {
+   browser1 = browser;
    gtk_widget_destroy (night_mode_image);
    if(!g_night_mode)
         {
@@ -159,6 +190,7 @@ extension_init (void)
       "version", "1.0" MIDORI_VERSION_SUFFIX,
       "authors", "luy_os@sari.ac.cn",
       NULL);
+
    g_signal_connect (extension, "activate",
        G_CALLBACK ( night_mode_activated_cb), NULL);
    return extension;

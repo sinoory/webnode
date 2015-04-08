@@ -208,6 +208,7 @@ enum {
     WEBSITE_CHECK,//luyue,20150309
     DANGEROUS_URL,//luyue,20150309
     FORWARD_URL,//luyue,2015/3/16
+    CDOSEXTENSION_MESSAGE,//luyue,2015/4/7
     LAST_SIGNAL
 };
 
@@ -443,6 +444,17 @@ midori_view_class_init (MidoriViewClass* class)
         NULL,
         g_cclosure_marshal_VOID__VOID,
         G_TYPE_NONE, 0);
+
+    signals[CDOSEXTENSION_MESSAGE] = g_signal_new (
+        "cdosextension-message",
+        G_TYPE_FROM_CLASS (class),
+        (GSignalFlags)(G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
+        0,
+        0,
+        NULL,
+        g_cclosure_marshal_VOID__STRING,
+        G_TYPE_NONE, 1,
+        G_TYPE_STRING);
 
     signals[FORWARD_URL] = g_signal_new (
         "forward-url",
@@ -3822,6 +3834,11 @@ webkit_web_view_console_message_cb (GtkWidget*   web_view,
             g_critical ("Failed speed dial message: %s\n", error->message);
             g_error_free (error);
         }
+    }
+    else if(!strncmp (message, "cdosExtension", 13))
+    {
+       
+       g_signal_emit(view, signals[CDOSEXTENSION_MESSAGE], 0, message);   
     }
     else {
         g_signal_emit_by_name (view, "console-message", message, line, source_id);

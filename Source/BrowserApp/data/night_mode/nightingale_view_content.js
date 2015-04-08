@@ -3506,52 +3506,18 @@ var f=true;
 (function(c)
 {var d=null;
 
-if(typeof(localStorage.coverOpacity)==="undefined")
-{
-  localStorage.coverOpacity=0.45;    
-}
-
 if(document.readyState=="complete")
-{a()}
-else{ 
-window.addEventListener("DOMContentLoaded",function(){a();})
-a();
-}
-
-/*
-if(typeof(chrome.extension.onMessage)!=="undefined"&&chrome.extension.onMessage.addListener)
-{chrome.extension.onMessage.addListener(e)}
-else{if(typeof(chrome.extension.onRequest)!=="undefined"&&chrome.extension.onRequest.addListener)
-{chrome.extension.onRequest.addListener(e)}
-}
-*/
-
-//if(typeof(localStorage.showCoverDefault)==="undefined")
-//{
-//    localStorage.showCoverDefault=true
-//}
-
-
-function b(g,h){
-/*
-if(typeof(chrome.extension.sendMessage)==="function")
-{
-	b=function(i,j){chrome.extension.sendMessage(i,j)}
+{ 
+   a();
 }
 else
-{
-	if(typeof(chrome.extension.sendRequest)==="function")
-	{
-		b=function(i,j){chrome.extension.sendRequest(i,j)}
-	}
+{ 
+   window.addEventListener("DOMContentLoaded",function(){a();})
 }
-*/
-//b(g,h)
-}
-function e(k,i,g){var h=k.data;var j=h.showCoverDefault.toString()=="true";if(j==f){d.style.opacity=h.coverOpacity;return}f=j;if(f){c(d).animate({opacity:h.coverOpacity},1000)}else{d.style.opacity=String(h.coverOpacity);c(d).animate({opacity:0},1000)}}
 
 function a()
 {
+                 localStorage.coverOpacity='%s';
                  f=true;
                  function h()
                  {
@@ -3573,33 +3539,41 @@ function(h)
 {
    if(h.altKey&&h.keyCode==109 || h.altKey&&h.keyCode==189) //UP
        {
-         if(!f||d.style.opacity<=0.15)
+         var g=Number(localStorage.coverOpacity);
+         if(!f||g<=0.15)
          {return}
-         var g=Number(d.style.opacity);
          g=(g-0.1<=0.15)?0.1:(g-0.1);
          localStorage.coverOpacity=g;
+         console.log("cdosExtension_night_mode_info" + "#"  + c.trim(g));
          a();
+         f=false;
        }
   else
      {
      if(h.altKey&&h.keyCode==107 || h.altKey&&h.keyCode==187) //down
              {
-         if(!f||d.style.opacity>=0.95){return}
-         var g=Number(d.style.opacity);
+         var g=Number(localStorage.coverOpacity);
+         if(!f||g>=0.95){return}
          g=(g+0.1<=0.95)?(g+0.1):0.95;
          localStorage.coverOpacity=g;
+         console.log("cdosExtension_night_mode_info" + "#"  + c.trim(g));
          a();
+         f=false;
              }
     else
             {
         if(h.altKey&&h.keyCode==8) //左
                      {
+              if(!f){return}
               localStorage.coverOpacity=0.45;
+              var g = localStorage.coverOpacity;
+              console.log("cdosExtension_night_mode_info" + "#"  + c.trim(g));
               a();
+              f=false;
                      }
             }
       }
-},true)
+},false)
 }
 )
 (jQuery.noConflict());
