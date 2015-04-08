@@ -71,8 +71,9 @@ namespace Midori {
             WebKit.URIResponse response = download.get_response();
             uint64 total_size = response.get_content_length(), current_size = download.get_received_data_length ();
             double elapsed = download.elapsed_time,
-               diff = elapsed / current_size,
-               estimated = (total_size - current_size) * diff;
+               diff = elapsed / current_size;
+	if(diff < 0.000001) diff += 0.000001;
+            double estimated = (total_size - current_size) * diff;
             int hour = 3600, minute = 60;
             int hours = (int)(estimated / hour),
                 minutes = (int)((estimated - (hours * hour)) / minute),
