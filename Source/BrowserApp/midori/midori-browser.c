@@ -226,7 +226,7 @@ midori_browser_set_bookmarks (MidoriBrowser*     browser,
                               MidoriBookmarksDb* bookmarks);
 
 static void
-midori_browser_add_speed_dial (MidoriBrowser* browser);
+midori_browser_add_speed_dial (MidoriBrowser* browser, gchar* uri, gchar* title);
 
 static void
 midori_browser_step_history (MidoriBrowser* browser,
@@ -1292,7 +1292,9 @@ midori_browser_edit_bookmark_add_speed_dial_cb (GtkWidget* button,
                                                 KatzeItem* bookmark)
 {
     MidoriBrowser* browser = midori_browser_get_for_widget (button);
-    midori_browser_add_speed_dial (browser);
+    gchar* title = (gchar*)g_object_get_data (G_OBJECT (button), "ENTRY_TITLE");
+    gchar* uri = (gchar*)g_object_get_data (G_OBJECT(button), "ENTRY_URI");
+    midori_browser_add_speed_dial (browser, uri, title);
     GtkWidget* dialog = gtk_widget_get_toplevel (button);
     gtk_dialog_response (GTK_DIALOG (dialog), GTK_RESPONSE_DELETE_EVENT);
 }
@@ -1428,6 +1430,8 @@ midori_browser_edit_bookmark_dialog_new (MidoriBrowser* browser,
         gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
 
         label = gtk_button_new_with_mnemonic (_("Add to _Speed Dial"));
+        g_object_set_data (G_OBJECT (label), "ENTRY_TITLE", katze_item_get_name (bookmark));
+        g_object_set_data (G_OBJECT (label), "ENTRY_URI", katze_item_get_uri (bookmark));
         g_signal_connect (label, "clicked",
             G_CALLBACK (midori_browser_edit_bookmark_add_speed_dial_cb), bookmark);
         gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
@@ -1670,12 +1674,19 @@ midori_browser_speed_dial_refresh_cb (MidoriSpeedDial* dial,
 }
 
 static void
-midori_browser_add_speed_dial (MidoriBrowser* browser)
+midori_browser_add_speed_dial (MidoriBrowser* browser, gchar* uri, gchar* title)
 {
+    if (!uri || !title)
+    {
     GtkWidget* view = midori_browser_get_current_tab (browser);
     midori_speed_dial_add (browser->dial,
         midori_view_get_display_uri (MIDORI_VIEW (view)),
         midori_view_get_display_title (MIDORI_VIEW (view)), NULL);
+    }
+    else
+    {
+        midori_speed_dial_add (browser->dial, uri, title, NULL);
+    }
 }
 
 static gboolean
@@ -3183,7 +3194,7 @@ static void
 _action_add_speed_dial_activate (GtkAction*     action,
                                 MidoriBrowser* browser)
 {
-    midori_browser_add_speed_dial (browser);
+    midori_browser_add_speed_dial (browser, NULL, NULL);
 }
 
 static void
@@ -4978,12 +4989,14 @@ midori_browser_bookmark_delete_activate_cb (GtkWidget*     menuitem,
                 MIDORI_LOCATION_ACTION (action), STOCK_UNBOOKMARK, _("Add to Bookmarks bar"));  //add by zgh 1224
 
     //zghtodo 更新书签菜单项
-    GtkAction *bookmarkAction = gtk_action_group_get_action(browser->action_group, "Bookmarks");
-    KatzeArray* array = katze_array_action_get_array (KATZE_ARRAY_ACTION(bookmarkAction));
     GtkWidget* proxy = (GtkWidget*)g_object_get_data (G_OBJECT (menuitem), "Proxy");
     GtkWidget* menu = gtk_widget_get_parent(proxy);
-    _action_bookmarks_populate_folder(KATZE_ARRAY_ACTION(bookmarkAction), menu, array, browser);
-    
+    if (GTK_IS_MENU_SHELL (menu))
+    {
+        GtkAction *bookmarkAction = gtk_action_group_get_action(browser->action_group, "Bookmarks");
+        KatzeArray* array = katze_array_action_get_array (KATZE_ARRAY_ACTION(bookmarkAction));
+        _action_bookmarks_populate_folder(KATZE_ARRAY_ACTION(bookmarkAction), menu, array, browser);
+    }
 }
 
 static void
