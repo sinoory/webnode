@@ -3500,8 +3500,8 @@ msgid "Disable"
 msgstr "Disable"
 
 #: ../extensions/adblock/widgets.vala:123
-msgid "Type the locally saved the filter file and hit Entry.Form:file://filepath+filename,such as file:///home/test.txt."
-msgstr "Type the locally saved the filter file and hit Entry.Form:file://filepath+filename,such as file:///home/test.txt."
+msgid "Type the locally saved the filter file and hit Enter.Form:file://filepath+filename,such as file:///home/test.txt."
+msgstr "Type the locally saved the filter file and hit Enter.Form:file://filepath+filename,such as file:///home/test.txt."
 
 #: ../extensions/adblock/widgets.vala:99
 msgid "Display hidden elements"

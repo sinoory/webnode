@@ -3465,8 +3465,8 @@ msgid "Disable"
 msgstr "禁止"
 
 #: ../extensions/adblock/widget.vala:127
-msgid "Type the locally saved the filter file and hit Entry.Form:file://filepath+filename,such as file:///home/test.txt."
-msgstr "输入本地保存的过滤器文件，然后点击entry键。"
+msgid "Type the locally saved the filter file and hit Enter.Form:file://filepath+filename,such as file:///home/test.txt."
+msgstr "输入本地保存的过滤器文件，然后点击enter键。"
        "形式为:file://文件路径+文件名,例如file:///home/test.txt。"
 
 #: ../extensions/adblock/widget.vala:99

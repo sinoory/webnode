@@ -120,7 +120,7 @@ namespace Adblock {
             this.config = config;
             this.liststore = new Gtk.ListStore (1, typeof (Subscription));
             this.description_label = new Gtk.Label (null);
-            this.description = _("Type the locally saved the filter file and hit Entry.Form:file://filepath+filename,such as file:///home/test.txt.");
+            this.description = _("Type the locally saved the filter file and hit Enter.Form:file://filepath+filename,such as file:///home/test.txt.");
         }
 
         public void add_subscription (string? uri) {
