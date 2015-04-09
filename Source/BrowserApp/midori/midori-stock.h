@@ -41,6 +41,7 @@
 #define STOCK_ENTRY              "authensite" 
 #define STOCK_SECURITY           "certifiedwebsite"
 #define MIDORI_STOCK_DOWNLOADING "downloading"
+#define MIDORI_STOCK_CDOS_ADD    "cdos-add"
 #define STOCK_COMPACTMENU        "compactmenu"
 #define STOCK_GO_BACK            "go_back"
 #define STOCK_GO_FORWARD         "go_forward"

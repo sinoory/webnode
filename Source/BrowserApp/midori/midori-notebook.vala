@@ -361,7 +361,7 @@ namespace Midori {
             var add = new Gtk.Button ();
             add.tooltip_text = _("Open a new tab");
             add.relief = Gtk.ReliefStyle.NONE;
-            add.add (new Gtk.Image.from_gicon (new ThemedIcon.with_default_fallbacks ("gtk-add"/*"tab-new-symbolic"*/), Gtk.IconSize.MENU));    //zgh
+            add.add (new Gtk.Image.from_gicon (new ThemedIcon.with_default_fallbacks ("cdos-add"), Gtk.IconSize.MENU));    //zgh 20150409  /*"gtk-add"*//*"tab-new-symbolic"*/
             add.show_all ();
             notebook.set_action_widget (add, Gtk.PackType.START);
             add.clicked.connect (()=>{
