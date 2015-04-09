@@ -116,6 +116,7 @@ namespace Midori {
         [HasEmitter]
         public signal void activate_action (string name);
         public signal void add_download (WebKit.Download download);
+        public signal void clear_download (Gtk.Widget widget);
         public signal void populate_tool_menu (Gtk.Menu menu);
         [HasEmitter]
         public signal void quit ();

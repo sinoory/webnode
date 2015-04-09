@@ -142,6 +142,7 @@ enum
     SWITCH_TAB,
     ACTIVATE_ACTION,
     ADD_DOWNLOAD,
+    CLEAR_DOWNLOAD,
     SEND_NOTIFICATION,
     POPULATE_TOOL_MENU,
     POPULATE_TOOLBAR_MENU,
@@ -1499,6 +1500,12 @@ midori_browser_prepare_download (MidoriBrowser*  browser,
     return TRUE;
 }
 
+void
+midori_browser_clear_download_data (MidoriBrowser* browser, GtkWidget* widget)
+{
+    g_signal_emit (browser, signals[CLEAR_DOWNLOAD], 0, widget);
+}
+
 #ifndef HAVE_WEBKIT2
 static void
 midori_browser_save_resources (GList*       resources,
@@ -2732,6 +2739,17 @@ midori_browser_class_init (MidoriBrowserClass* class)
      */
     signals[ADD_DOWNLOAD] = g_signal_new (
         "add-download",
+        G_TYPE_FROM_CLASS (class),
+        (GSignalFlags)(G_SIGNAL_RUN_LAST),
+        0,
+        0,
+        NULL,
+        g_cclosure_marshal_VOID__OBJECT,
+        G_TYPE_NONE, 1,
+        G_TYPE_OBJECT);
+        
+    signals[CLEAR_DOWNLOAD] = g_signal_new (
+        "clear-download",
         G_TYPE_FROM_CLASS (class),
         (GSignalFlags)(G_SIGNAL_RUN_LAST),
         0,

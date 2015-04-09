@@ -24,6 +24,7 @@
  */
 
 #include "BrowserSettingsDialog.h"
+#include "midori-panel.h"
 //#include "BrowserCellRendererVariant.h"
 #include "../midori/Certificate.h"
 #include "panels/midori-extensions.h"
@@ -526,6 +527,8 @@ static void clearDataCallback(GtkButton *button, MidoriWebSettings *settings)
     //clear download record.
     if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(settings->checkbutton5_privacy))) {
 		//TODO clear download record.
+		//zgh 清除下载数据
+		midori_browser_clear_download_data (browser, GTK_WIDGET(button));
     }
 
     //clear cookie and others

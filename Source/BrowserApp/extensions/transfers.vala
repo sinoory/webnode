@@ -1010,7 +1010,17 @@ gtk_tree_view_column_set_sizing (GtkTreeViewColumn       *tree_column,
             // TODO: popover
             // TODO: progress in dock item
             browser.add_download.connect (download_added);
+            browser.clear_download.connect (clear_download);
             browser.delete_event.connect (browser_closed);
+        }
+        
+        void clear_download (Gtk.Widget widget)
+        {
+            foreach (GLib.Object item in array.get_items ()) {
+                var transfer = item as Transfer;
+                if (transfer.finished)
+                    transfer.remove ();
+            }
         }
         
         void get_download_array()

@@ -1419,7 +1419,7 @@ midori_view_load_committed (MidoriView* view)
 
     katze_item_set_added (view->item, time (NULL));
     g_object_set (view, "title", NULL, NULL);
-    midori_view_unset_icon (view);
+//    midori_view_unset_icon (view);     //zgh 20150403解决刷新后网站图标错误的问题
 
     if (!strncmp (uri, "https", 5))
     {
