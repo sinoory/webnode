@@ -3507,6 +3507,8 @@ webkit_web_view_web_view_ready_cb (GtkWidget*  web_view,
                   NULL);
 #else
     GdkRectangle rectangle;
+			rectangle.width = 0;
+			rectangle.height = 0;
     gint width, height;
     g_object_get (features,
                   "locationbar-visible", &locationbar_visible,
