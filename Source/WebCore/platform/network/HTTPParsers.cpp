@@ -39,6 +39,10 @@
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/WTFString.h>
 #include <wtf/unicode/CharacterNames.h>
+#include <wtf/text/Base64.h>
+#include "TextEncoding.h"
+
+
 
 using namespace WTF;
 
@@ -266,9 +270,47 @@ String filenameFromHTTPContentDisposition(const String& value)
         if (value[0] == '\"')
             value = value.substring(1, value.length() - 2);
 
+        //by sunh
+        //2015.04.10
+        //modified download filename exception for mail.cstnet.cn
+        if (value.startsWith(String("=?")) && value.endsWith(String("?="))) {
+            int prefixPosition = value.find("B?", 0, true);
+            if(-1 == prefixPosition)
+                return String();
+
+           //get base64 standard string
+            value = value.substring(prefixPosition + 2, value.length() - (prefixPosition + 2) - 2);
+            
+            Vector<char> suggestedNameAsUTF8;
+            base64Decode(value, suggestedNameAsUTF8, Base64IgnoreWhitespace);
+
+            String codeset = value.substring(2, prefixPosition -3);
+            TextEncoding codesetEncoding(codeset);
+            value = codesetEncoding.decode(suggestedNameAsUTF8.data(), suggestedNameAsUTF8.size());
+        }
+
+        /*
+        if(value[0] == '=' && value[1] == '?') {
+            return String();
+
+            
+            g_print("\t\t\t testing mail base64\n");
+            if(memcmp(g_ascii_strup(value.utf8().data() + 2, 4), "UTF8", 4) == 0) {
+                if(value[2 + 4 + 1] == 'B') {
+                    value = value.substring(2 + 4 + 1 + 2, value.length() - 2 - 4 - 1 - 2 - 2);
+
+                    Vector<char> out;
+                    if (base64Decode(value, out, Base64IgnoreWhitespace) && out.size() > 0)
+                        return String::fromUTF8WithLatin1Fallback(out.data(), out.size());
+                }
+            }
+            return String();
+            
+        }
+        */
+        
         return value;
     }
-
     return String();
 }
 
