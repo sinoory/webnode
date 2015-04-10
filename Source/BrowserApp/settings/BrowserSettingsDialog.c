@@ -730,7 +730,7 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
 
 	gtk_window_set_title (GTK_WINDOW (window), "设置");
 	gtk_container_set_border_width (GTK_CONTAINER (window), 0);
-
+   gtk_window_set_position(GTK_WINDOW (window),GTK_WIN_POS_CENTER);
 /* 创建一个新的笔记本,将标签页放在顶部 */
 	notebook = gtk_notebook_new ();
 	gtk_container_set_border_width (GTK_CONTAINER (notebook), 0);
