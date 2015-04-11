@@ -40,5 +40,6 @@ struct _PasswordManagerClass{
 GType			password_manager_get_type		(void) G_GNUC_CONST;;
 PasswordManager*	password_manager_get_default		(void);
 void			password_manager_display		(void);
+void                    clear_password_all                      (void);
 
 #endif /* PASSWORD_MANAGER_H */

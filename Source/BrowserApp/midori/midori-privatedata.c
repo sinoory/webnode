@@ -7,6 +7,7 @@
 #include "marshal.h"
 #include "midori-platform.h"
 #include "cdosbrowser-core.h"
+#include "password-manager.h"
 
 #include "config.h"
 #include <string.h>
@@ -78,7 +79,7 @@ midori_private_data_dialog_response_cb (GtkWidget*     dialog,
         gtk_widget_destroy (dialog);
 }
 
-static void
+/*static void
 midori_private_data_clear_on_quit_toggled_cb (GtkToggleButton*   button,
                                               MidoriWebSettings* settings)
 {
@@ -86,7 +87,7 @@ midori_private_data_clear_on_quit_toggled_cb (GtkToggleButton*   button,
     g_object_get (settings, "clear-private-data", &clear_prefs, NULL);
     clear_prefs ^= MIDORI_CLEAR_ON_QUIT;
     g_object_set (settings, "clear-private-data", clear_prefs, NULL);
-}
+}*/
 
 GtkWidget*
 midori_private_data_get_dialog (MidoriBrowser* browser)
@@ -164,7 +165,7 @@ midori_private_data_get_dialog (MidoriBrowser* browser)
     gtk_container_add (GTK_CONTAINER (alignment), vbox);
     gtk_box_pack_start (GTK_BOX (hbox), alignment, TRUE, TRUE, 4);
     gtk_box_pack_start (GTK_BOX (content_area), hbox, FALSE, FALSE, 8);
-    button = gtk_check_button_new_with_mnemonic (_("Clear private data when _quitting Midori"));
+/*    button = gtk_check_button_new_with_mnemonic (_("Clear private data when _quitting Midori"));
     if ((clear_prefs & MIDORI_CLEAR_ON_QUIT) == MIDORI_CLEAR_ON_QUIT)
         gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);
     g_signal_connect (button, "toggled",
@@ -172,7 +173,7 @@ midori_private_data_get_dialog (MidoriBrowser* browser)
     alignment = gtk_alignment_new (0, 0, 1, 1);
     gtk_alignment_set_padding (GTK_ALIGNMENT (alignment), 0, 0, 2, 0);
     gtk_container_add (GTK_CONTAINER (alignment), button);
-    gtk_box_pack_start (GTK_BOX (content_area), alignment, FALSE, FALSE, 0);
+    gtk_box_pack_start (GTK_BOX (content_area), alignment, FALSE, FALSE, 0);*/
     gtk_widget_show_all (content_area);
     return dialog;
 }
@@ -252,11 +253,11 @@ midori_clear_web_cookies_cb (void)
 static void
 midori_clear_saved_logins_cb (void)
 {
-    sqlite3* db;
+/*    sqlite3* db;
     gchar* filename = midori_paths_get_config_filename_for_writing ("logins");
-    g_unlink (filename);
+    g_unlink (filename);*/
     /* Form History database, written by the extension */
-    gchar* path = midori_paths_get_extension_config_dir ("formhistory");
+/*    gchar* path = midori_paths_get_extension_config_dir ("formhistory");
     katze_assign (filename, g_build_filename (path, "forms.db", NULL));
     g_free (path);
     if (sqlite3_open (filename, &db) == SQLITE_OK)
@@ -264,7 +265,8 @@ midori_clear_saved_logins_cb (void)
         sqlite3_exec (db, "DELETE FROM forms", NULL, NULL, NULL);
         sqlite3_close (db);
     }
-    g_free (filename);
+    g_free (filename);*/
+    clear_password_all();
 }
 
 static void
@@ -294,8 +296,8 @@ midori_private_data_register_built_ins ()
     /* TODO: Preserve page icons of search engines and merge privacy items */
     midori_private_data_register_item ("web-cache", _("Web Cache"),
         G_CALLBACK (midori_clear_web_cache_cb));
-    midori_private_data_register_item ("page-icons", _("Website icons"),
-        G_CALLBACK (midori_paths_clear_icons));
+//    midori_private_data_register_item ("page-icons", _("Website icons"),
+//        G_CALLBACK (midori_paths_clear_icons));
 }
 
 void

@@ -446,6 +446,16 @@ static void clearCookieAndOthersCallback(GtkToggleButton *togglebutton, MidoriWe
              NULL);
 }
 
+//add by luyue 2015/4/11 start
+static void clearOpenTabsCallback(GtkToggleButton *togglebutton, MidoriWebSettings *settings)
+{
+    bool bvalue = gtk_toggle_button_get_active(togglebutton);
+    g_object_set(settings,
+             "clear-open-tabs", bvalue,
+             NULL);
+}
+//add end
+
 static void clearCachedImagesAndFilesCallback(GtkToggleButton *togglebutton, MidoriWebSettings *settings)
 {
     bool bvalue = gtk_toggle_button_get_active(togglebutton); 
@@ -519,6 +529,14 @@ static void clearDataCallback(GtkButton *button, MidoriWebSettings *settings)
 	 MidoriApp *app = midori_app_get_default();
     MidoriBrowser *browser = midori_app_get_browser(app);
 
+    //clear open tabs
+    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(settings->checkbutton9_privacy))) {
+       GList* tabs = midori_browser_get_tabs (browser);
+       for (; tabs != NULL; tabs = g_list_next (tabs))
+          midori_browser_close_tab (browser, tabs->data);
+       g_list_free (tabs);
+    }
+
     //clear browse record.
     if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(settings->checkbutton4_privacy))) {
 		midori_browser_clear_history(browser);
@@ -547,6 +565,7 @@ static void clearDataCallback(GtkButton *button, MidoriWebSettings *settings)
     //clear passwords
     if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(settings->checkbutton8_privacy))) {
 	//TODO clear password
+        clear_password_all();
     }     
 }
 
@@ -1130,7 +1149,7 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
 	widget = gtk_label_new("清除数据：");
 	gtk_grid_attach(grid, widget, 1, 3, 1, 1);
 
-	button = gtk_check_button_new_with_label("浏览记录");
+	button = gtk_check_button_new_with_label("历史记录");
 	settings->checkbutton4_privacy = GTK_WIDGET(button);
 	g_object_get(settings, "clear-browse-record", &bvalue, NULL);
 	if(TRUE == bvalue)
@@ -1150,7 +1169,7 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
    g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(clearDownloadRecordCallback), settings);
 	gtk_grid_attach(grid, button, 3, 4, 1, 1);
 
-	button = gtk_check_button_new_with_label("缓存的图片和文件");
+	button = gtk_check_button_new_with_label("网页缓存");
 	settings->checkbutton7_privacy = GTK_WIDGET(button);
 	g_object_get(settings, "clear-cached-images-and-files", &bvalue, NULL);
 	if(TRUE == bvalue)
@@ -1170,7 +1189,7 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
    g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(clearPasswordsCallback), settings);
 	gtk_grid_attach(grid, button, 4, 4, 1, 1);
 
-	button = gtk_check_button_new_with_label("Cookie及其它网站和插件数据");
+	button = gtk_check_button_new_with_label("隐私信息和网站数据");
 	settings->checkbutton6_privacy = GTK_WIDGET(button);
 	g_object_get(settings, "clear-cookie-and-others", &bvalue, NULL);
 	if(TRUE == bvalue)
@@ -1180,13 +1199,24 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
    g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(clearCookieAndOthersCallback), settings);
 	gtk_grid_attach(grid, button, 3, 5, 2, 1);
 
+//luyue add by 2015/4/11 start
+        button = gtk_check_button_new_with_label("已打开的标签");
+        settings->checkbutton9_privacy = GTK_WIDGET(button);
+        g_object_get(settings, "clear-open-tabs", &bvalue, NULL);
+        if(TRUE == bvalue)
+           gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
+        else
+           gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), FALSE);
+        g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(clearOpenTabsCallback), settings);
+        gtk_grid_attach(grid, button, 2, 6, 1, 1);
+
 	button = gtk_button_new_with_label("　　清除　　");
    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(clearDataCallback), settings);
-	gtk_grid_attach(grid, button, 3, 7, 1, 1);
+	gtk_grid_attach(grid, button, 3, 8, 1, 1);
 
 
 	widget = gtk_label_new("历史记录：");
-	gtk_grid_attach(grid, widget, 1, 8, 1, 1);
+	gtk_grid_attach(grid, widget, 1, 9, 1, 1);
 
 	widget = gtk_combo_box_text_new();
 	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), "记录浏览历史");
@@ -1208,11 +1238,11 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
 		printf("error PROP_OPEN_NEWPAGE ivalue = %i\n", ivalue);
 		break;
 	}
-	gtk_grid_attach(grid, widget, 2, 8, 1, 1);
+	gtk_grid_attach(grid, widget, 2, 9, 1, 1);
 
 
 	widget = gtk_label_new("Cookie：");
-	gtk_grid_attach(grid, widget, 1, 10, 1, 1);
+	gtk_grid_attach(grid, widget, 1, 11, 1, 1);
 
 	widget = gtk_combo_box_text_new();
 	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), "允许设置本地数据（推荐）");
@@ -1234,10 +1264,10 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
 		printf("error PROP_OPEN_NEWPAGE ivalue = %i\n", ivalue);
 		break;
 	}
-	gtk_grid_attach(grid, widget, 2, 10, 2, 1);
+	gtk_grid_attach(grid, widget, 2, 11, 2, 1);
 
 	widget = gtk_label_new("位置：");
-	gtk_grid_attach(grid, widget, 1, 11, 1, 1);
+	gtk_grid_attach(grid, widget, 1, 12, 1, 1);
 
 	widget = gtk_combo_box_text_new();
 	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), "不允许任何网站跟踪您所在的位置");
@@ -1259,10 +1289,10 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
 		printf("error PROP_OPEN_NEWPAGE ivalue = %i\n", ivalue);
 		break;
 	}
-	gtk_grid_attach(grid, widget, 2, 11, 2, 1);
+	gtk_grid_attach(grid, widget, 2, 12, 2, 1);
 
 	widget = gtk_label_new("防追踪：");
-	gtk_grid_attach(grid, widget, 1, 12, 1, 1);
+	gtk_grid_attach(grid, widget, 1, 13, 1, 1);
 
 	button = gtk_check_button_new_with_label("随浏览流量一起发送“请勿跟踪”请求");
 	g_object_get(settings, "do-not-track", &bvalue, NULL);
@@ -1271,7 +1301,7 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
 	else
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), FALSE);
    g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(doNotTrackCallback), settings);
-	gtk_grid_attach(grid, button, 2, 12, 2, 1);
+	gtk_grid_attach(grid, button, 2, 13, 2, 1);
 
 	gchar *privacy_pic = midori_paths_get_res_filename("settings-icons/privacy.png");
         label = xpm_label_box( privacy_pic, "隐 私" );

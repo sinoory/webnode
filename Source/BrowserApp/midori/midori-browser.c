@@ -9470,9 +9470,7 @@ static void midori_browser_actiave_transfer_in_window(GtkAction*     action,
 
 void midori_browser_clear_history(MidoriBrowser* browser)
 {
-        g_print("Clear History start\n");
         katze_array_clear (browser->history);
-        g_print("Clear History end\n");
 }
 
 void midori_browser_change_history_seting(MidoriBrowser* browser, gint *settings)

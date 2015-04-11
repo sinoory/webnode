@@ -167,6 +167,16 @@ auth_data_deleted_cb(SecretService *service,
   password_manager_display();
 }
 
+//add by luyue 2015/4/11 start
+static void
+auth_data_clear_cb(SecretService *service,
+                   GAsyncResult *result,
+                   gpointer data)
+{
+  secret_service_clear_finish (service, result, NULL);
+}
+//add end
+
 static GHashTable *
 midori_form_auth_data_get_secret_attributes_table (const char *uri,
                                                  const char *field_username,
@@ -281,6 +291,26 @@ static void delete_all_auth_data_cb(PasswordManagerPrivate* priv)
                         (GAsyncReadyCallback)auth_data_deleted_cb,
                         NULL);
 }
+
+//add by luyue 2015/4/10
+void clear_password_all()
+{
+  GHashTable *attributes;
+  GtkListStore* store;
+
+  PasswordManager* passwordManager = password_manager_get_default();
+  p_item_list = GTK_TREE_VIEW(gtk_tree_view_new_with_model(GTK_TREE_MODEL(passwordManager->priv->p_auth_data_list_store)));
+  store = GTK_LIST_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(p_item_list)));
+  gtk_list_store_clear(store);
+  attributes = secret_attributes_build (EPHY_FORM_PASSWORD_SCHEMA, NULL);
+  secret_service_clear (NULL,
+                        EPHY_FORM_PASSWORD_SCHEMA,
+                        attributes,
+                        NULL,
+                        (GAsyncReadyCallback)auth_data_clear_cb,
+                        NULL);
+}
+//add end
 
 static int close_password_manager()
 {

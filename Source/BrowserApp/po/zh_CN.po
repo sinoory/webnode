@@ -174,7 +174,7 @@ msgstr "扩展(_E)"
 #. i18n: Browsing history, visited web pages, closed tabs
 #: ../midori/midori-app.c:1156 ../midori/midori-privatedata.c:178
 msgid "_History"
-msgstr "历史(_H)"
+msgstr "历史记录(_H)"
 
 #: ../midori/midori-app.c:1157
 msgid "_Userscripts"
@@ -2958,22 +2958,14 @@ msgstr "清除以下数据："
 msgid "Last open _tabs"
 msgstr "上次打开的标签(_T)"
 
-#: ../midori/midori-privatedata.c:198
-msgid "Clear private data when _quitting Midori"
-msgstr "退出浏览器时清除隐私数据(_Q)"
-
 #. i18n: Logins and passwords in websites and web forms
 #: ../midori/midori-privatedata.c:321
 msgid "Saved logins and _passwords"
-msgstr "已保存的用户名和密码(_P)"
+msgstr "密码(_P)"
 
 #: ../midori/midori-privatedata.c:323
 msgid "Cookies and Website data"
 msgstr "隐私信息和网站数据"
-
-#: ../midori/midori-privatedata.c:328
-msgid "Website icons"
-msgstr "网站图标"
 
 #: ../midori/midori-viewcompletion.vala:18
 msgid "Open tabs"

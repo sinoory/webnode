@@ -204,6 +204,7 @@ struct  _MidoriWebSettings
     GtkWidget *checkbutton6_privacy;
     GtkWidget *checkbutton7_privacy;
     GtkWidget *checkbutton8_privacy;
+    GtkWidget *checkbutton9_privacy;//luyue add,2015/4/11
 
 	GtkWidget *radiobutton1_security;
 	GtkWidget *radiobutton2_security;

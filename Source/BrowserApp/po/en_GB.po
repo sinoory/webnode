@@ -2982,10 +2982,6 @@ msgstr "Clear the following data:"
 msgid "Last open _tabs"
 msgstr "Last open _tabs"
 
-#: ../midori/midori-privatedata.c:198
-msgid "Clear private data when _quitting Midori"
-msgstr "Clear private data when _quitting Midori"
-
 #. i18n: Logins and passwords in websites and web forms
 #: ../midori/midori-privatedata.c:321
 msgid "Saved logins and _passwords"
@@ -2994,10 +2990,6 @@ msgstr "Saved logins and _passwords"
 #: ../midori/midori-privatedata.c:323
 msgid "Cookies and Website data"
 msgstr "Cookies and Website data"
-
-#: ../midori/midori-privatedata.c:328
-msgid "Website icons"
-msgstr "Website icons"
 
 #: ../midori/midori-viewcompletion.vala:18
 msgid "Open tabs"
