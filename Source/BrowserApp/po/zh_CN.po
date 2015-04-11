@@ -718,7 +718,7 @@ msgstr "清除隐私数据(_C)..."
 
 #: ../midori/midori-browser.c:5239
 msgid "_Inspect Page"
-msgstr "检查页面(_I)"
+msgstr "检查元素(_I)"
 
 #: ../midori/midori-browser.c:5243
 msgid "_Previous Tab"
