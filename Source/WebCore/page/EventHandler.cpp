@@ -612,31 +612,33 @@ bool EventHandler::zoomScrollOnClickNode(Node* hitNode)
 {
    Node* n = hitNode;
    int cnt = 0;
-
    double scale = m_frame.doubleZoomLevel();   
    while (cnt++ < 5) 
    {
       n = n->parentNode();
       if (!n || n->isLink()) 
          break;
-      if (n->renderer()) 
+   }
+   if(cnt<5)
+      return false;
+   else
+   {
+      n = hitNode;
+      n = n->parentNode();
+      if (n->renderer() && ((RenderBox*)(n->renderer()))->contentBoxRect().pixelSnappedSize().width() >=0
+                        && !(n->nodeName()=="DIV")
+                        && !(n->nodeName()=="ULr")
+                        && !(n->nodeName()=="LI")
+                        && !(n->nodeName()=="H2")) 
       {
-         LayoutRect rc = ((RenderBox*)(n->renderer()))->contentBoxRect();
-         if (rc. pixelSnappedSize().width() <0 ) 
-         {
-            //sometimes error happend when get width from <span> or <strong> tag
-            continue;
-         }
          if (scale == 1.0 )
          {   
             if (!m_zoomstatus)
             {
                m_zoomstatus = true;
-               scale = (double)m_frame.view()->width()/rc.pixelSnappedSize().width();
+               scale = (double)m_frame.view()->width()/((RenderBox*)(n->renderer()))->contentBoxRect().pixelSnappedSize().width();
                if( scale-1.00 < 0.1 ) 
-         //         scale = 1.0;
-                    scale = 1.2;
-         //      scale = (scale > 1.9) ? 1.9 : scale;
+                  scale = 1.2;
             }
             else
             {
@@ -653,19 +655,51 @@ bool EventHandler::zoomScrollOnClickNode(Node* hitNode)
                m_zoomstatus = false;
                scale = 1.0;
             }
+         }         
+         if(m_frame.textZoomState())
+            m_frame.setTextZoomFactor(static_cast<float>(scale));
+         else
+            m_frame.setPageZoomFactor(static_cast<float>(scale));
+         Element* element=(Element*)n;
+         if(element)
+            element->scrollIntoViewIfNeeded(true);
+         return true;
+      }
+      else
+      {
+         if (scale == 1.0 )
+         {
+            if (!m_zoomstatus)
+            {
+               m_zoomstatus = true;
+               scale = 1.2;
+            }
+            else
+            {
+               m_zoomstatus = false;
+               scale = 1.0;
+            }
+         }
+         else
+         {
+            if (!m_zoomstatus)
+               m_zoomstatus = true;
+            else
+            {
+               m_zoomstatus = false;
+               scale = 1.0;
+            }
          }
          if(m_frame.textZoomState())
             m_frame.setTextZoomFactor(static_cast<float>(scale));
          else
             m_frame.setPageZoomFactor(static_cast<float>(scale));
          Element* element=(Element*)n;
-         if(element){
+         if(element)
             element->scrollIntoViewIfNeeded(true);
-         }
          return true;
       }
    }
-   return false;
 }
 
 bool EventHandler::handleMousePressEventDoubleClick(const MouseEventWithHitTestResults& event)
