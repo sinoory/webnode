@@ -7350,7 +7350,7 @@ static void _midori_browser_set_action_icon_name(MidoriBrowser *browser, gchar* 
 
 static void midori_browser_set_action_icon_name (MidoriBrowser *browser)
 {
-    _midori_browser_set_action_icon_name (browser, "Back", STOCK_GO_BACK, NULL);
+    _midori_browser_set_action_icon_name (browser, "Back", STOCK_GO_BACK, _("Go back"));
     _midori_browser_set_action_icon_name (browser, "Forward", STOCK_GO_FORWARD, NULL);
     _midori_browser_set_action_icon_name (browser, "Homepage", STOCK_HOME_PAGE, _("homepage"));
     _midori_browser_set_action_icon_name (browser, "DownloadDialog", STOCK_DOWNLOAD, NULL);
