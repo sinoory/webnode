@@ -214,6 +214,7 @@ namespace Midori {
                   public bool remember_web_password {get; set; default = false;} //luyue add, 20150326
                   public bool save_form_user_password {get; set; default = true;} //wangjy for GUI save username
                   public bool clear_open_tabs {get; set; default = false;} //luyue add, 20150411
+		  public bool javascript_can_open_windows_automatically{get; set; default = true;}
 
         // [IntegerType (min = 0, int.max)]
         public int maximum_cookie_age { get; set; default = 30; }
