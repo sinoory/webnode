@@ -197,8 +197,13 @@ bool DatabaseTracker::canEstablishDatabase(DatabaseBackendContext* context, cons
     if (error == DatabaseError::DatabaseSizeOverflowed)
         doneCreatingDatabase(origin, name);
     else
-        ASSERT(error == DatabaseError::DatabaseSizeExceededQuota);
-
+//add by luyue 2015/4/15
+//屏蔽DatabaseSizeExceededQuota检查
+   {
+//        ASSERT(error == DatabaseError::DatabaseSizeExceededQuota);
+        error = DatabaseError::None;
+        return true;
+   }
     return false;
 }
 
