@@ -98,6 +98,7 @@ Build-Depends: debhelper (>= 8.0.0),
 	libgcr-3-dev,
 	libnotify-dev,
 	libsoup-gnome2.4-dev (>=2.27.90)
+	uchardet
 Standards-Version: 0.2.0
 Homepage: <insert the upstream URL, if relevant>
 #Vcs-Git: git://git.debian.org/collab-maint/zrltest.git

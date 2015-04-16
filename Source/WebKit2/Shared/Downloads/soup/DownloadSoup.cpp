@@ -185,7 +185,7 @@ public:
     void cancel(ResourceHandle* handle)
     {
         handle->cancel();
-//zgh        deleteFilesIfNeeded(); //取消下载 不删除临时文件
+        deleteFilesIfNeeded(); 
         m_download->didCancel(IPC::DataReference());
     }
 

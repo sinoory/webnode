@@ -30,6 +30,11 @@
 #include <wtf/text/CString.h>
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/WTFString.h>
+#include "TextEncoding.h"
+//#include "../../../../ThirdParty/uchardet/src/uchardet.h"
+#include "uchardet/src/uchardet.h"
+
+
 
 namespace WebCore {
 
@@ -109,8 +114,38 @@ CertificateInfo ResourceResponse::platformCertificateInfo() const
 String ResourceResponse::platformSuggestedFilename() const
 {
     String contentDisposition(httpHeaderField(HTTPHeaderName::ContentDisposition));
+    
+    unsigned len = contentDisposition.length();
+    const gchar* charset;
+
+    char * decodeContentDisposition = (char*)malloc(len+1);
+    memset(decodeContentDisposition, 0x00, len+1);
+
+    for(unsigned i = 0; i < len; ++i)
+        decodeContentDisposition[i] = contentDisposition[i];
+
+    if(decodeContentDisposition)
+    {
+        uchardet_t handle = uchardet_new();
+
+        int ret = uchardet_handle_data(handle, decodeContentDisposition, strlen(decodeContentDisposition));
+        if(ret)
+            return String();
+        
+        uchardet_data_end(handle);
+        charset = uchardet_get_charset(handle);
+        if(g_strcmp0(charset, "UTF-8"))
+        {
+            TextEncoding codesetEncoding("gbk");
+            contentDisposition = (codesetEncoding.decode((const char*)contentDisposition.characters8(), contentDisposition.length())).utf8().data();
+        }
+        g_free(decodeContentDisposition);
+        uchardet_delete(handle);
+    }
+    
     return filenameFromHTTPContentDisposition(String::fromUTF8WithLatin1Fallback(contentDisposition.characters8(), contentDisposition.length()));
 }
+
 
 }
 
