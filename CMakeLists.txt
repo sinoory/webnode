@@ -44,7 +44,7 @@ include(WebKitMacros)
 include(WebKitFS)
 include(WebKitHelpers)
 include(WebKitFeatures)
-
+set (PORT GTK)
 # -----------------------------------------------------------------------------
 # Determine which port will be built
 # -----------------------------------------------------------------------------
