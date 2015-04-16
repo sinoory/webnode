@@ -97,15 +97,15 @@ Build-Depends: debhelper (>= 8.0.0),
 	librsvg2-bin,
 	libgcr-3-dev,
 	libnotify-dev,
-	libsoup-gnome2.4-dev (>=2.27.90)
+	libsoup-gnome2.4-dev (>=2.27.90),
 	uchardet
-Standards-Version: 0.2.0
+Standards-Version: 0.2.1
 Homepage: <insert the upstream URL, if relevant>
 #Vcs-Git: git://git.debian.org/collab-maint/zrltest.git
 #Vcs-Browser: http://git.debian.org/?p=collab-maint/zrltest.git;a=summary
 
 Package:cdosbrowser
-Version:0.2.0
+Version:0.2.1
 Section:web
 Architecture:any
 Pre-Depends: dpkg (>= 1.16.10)
