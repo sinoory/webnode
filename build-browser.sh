@@ -85,7 +85,7 @@ if [ ${USE_32BITS} -eq 1 ]; then
 
 	cd $ThirdParty_DIR
 	tar -zxvf uchardet.tar.gz && cd uchardet
-	cmake . && make && cd $ThirdParty_DIR/../../
+	cmake . && make && cd ../../../
 	mkdir -p lib 
 	cp -rf $ThirdParty_DIR/uchardet/src/lib*.a ./lib
 	
