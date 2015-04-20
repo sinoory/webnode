@@ -148,6 +148,14 @@ static void muchTabWarningCallback(GtkToggleButton *togglebutton, MidoriWebSetti
              NULL);
 } 
 
+static void closeWindowWarningCallback(GtkToggleButton *togglebutton, MidoriWebSettings *settings)
+{
+    bool bvalue = gtk_toggle_button_get_active(togglebutton);
+    g_object_set(settings,
+             "close_window_warning", bvalue,
+             NULL);
+}
+
 static void showStatusBarCallback(GtkToggleButton *togglebutton, MidoriWebSettings *settings)
 {
     bool bvalue = gtk_toggle_button_get_active(togglebutton); 
@@ -846,16 +854,22 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
 	g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(muchTabWarningCallback), settings);
 	gtk_grid_attach_next_to(grid, widget, button, GTK_POS_BOTTOM, 1, 1);
-//	gtk_grid_attach(grid, button, 1, 4, 2, 1);
+        
+        button = gtk_check_button_new_with_label("关闭多个标签页时警告我");
+        bvalue = katze_object_get_boolean(settings, "close_window_warning");
+        if(TRUE == bvalue)
+                gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
+        g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(closeWindowWarningCallback), settings);
+        gtk_grid_attach_next_to(grid, button, widget, GTK_POS_BOTTOM, 1, 1);
 
 	widget = gtk_label_new("外观：");
-	gtk_grid_attach(grid,widget,1,6,1,1);
+	gtk_grid_attach(grid,widget,1,7,1,1);
 	button = gtk_check_button_new_with_label("显示状态栏");
 	g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(showStatusBarCallback), settings);
 	bvalue = katze_object_get_boolean(settings, "show-statusbar");
 	if(TRUE == bvalue)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE); 
-	gtk_grid_attach(grid,button,2,7,1,1);
+	gtk_grid_attach(grid,button,2,8,1,1);
 
 	widget = gtk_check_button_new_with_label("显示书签栏");
 	g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(showBookmarkbarCallback), settings);
@@ -1327,16 +1341,6 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
         if(!bvalue)
            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
         g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(rememberWebPasswordCallback), settings);
-/*	button = gtk_check_button_new_with_label("使用主密码");
-	gtk_grid_attach(grid, button, 2, 3, 1, 1);
-
-	button = gtk_button_new_with_label("　修改主密码　");
-	gtk_grid_attach(grid, button, 3, 2, 1, 1);
-
-	button = gtk_button_new_with_label("　已保存密码　");
-	gtk_grid_attach(grid, button, 3, 3, 1, 1);
-        g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(showPasswordManagerCallback), NULL);
-*/
         settings->remember_password_button = gtk_button_new_with_label("已保存密码信息");
         gtk_grid_attach(grid, settings->remember_password_button, 3, 2, 1, 1);
         g_object_get(settings, "remember-web-password", &bvalue, NULL);
@@ -1351,18 +1355,17 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
 	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(certificateManagerCallback), settings);
 	gtk_grid_attach(grid, button, 2, 4, 1, 1);
 
-	button = gtk_check_button_new_with_label("检查服务器证书吊销状态");
-	g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(certificateRevocationCallback), settings);
-	gtk_grid_attach(grid, button, 2, 5, 2, 1);
         //add by luyue 2015/3/18
         widget = gtk_label_new("高危网址检测：");
-        gtk_grid_attach(grid, widget, 1, 6, 1, 1);
+        gtk_grid_attach(grid, widget, 1, 5, 1, 1);
         button = gtk_check_button_new_with_label("打开高危网址检测功能");
         g_object_get(settings, "danger-url", &bvalue, NULL);
         if(!bvalue)
            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
         g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(dangerUrlCallback), settings);
-        gtk_grid_attach(grid,button,2,7,2,1);
+        gtk_grid_attach(grid,button,2,6,2,1);
+        label = gtk_label_new("警告:该功能会导致部分网页加载速度变慢");
+        gtk_grid_attach(grid,label,2,7,2,1);
         //add end
         
 	gchar *security_pic = midori_paths_get_res_filename("settings-icons/security.png");
