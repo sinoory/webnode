@@ -625,7 +625,7 @@ static void setCdosDefaultBrowserCallback(GtkButton *button, MidoriWebSettings *
 {
 	system("xdg-settings set default-web-browser cdosbrowser.desktop");//	system("xdg-settings set default-web-browser cuprumbrowser.desktop");
 	gtk_widget_hide(GTK_WIDGET(button));
-	gtk_label_set_text (GTK_LABEL(settings->label1_advanced), "目前的默认浏览器是cdosbrowser."); 
+	gtk_label_set_text (GTK_LABEL(settings->label1_advanced), "目前的默认浏览器是本浏览器."); 
 	printf("function setCuprumDefaultBrowserCallback has been called\n");
 }
 
