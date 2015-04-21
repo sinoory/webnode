@@ -857,18 +857,41 @@ webkit_web_view_javascript_popup_window_block_cb(WebKitWebView *web_view,
 static void
 free_midori_view_get_website_record (MidoriView*        view)
 {
-   if(view->website_record_array[0])
+   if(view->website_record_array[0] && 
+      strlen(view->website_record_array[0]) &&
+      strcmp(view->website_record_array[0],"unknown") == 0)
+   {
       free(view->website_record_array[0]);
-   if(view->website_record_array[1])
-      free(view->website_record_array[1]);
-   if(view->website_record_array[2])
-      free(view->website_record_array[2]);
-   if(view->website_record_array[3])
-      free(view->website_record_array[3]);
-   if(view->website_record_array[4])
-      free(view->website_record_array[4]);
-   if(view->website_record_array[5])
-      free(view->website_record_array[5]);
+      view->website_record_array[0] = NULL;     
+   }
+   else
+   {
+      if(view->website_record_array[1])
+      {
+         free(view->website_record_array[1]);
+         view->website_record_array[1] = NULL;
+      }
+      if(view->website_record_array[2])
+      {
+         free(view->website_record_array[2]);
+         view->website_record_array[2] = NULL;
+      }
+      if(view->website_record_array[3])
+      {
+         free(view->website_record_array[3]);
+         view->website_record_array[3] = NULL;
+      }
+      if(view->website_record_array[4])
+      {
+         free(view->website_record_array[4]);
+         view->website_record_array[4] = NULL;
+      }
+      if(view->website_record_array[5])
+      {
+         free(view->website_record_array[5]);
+         view->website_record_array[5] = NULL;
+      }
+   }
    free(view->website_record_array);
    view->website_record_array = NULL;
 }
@@ -1061,7 +1084,8 @@ static void sendRequestCallback(GObject* object, GAsyncResult* result, gpointer 
     view->total_read_buffer = (char *) malloc(1024*60);
     memset(view->once_read_buffer,0,1024*10);
     memset(view->total_read_buffer,0,1024*60);
-    if(result && view->soup_request)
+//    if(result && view->soup_request)
+    if(g_task_is_valid (result, view->soup_request))
     {
        view->inputStream = soup_request_send_finish(view->soup_request, result, NULL);
        view->soup_request = NULL;
