@@ -3562,7 +3562,7 @@ function(h)
              }
     else
             {
-        if(h.altKey&&h.keyCode==8) //左
+        if(h.altKey&&h.keyCode==120) //恢复
                      {
               if(!f){return}
               localStorage.coverOpacity=0.45;
