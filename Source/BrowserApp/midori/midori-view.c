@@ -3750,10 +3750,14 @@ midori_view_download_requested_cb (GtkWidget*      web_view,
     GString* details;
     /* Opener may differ from displaying view:
        http://lcamtuf.coredump.cx/fldl/ http://lcamtuf.coredump.cx/switch/ */
+    //by sunh 修复下载不正确显示网页来源 'from where'
+    WebKitURIRequest* request = webkit_download_get_request(download);  //add
     const gchar* opener_uri = g_object_get_data (G_OBJECT (view), "opener-uri");
     hostname = midori_uri_parse_hostname (
-        opener_uri ? opener_uri : midori_view_get_display_uri (view), NULL);
-    
+        opener_uri ? opener_uri : webkit_uri_request_get_uri(request), NULL);
+        //opener_uri ? opener_uri : midori_view_get_display_uri (view), NULL);
+    //by sunh end
+
     #ifdef HAVE_WEBKIT2
     content_type = g_content_type_guess (suggested_filename, NULL ,
                                             0 ,NULL);
