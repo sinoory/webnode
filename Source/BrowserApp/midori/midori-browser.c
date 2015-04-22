@@ -6995,25 +6995,83 @@ midori_browser_size_allocate_cb (MidoriBrowser* browser,
     }
 }
 
-static void
+static void closeWindowWarningCallback(GtkToggleButton *togglebutton, MidoriBrowser* browser)
+{
+   gboolean bvalue = 0;
+   g_object_get(browser->settings, "close-window-warning", &bvalue, NULL);
+   g_object_set(browser->settings, "close_window_warning", !bvalue,NULL);
+}
+
+static int
 midori_browser_destroy_cb (MidoriBrowser* browser)
 {
+   char content_text[256];
+   gint result;
+   int tab_num;
+   gboolean bvalue = 0;
 
-    g_object_set_data (G_OBJECT (browser), "midori-browser-destroyed", (void*)1);
+   GList* tabs = midori_browser_get_tabs (browser);
+   for (tab_num=0; tabs != NULL; tabs = g_list_next (tabs),tab_num++);      
+   g_list_free (tabs);
 
-    if (G_UNLIKELY (browser->panel_timeout))
-        g_source_remove (browser->panel_timeout);
-    if (G_UNLIKELY (browser->alloc_timeout))
-        g_source_remove (browser->alloc_timeout);
+   g_object_get(browser->settings, "close-window-warning", &bvalue, NULL);
+   if(!bvalue || tab_num<2)
+   {
+      g_object_set_data (G_OBJECT (browser), "midori-browser-destroyed", (void*)1);
+      if (G_UNLIKELY (browser->panel_timeout))
+         g_source_remove (browser->panel_timeout);
+      if (G_UNLIKELY (browser->alloc_timeout))
+         g_source_remove (browser->alloc_timeout);
 
-    /* Destroy panel first, so panels don't need special care */
-    gtk_widget_destroy (browser->panel);
-    //zgh 销毁管理器窗体
-    gtk_widget_hide (browser->sari_panel_windows);
-    
-    /* Destroy tabs second, so child widgets don't need special care */
-    gtk_container_foreach (GTK_CONTAINER (browser->notebook),
-                           (GtkCallback) gtk_widget_destroy, NULL);
+      /* Destroy panel first, so panels don't need special care */
+      if(GTK_IS_WIDGET (browser->panel))
+         gtk_widget_destroy (browser->panel);
+      //zgh 销毁管理器窗体
+      if(GTK_IS_WIDGET (browser->sari_panel_windows))
+         gtk_widget_hide (browser->sari_panel_windows);
+      return false; 
+   }
+   sprintf(content_text,"您即将关闭%d个标签页，确定要继续吗?",tab_num);
+   GtkWidget *dialog = gtk_message_dialog_new(browser,
+                                   GTK_DIALOG_MODAL,
+                                   GTK_MESSAGE_QUESTION,
+                                   GTK_BUTTONS_OK_CANCEL,
+                                   content_text);
+   GtkWidget *box = gtk_message_dialog_get_message_area ((GtkMessageDialog *)dialog);
+   GtkWidget *widget = gtk_check_button_new_with_label("关闭多个标签页时警告我");
+   gtk_box_pack_start (GTK_BOX (box), widget, FALSE, FALSE, 0);
+   gtk_widget_show (widget);
+   gtk_widget_show (box);
+   if(TRUE == bvalue)
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
+   g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(closeWindowWarningCallback), browser);
+   result = gtk_dialog_run(GTK_DIALOG (dialog));
+   if(result == GTK_RESPONSE_OK)
+   {
+      gtk_widget_destroy (dialog);
+      g_object_set_data (G_OBJECT (browser), "midori-browser-destroyed", (void*)1);
+      if (G_UNLIKELY (browser->panel_timeout))
+         g_source_remove (browser->panel_timeout);
+      if (G_UNLIKELY (browser->alloc_timeout))
+         g_source_remove (browser->alloc_timeout);
+
+      /* Destroy panel first, so panels don't need special care */
+      if(GTK_IS_WIDGET (browser->panel))
+         gtk_widget_destroy (browser->panel);
+      //zgh 销毁管理器窗体
+      if(GTK_IS_WIDGET (browser->sari_panel_windows))
+         gtk_widget_hide (browser->sari_panel_windows);
+
+      /* Destroy tabs second, so child widgets don't need special care */
+  //    gtk_container_foreach (GTK_CONTAINER (browser->notebook),
+  //                           (GtkCallback) gtk_widget_destroy, NULL);
+      return false; 
+   }
+   else
+   {
+      gtk_widget_destroy (dialog);
+      return true;          
+   }
 }
 
 static const gchar* ui_markup =
@@ -7398,7 +7456,9 @@ midori_browser_init (MidoriBrowser* browser)
                       G_CALLBACK (midori_browser_window_state_event_cb), NULL);
     g_signal_connect (browser, "size-allocate",
                       G_CALLBACK (midori_browser_size_allocate_cb), NULL);
-    g_signal_connect (browser, "destroy",
+ //   g_signal_connect (browser, "destroy",
+ //                     G_CALLBACK (midori_browser_destroy_cb), NULL);
+    g_signal_connect (browser, "delete_event",
                       G_CALLBACK (midori_browser_destroy_cb), NULL);
     gtk_window_set_role (GTK_WINDOW (browser), "browser");
     gtk_window_set_icon_name (GTK_WINDOW (browser), MIDORI_STOCK_WEB_BROWSER);

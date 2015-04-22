@@ -3595,7 +3595,7 @@ msgid "Translate English web pages into Chinese"
 msgstr "将英文网页翻译成中文"
 
 #: ../extensions/online_bank.c:25
-msgid " secure online bank"
+msgid "secure online bank"
 msgstr "安全网银"
 
 #: ../extensions/online_bank.c:45
