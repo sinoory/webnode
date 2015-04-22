@@ -1226,7 +1226,11 @@ midori_view_web_view_navigation_decision_cb (WebKitWebView*             web_view
             webkit_policy_decision_download (decision);
             return TRUE;
         }
-
+        else if(webkit_web_view_isattachment(web_view, decision, WEBKIT_POLICY_DECISION_TYPE_RESPONSE))
+        {
+            return TRUE;
+        }
+        
 #if ENABLE_WEBSITE_AUTH
         const gchar* w_uri = webkit_web_view_get_uri(web_view);
         const gchar* d_uri = webkit_uri_response_get_uri(response);

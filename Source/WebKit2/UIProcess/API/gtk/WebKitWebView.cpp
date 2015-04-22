@@ -354,6 +354,28 @@ static gboolean webkitWebViewScriptDialog(WebKitWebView* webView, WebKitScriptDi
     return TRUE;
 }
 
+gboolean webkit_web_view_isattachment(WebKitWebView* webView, WebKitPolicyDecision* decision, WebKitPolicyDecisionType decisionType)
+{
+    if (decisionType != WEBKIT_POLICY_DECISION_TYPE_RESPONSE) {
+        webkit_policy_decision_use(decision);
+        return TRUE;
+    }
+
+    WebKitURIResponse* response = webkit_response_policy_decision_get_response(WEBKIT_RESPONSE_POLICY_DECISION(decision));
+    const ResourceResponse& resourceResponse = webkitURIResponseGetResourceResponse(response);
+    if (resourceResponse.isAttachment()) {
+        webkit_policy_decision_download(decision);
+        return TRUE;
+    }
+
+    if (webkit_response_policy_decision_is_mime_type_supported(WEBKIT_RESPONSE_POLICY_DECISION(decision)))
+        webkit_policy_decision_use(decision);
+    else
+        webkit_policy_decision_ignore(decision);
+
+    return TRUE;
+}
+
 static gboolean webkitWebViewDecidePolicy(WebKitWebView*, WebKitPolicyDecision* decision, WebKitPolicyDecisionType decisionType)
 {
     if (decisionType != WEBKIT_POLICY_DECISION_TYPE_RESPONSE) {
