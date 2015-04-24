@@ -82,6 +82,14 @@ namespace Midori {
            Since: 0.5.7 */
         public signal void colors_changed ();
 
+        private bool website_check = false;
+        public bool website { get {
+            return website_check;
+        }
+        protected set {
+           website_check = value;
+        }
+        }
         /* Special pages don't convey progress */
         private double current_progress = 0.0;
         public double progress { get {
@@ -89,9 +97,11 @@ namespace Midori {
         }
         protected set {
             /* When we are finished, we don't want to *see* progress anymore */
-            if (load_status == LoadStatus.FINISHED)
+            if (load_status == LoadStatus.FINISHED && website_check == true)
 //                current_progress = 0.0;
                   current_progress = 0.5; //modify by luyue 2015/3/9
+            else if (load_status == LoadStatus.FINISHED && website_check == false)
+               current_progress = 0.0;
             /* Full progress but not finished: presumably all loaded */
             else if (value == 1.0)
                 current_progress = 0.0;

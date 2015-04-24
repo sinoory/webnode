@@ -3717,7 +3717,6 @@ midori_view_download_decide_destination_cb (WebKitDownload*   download,
     MidoriApp *app = midori_app_get_default();	
     MidoriBrowser* browser = midori_app_get_browser (MIDORI_APP (app));
     MidoriView * r_view = MIDORI_VIEW(midori_browser_get_nth_tab(browser, 0));
-    
     if(!midori_view_download_query_action (r_view, download, suggested_filename)) {
         webkit_download_cancel (download);
     }
@@ -5370,6 +5369,7 @@ midori_view_set_uri (MidoriView*  view,
                   }
                   fclose(fp);
                }
+               midori_tab_set_website (MIDORI_TAB (view), true);
                WebKitSettings *localSettings = webkit_settings_new();
                webkit_settings_set_enable_javascript(localSettings, true);
                webkit_settings_set_enable_web_security(localSettings, false);

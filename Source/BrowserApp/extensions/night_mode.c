@@ -66,7 +66,6 @@ night_mode_console_message_cb (MidoriView*   web_view,
 {
    if (!strncmp (message, "cdosExtension_night_mode_info", 20))
        {
-printf("night_mode_console_message_cb\n");
       gchar** wqi_array = NULL;
       wqi_array = g_strsplit (message, "#", -1);
       if(strlen(wqi_array[1]))
@@ -155,7 +154,7 @@ night_mode_extension_add_browser_cb (MidoriApp*       app,
    night_mode_button = gtk_button_new();
    gtk_container_add(GTK_CONTAINER(night_mode_button), night_mode_image);
    gtk_widget_set_tooltip_text(night_mode_button,
-              "夜间模式\n使用方法:\n点击按钮选择夜间模式或非夜间模式\n在夜间模式下:\n使用alt键加=(或+)键增加暗度\n使用alt键加-键减小暗度\n使用alt键+Backspace键恢复默认");
+              "夜间模式\n使用方法:\n点击按钮选择夜间模式或非夜间模式\n在夜间模式下:\n使用alt键加=(或+)键增加暗度\n使用alt键加-键减小暗度\n使用alt键+F9键恢复默认");
    gtk_widget_show(night_mode_image);
    gtk_widget_show(night_mode_button);
    g_object_get (browser, "statusbar", &tmp, NULL);

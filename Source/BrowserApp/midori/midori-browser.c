@@ -6228,7 +6228,8 @@ static void
 _action_help_link_activate (GtkAction*     action,
                             MidoriBrowser* browser)
 {
-    const gchar* action_name = gtk_action_get_name (action);
+//add by luyue 2015/4/22 
+/*    const gchar* action_name = gtk_action_get_name (action);
     gchar* uri = NULL;
     if (!strncmp ("HelpFAQ", action_name, 7))
         uri = midori_browser_get_docs (TRUE);
@@ -6243,7 +6244,8 @@ _action_help_link_activate (GtkAction*     action,
         GtkWidget* view = midori_browser_add_uri (browser, uri);
         midori_browser_set_current_tab (browser, view);
         g_free (uri);
-    }
+    }*/
+   system("/usr/bin/cdosfeedback");
 }
 
 //add by zgh 20141211
@@ -7731,8 +7733,6 @@ midori_browser_init (MidoriBrowser* browser)
     g_signal_connect (forward, "button-press-event",
         G_CALLBACK (midori_browser_menu_item_middle_click_event_cb), browser);
 #endif
-//    _action_set_sensitive (browser, "EncodingCustom", FALSE);//luyue
-    _action_set_sensitive (browser, "HelpBugs", FALSE); //add by luyue 2015/3/30 暂时屏蔽
     _action_set_visible (browser, "LastSession", FALSE);
 
     _action_set_visible (browser, "Bookmarks", browser->bookmarks != NULL);
