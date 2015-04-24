@@ -659,6 +659,9 @@ msgstr "返回上一页面"
 msgid "Go back"
 msgstr "后退"
 
+msgid "go forward"
+msgstr "前进"
+
 #. i18n: Visit the previous logical page, ie. in a forum or blog
 #: ../midori/midori-browser.c:5202
 msgid "Go to the previous sub-page"
