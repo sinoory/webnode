@@ -68,39 +68,50 @@ namespace Midori {
             //WebKitURIResponse *response = webkit_download_get_response(download);
             //dialog->contentLength = webkit_uri_response_get_content_length(response);
             ///WebKit.WebContext m_webContext = WebKit.WebContext.get_default();
+            string eta = "";
+            
             WebKit.URIResponse response = download.get_response();
             uint64 total_size = response.get_content_length(), current_size = download.get_received_data_length ();
-            double elapsed = download.elapsed_time,
-               diff = elapsed / current_size;
-	if(diff < 0.000001) diff += 0.000001; 
-            double estimated = (total_size - current_size) * diff;
-            int hour = 3600, minute = 60;
-            int hours = (int)(estimated / hour),
-                minutes = (int)((estimated - (hours * hour)) / minute),
-                seconds = (int)((estimated - (hours * hour) - (minutes * minute)));
-            string hours_ = ngettext ("%d hour", "%d hours", hours).printf (hours);
-            string minutes_ = ngettext ("%d minute", "%d minutes", minutes).printf (minutes);
-            string seconds_ = ngettext ("%d second", "%d seconds", seconds).printf (seconds);
+            if(total_size > 0) {
+                double elapsed = download.elapsed_time,
+                   diff = elapsed / current_size;
+                if(diff < 0.000001) diff += 0.000001; 
+                double estimated = (total_size - current_size) * diff;
+                int hour = 3600, minute = 60;
+                int hours = (int)(estimated / hour),
+                    minutes = (int)((estimated - (hours * hour)) / minute),
+                    seconds = (int)((estimated - (hours * hour) - (minutes * minute)));
+                string hours_ = ngettext ("%d hour", "%d hours", hours).printf (hours);
+                string minutes_ = ngettext ("%d minute", "%d minutes", minutes).printf (minutes);
+                string seconds_ = ngettext ("%d second", "%d seconds", seconds).printf (seconds);
 
-            string eta = "";
-            if (estimated > 0) {
-                if (hours > 0)
-                    eta = hours_ + ", " + minutes_;
-                else if (minutes >= 10)
-                    eta = minutes_;
-                else if (minutes < 10 && minutes > 0)
-                    eta = minutes_ + ", " + seconds_;
-                else if (seconds > 0)
-                    eta = seconds_;
-                if (eta != "")
-            /* i18n: Download tooltip (estimated time) : - 1 hour, 5 minutes remaning */
-                    eta = _("%s").printf (eta);
+                if (estimated > 0) {
+                    if (hours > 0)
+                        eta = hours_ + ", " + minutes_;
+                    else if (minutes >= 10)
+                        eta = minutes_;
+                    else if (minutes < 10 && minutes > 0)
+                        eta = minutes_ + ", " + seconds_;
+                    else if (seconds > 0)
+                        eta = seconds_;
+                    if (eta != "")
+                /* i18n: Download tooltip (estimated time) : - 1 hour, 5 minutes remaning */
+                        eta = _("%s").printf (eta);
+                }
+            }
+            else {
+                eta = _("%s").printf("未知");
             }
             return "%s".printf (eta);
         }
         
         public static string get_size (WebKit.Download download) {
-            string size = "%s".printf (format_size (download.get_received_data_length ()));
+            string size = "";
+            uint64 dl_res_len = download.get_received_data_length ();
+            if(dl_res_len > 0)
+                size = _("%s").printf (format_size (download.get_received_data_length ()));
+            else
+                size = _("%s").printf("未知长度");
             return "%s".printf (size);
         }
 
