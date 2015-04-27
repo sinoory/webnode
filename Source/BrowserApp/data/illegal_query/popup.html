@@ -1,17 +1,72 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-	<head>
-		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-		<title>
-			违章查询
-		</title>
-		<style type="text/css">
-			body { margin-left: 0px; margin-top: 0px; margin-right: 0px; margin-bottom: 0px; }
-		</style>
-	</head>
-	<body>
-		<div align="left" style="height: 100%;" width="100%">
-			<iframe name="weizhang" src="http://www.cheshouye.com/api/weizhang/?bd=0" width="500" height="350" frameborder="0" scrolling="no"></iframe>
-		</div>
-	</body>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="auto_new_gjx_wzcx.css" />
+</head>
+<body class="auto_all">
+<script>
+/**
+* 搜索框默认提示词.
+*/
+var formbox = $("#flpage"),
+ipt = formbox.find(".search_input2").eq(0),
+subBtn = formbox.find(".search_btn2").eq(0),
+wordDiv = formbox.find("#searchHotWord");
+if($.trim(ipt.val()) !== ""){
+wordDiv.hide();
+}
+wordDiv.click(function(){
+ipt.focus();
+});
+ipt.keydown(function(){
+wordDiv.hide();
+}).blur(function(){
+if($.trim(ipt.val()) === ""){
+wordDiv.show();
+}
+});
+formbox.submit(function(){
+if($.trim(ipt.val()) === ""){
+wordDiv.hide();
+ipt.val($.trim(wordDiv.text()));
+}
+});
+</script>
+<div class="wzcx">
+<div class="wzcx_sf wzcx_xj"><a href="http://124.117.209.131:8088/WebVeh/WfQuery/JdcWfQuery/Search.aspx" target="_blank">新疆</a></div>
+<div class="wzcx_sf wzcx_xz"><a href="http://www.xizang.gov.cn/zffw/index.jhtml" target="_blank">西藏</a></div>
+<div class="wzcx_sf wzcx_qh"><a href="http://jjzd.qhga.gov.cn" target="_blank">青海</a></div>
+<div class="wzcx_sf wzcx_nx"><a href="http://www.nxjj.gov.cn/sys/jdcwzGuest_displayAll.act?flag=true" target="_blank">宁夏</a></div>
+<div class="wzcx_sf wzcx_gs"><a href="http://www.gsgajt.gov.cn:9080/GajtQuery/queryinfo/queryVehicleVio_main.jsp" target="_blank">甘肃</a></div>
+<div class="wzcx_sf wzcx_sc"><a href="http://www.scjj.gov.cn:8636/" target="_blank">四川</a></div>
+<div class="wzcx_sf wzcx_nmg"><a href="http://jjzd.nmgat.gov.cn/Query.jsp" target="_blank">内蒙古</a></div>
+<div class="wzcx_sf wzcx_yn"><a href="http://220.163.43.26:8080/ynviowww/surveil/index" target="_blank">云南</a></div>
+<div class="wzcx_sf wzcx_sxi"><a href="http://knews.shaanxi.gov.cn/IssuedContentAction.do?dispatch=vContentListBySubid&scope=9d&columninfoid=1363" target="_blank">陕西</a></div>
+<div class="wzcx_sf wzcx_cq"><a href="http://www.cqjg.gov.cn/DriverFind.html" target="_blank">重庆</a></div>
+<div class="wzcx_sf wzcx_gz"><a href="http://www.gzjjzd.gov.cn/search.php" target="_blank">贵州</a></div>
+<div class="wzcx_sf wzcx_gx"><a href="http://www.gxjtaq.com/portal.php?mod=list&catid=331" target="_blank">广西</a></div>
+<div class="wzcx_sf wzcx_gd"><a href="http://210.76.69.58/wfcx/query.jsp" target="_blank">广东</a></div>
+<div class="wzcx_sf wzcx_sx"><a href="http://www.sxgajj.gov.cn:60042/xbxxcx/index.html" target="_blank">山西</a></div>
+<div class="wzcx_sf wzcx_hn"><a href="http://www.zzcgs.com.cn/" target="_blank">河南</a></div>
+<div class="wzcx_sf wzcx_hub"><a href="http://www.hbsjg.gov.cn/hubeijiaoguan_weizhangxinxichaxun" target="_blank">湖北</a></div>
+<div class="wzcx_sf wzcx_hun"><a href="http://www.hnsjj.net" target="_blank">湖南</a></div>
+<div class="wzcx_sf wzcx_jx"><a href="http://jx.jxhld.gov.cn:8088/zhcx/web/car_jsp/car_wf.jsp" target="_blank">江西</a></div>
+<div class="wzcx_sf wzcx_fuj"><a href="http://jjcx.fjgat.gov.cn:800/jdcwfcx.aspx" target="_blank">福建</a></div>
+<div class="wzcx_sf wzcx_zj"><a href="http://www.zjsgat.gov.cn:8080/was/portals/car_lllegal_query.jsp" target="_blank">浙江</a></div>
+<div class="wzcx_sf wzcx_sh"><a href="http://www.shjtaq.com/Server2/dzjc_new.asp"target="_blank">上海</a></div>
+<div class="wzcx_sf wzcx_ah"><a href="http://www.ahga.gov.cn:8087/was2/ahsga/jsp/module/service/traffic_query_list.jsp?system=88001" target="_blank">安徽</a></div>
+<div class="wzcx_sf wzcx_js"><a href="http://www.jsga.gov.cn/www/gat/2010/wscgs1.htm" target="_blank">江苏</a></div>
+<div class="wzcx_sf wzcx_sd"><a href="http://www.sdwscgs.com:9080/zdwz/" target="_blank">山东</a></div>
+<div class="wzcx_sf wzcx_tj"><a href="http://www.tjcgs.gov.cn/" target="_blank">天津</a></div>
+<div class="wzcx_sf wzcx_heb"><a href="http://www.hbgajg.com/service/show-12-14.html" target="_blank">河北</a></div>
+<div class="wzcx_sf wzcx_bj"><a href="http://cgs.bjjtgl.gov.cn/chgs/Main.jsp" target="_blank">北京</a></div>
+<div class="wzcx_sf wzcx_ln"><a href="http://www.lnjj.gov.cn/_WFCX.aspx" target="_blank">辽宁</a></div>
+<div class="wzcx_sf wzcx_jl"><a href="http://www.jljj.cn/#findto" target="_blank">吉林</a></div>
+<div class="wzcx_sf wzcx_hlj"><a href="http://www.hljjj.gov.cn:8081/Home/Wfcx" target="_blank">黑龙江</a></div>
+<div class="wzcx_sf wzcx_hain"><a href="http://hainanjj.gov.cn/info5/index.html" target="_blank">海南</a></div>
+</div>
+<!--工具箱 end-->
+</div>
+</div>
+</body>
 </html>

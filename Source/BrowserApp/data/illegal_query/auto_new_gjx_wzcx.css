@@ -1,0 +1,43 @@
+/*-------------------------------违章查询------------------------------*/
+.wzcx { width:1000px; height:820px; overflow:hidden; background:url(auto_map_china.jpg) top center no-repeat; position:relative;}
+.wzcx_sf { width:96px; height:57px; hanging-punctuation:50px; text-align:center; line-height:57px;}
+.wzcx_sf a { font-size:16px; font-family:"微软雅黑"; color:#000;}
+.wzcx_sf a:hover { font-size:18px; font-family:"微软雅黑"; color:#FFF; background:url(auto_map_bg.gif) top center no-repeat; display:block;}
+
+.wzcx_xj { position:absolute; top:280px; left:200px;}
+.wzcx_xz { position:absolute; top:470px; left:200px;}
+.wzcx_qh { position:absolute; top:390px; left:340px;}
+.wzcx_nx { position:absolute; top:360px; left:500px;}
+.wzcx_gs { position:absolute; top:300px; left:350px;}
+.wzcx_sc { position:absolute; top:500px; left:440px;}
+.wzcx_nmg { position:absolute; top:300px; left:520px;}
+.wzcx_yn { position:absolute; top:610px; left:420px;}
+.wzcx_sxi { position:absolute; top:420px; left:545px;}
+.wzcx_cq { position:absolute; top:500px; left:525px;}
+.wzcx_gz { position:absolute; top:570px; left:520px;}
+.wzcx_gx { position:absolute; top:625px; left:560px;}
+.wzcx_gd { position:absolute; top:620px; left:650px;}
+.wzcx_sx { position:absolute; top:360px; left:590px;}
+.wzcx_hn { position:absolute; top:410px; left:625px;}
+.wzcx_hub { position:absolute; top:480px; left:620px;}
+.wzcx_hun { position:absolute; top:540px; left:600px;}
+.wzcx_jx { position:absolute; top:540px; left:670px;}
+.wzcx_fuj { position:absolute; top:560px; left:710px;}
+.wzcx_zj { position:absolute; top:495px; left:740px;}
+.wzcx_sh { position:absolute; top:450px; left:760px;}
+.wzcx_ah { position:absolute; top:460px; left:690px;}
+.wzcx_js { position:absolute; top:420px; left:720px;}
+.wzcx_sd { position:absolute; top:360px; left:680px;}
+.wzcx_tj { position:absolute; top:320px; left:690px;}
+.wzcx_heb { position:absolute; top:330px; left:640px;}
+.wzcx_bj { position:absolute; top:290px; left:650px;}
+.wzcx_ln { position:absolute; top:250px; left:740px;}
+.wzcx_jl { position:absolute; top:200px; left:780px;}
+.wzcx_hlj { position:absolute; top:130px; left:780px;}
+.wzcx_hain { position:absolute; top:715px; left:580px;}
+
+/*title*/
+.auto_title { overflow:hidden; line-height:19px; height:20px; padding-left:20px;}
+.auto_title h4 {  font-size:18px; font-weight:inherit; color:#004276; float:left;}
+.auto_title span  { float:left; padding-left:20px;}
+.auto_title span a { color:#666666; line-height:22px;font-family:"宋体";}
