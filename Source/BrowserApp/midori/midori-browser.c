@@ -4342,6 +4342,11 @@ _action_fullscreen_activate (GtkAction*     action,
     state = gdk_window_get_state (gtk_widget_get_window (GTK_WIDGET (browser)));
     if (state & GDK_WINDOW_STATE_FULLSCREEN)
     {
+        //add by luyue 2015/4/27 start
+        //退出全屏时，关闭左下角连接提示
+        GtkWidget* view = midori_browser_get_current_tab (browser);
+        midori_view_set_overlay_text (MIDORI_VIEW (view), NULL);
+        //add end
         if (katze_object_get_boolean (G_OBJECT (browser->settings), "show-menubar"))
             {
             gtk_widget_show (browser->menubar);

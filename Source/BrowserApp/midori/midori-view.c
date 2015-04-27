@@ -2391,6 +2391,9 @@ webkit_web_view_hovering_over_link_cb (WebKitWebView*       web_view,
     katze_object_assign (view->hit_test, g_object_ref (hit_test_result));
     if (!webkit_hit_test_result_context_is_link (hit_test_result))
     {
+        //add by luyue 2015/4/27 start
+        midori_tab_set_statusbar_text (MIDORI_TAB (view), NULL);
+        //add end
         katze_assign (view->link_uri, NULL);
         return;
     }
