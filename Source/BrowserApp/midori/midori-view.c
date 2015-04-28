@@ -1255,7 +1255,6 @@ midori_view_web_view_navigation_decision_cb (WebKitWebView*             web_view
             //add end
         }
 #endif
-
         webkit_policy_decision_use (decision);
         return TRUE;
     }
@@ -1270,7 +1269,6 @@ midori_view_web_view_navigation_decision_cb (WebKitWebView*             web_view
         g_debug ("Unhandled policy decision type %d", decision_type);
         return FALSE;
     }
-
     void* request = NULL;
     const gchar* uri = webkit_uri_request_get_uri (
         webkit_navigation_policy_decision_get_request (WEBKIT_NAVIGATION_POLICY_DECISION (decision)));
@@ -1376,6 +1374,29 @@ midori_view_web_view_navigation_decision_cb (WebKitWebView*             web_view
     view->find_links = -1;
     #endif
 
+    gboolean bvalue = 0;
+    g_object_get(view->settings, "night-mode", &bvalue, NULL);
+    if(bvalue)
+           {
+       char *night_level = NULL;
+       gchar *backgroundSrc = NULL;
+       GError * _inner_error_ = NULL;
+       gchar *queryStr = NULL;
+       g_file_get_contents (midori_paths_get_res_filename("night_mode/nightingale_view_content.js"),
+                            &backgroundSrc,
+                            NULL,
+                            &_inner_error_);
+       g_object_get(view->settings, "night-level", &night_level,NULL);
+       if(!night_level)
+          queryStr = g_strdup_printf(backgroundSrc,"0.45");
+       else 
+          queryStr = g_strdup_printf(backgroundSrc,night_level);
+       webkit_web_view_run_javascript(web_view, queryStr, NULL, NULL, NULL);
+       g_free(queryStr);
+       g_free(backgroundSrc);
+       if(night_level)
+          free(night_level); 
+              }
     //add by luyue 2014/12/10
     gboolean handled = FALSE;
     g_signal_emit_by_name (view, "navigation-adblock", uri, &handled);

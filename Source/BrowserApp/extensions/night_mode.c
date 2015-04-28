@@ -99,6 +99,14 @@ night_mode_extension_browser_add_tab_cb (MidoriBrowser*   browser,
 }
 
 static void
+night_mode_extension_browser_add_tab_cb1 (MidoriBrowser*   browser,
+                                         GtkWidget*       view,
+                                         MidoriExtension* extension)
+{ 
+   g_object_connect (view,"signal::cdosextension-message",night_mode_console_message_cb,view,NULL);
+}
+
+static void
 night_mode_function_realization (GtkWidget*     botton,
                                  MidoriBrowser* browser)
 {
@@ -127,10 +135,6 @@ night_mode_function_realization (GtkWidget*     botton,
    for (; children; children = g_list_next (children))
       night_mode_extension_browser_add_tab_cb (browser, children->data, NULL);
    g_list_free (children);
-   if(g_night_mode)   
-      g_signal_connect (browser, "add-tab",G_CALLBACK (night_mode_extension_browser_add_tab_cb), NULL);
-   else
-      g_signal_handlers_disconnect_by_func (browser, night_mode_extension_browser_add_tab_cb, NULL);
 }
 
 static void
@@ -138,13 +142,12 @@ night_mode_function_realization1 (GtkWidget*     botton,
                                  MidoriBrowser* browser)
 {
    browser1 = browser;
-   printf("night_mode_function_realization1\n");
    GList* children;
    children = midori_browser_get_tabs (MIDORI_BROWSER (browser));
    for (; children; children = g_list_next (children))
-      night_mode_extension_browser_add_tab_cb (browser, children->data, NULL);
+      night_mode_extension_browser_add_tab_cb1 (browser, children->data, NULL);
    g_list_free (children);
-   g_signal_connect (browser, "add-tab",G_CALLBACK (night_mode_extension_browser_add_tab_cb), NULL);
+   g_signal_connect (browser, "add-tab",G_CALLBACK (night_mode_extension_browser_add_tab_cb1), NULL);
 }
 
 static void
