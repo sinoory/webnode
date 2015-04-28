@@ -16,6 +16,7 @@
 #include "midori-view.h"
 #include "config.h"
 
+#define SCROLLBAR_MIN_NUM 6
 G_BEGIN_DECLS
 
 #define MIDORI_TYPE_LOCATION_ACTION \

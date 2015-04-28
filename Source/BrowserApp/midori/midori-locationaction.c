@@ -477,9 +477,11 @@ midori_location_action_popup_position (MidoriLocationAction* action,
     gint height, sep, width, toplevel_height;
     GtkWidget* scrolled = gtk_widget_get_parent (action->treeview);
     GtkWidget* toplevel;
+	 GtkTreeViewColumn *column;
 
     if (!window)
         return;
+
 
     gtk_widget_get_allocation (widget, &alloc);
     #if GTK_CHECK_VERSION (3, 0, 0)
@@ -515,6 +517,7 @@ midori_location_action_popup_position (MidoriLocationAction* action,
         items = MIN (matches, ((toplevel_height - wy) / height) - 1);
     width = MIN (alloc.width, monitor.width);
 
+	  if(items >= SCROLLBAR_MIN_NUM)items = SCROLLBAR_MIN_NUM;
     gtk_tree_view_columns_autosize (GTK_TREE_VIEW (action->treeview));
     #if GTK_CHECK_VERSION (3, 0, 0)
     gtk_widget_set_size_request (scrolled, width, -1);
@@ -526,9 +529,12 @@ midori_location_action_popup_position (MidoriLocationAction* action,
     gtk_widget_size_request (popup, &menu_req);
     #endif
 
+    column = gtk_tree_view_get_column(GTK_TREE_VIEW (action->treeview),0);
+	 gtk_tree_view_column_set_fixed_width (column,width-15);
     if (wx < monitor.x)
         wx = monitor.x;
-    else if (wx + menu_req.width > monitor.x + monitor.width)
+    //else if (wx + menu_req.width > monitor.x + monitor.width)
+	 else if (wx + width > monitor.x + monitor.width)
         wx = monitor.x + monitor.width - menu_req.width;
 
     if (wy + widget_req.height + menu_req.height <= monitor.y + monitor.height ||
@@ -613,6 +619,7 @@ midori_location_action_populated_suggestions_cb (MidoriAutocompleter*  autocompl
                                                  guint                 count,
                                                  MidoriLocationAction* action)
 {
+	 gtk_widget_show (action->popup);   
     GtkTreePath* path = gtk_tree_path_new_first ();
     gtk_tree_view_scroll_to_cell (GTK_TREE_VIEW (action->treeview), path, NULL,
         FALSE, 0.0, 0.0);
@@ -624,6 +631,15 @@ void
 midori_app_set_browsers (MidoriApp*     app,
                          KatzeArray*    browsers,
                          MidoriBrowser* browser);
+
+static gboolean
+midori_browser_window_state_event_with_reference (MidoriBrowser*       browser,
+                                      GdkEventWindowState* event, MidoriLocationAction* action)
+{
+     if(GTK_IS_WIDGET(action->popup))
+	gtk_widget_hide(action->popup);
+    return FALSE;
+}
 
 static gboolean
 midori_location_action_popup_timeout_cb (gpointer data)
@@ -645,6 +661,8 @@ midori_location_action_popup_timeout_cb (gpointer data)
     {
         MidoriApp* app = midori_app_new_proxy (NULL);
         MidoriBrowser* browser = midori_browser_get_for_widget (action->entry);
+		  g_signal_connect (browser, "window-state-event",
+                      G_CALLBACK (midori_browser_window_state_event_with_reference), action);
         g_object_set (app,
             "history", action->history,
             "search-engines", action->search_engines,
@@ -757,7 +775,7 @@ midori_location_action_popup_timeout_cb (gpointer data)
         #if GTK_CHECK_VERSION (3, 4, 0)
         gtk_window_set_attached_to (GTK_WINDOW (action->popup), action->entry);
         #endif
-        gtk_widget_show (action->popup);
+        //gtk_widget_show (action->popup);
     }
 
     return FALSE;
@@ -1011,6 +1029,7 @@ midori_location_action_backspace_cb (GtkWidget*            entry,
                                      MidoriLocationAction* action)
 {
     gchar* key = g_strdup (gtk_entry_get_text (GTK_ENTRY (entry)));
+
     midori_location_action_popup_completion (action, entry, key);
     action->completion_index = -1;
 }
