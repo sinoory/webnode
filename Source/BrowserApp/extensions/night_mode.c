@@ -8,7 +8,6 @@ GtkWidget *night_mode_button;
 GtkWidget *night_mode_image;
 gboolean g_night_mode = false;
 gchar *night_mode_remove = "jQuery(\"#__nightingale_view_cover\").remove();f=false;";
-gchar *night_level = NULL;
 MidoriBrowser* browser1;
 
 static void
@@ -19,7 +18,7 @@ night_mode_console_message_cb (MidoriView*   web_view,
 static void
 night_mode_tabs_view_notify_uri_cb (MidoriView*      view,
                                     GParamSpec*      pspec,
-                                    MidoriExtension* extension)
+                                    MidoriBrowser*   browser)
 {
    GtkWidget* current_web_view;
 
@@ -40,10 +39,13 @@ night_mode_tabs_view_notify_uri_cb (MidoriView*      view,
                                  &backgroundSrc,
                                  NULL,
                                  &_inner_error_);
-            if(!night_level)
+            MidoriWebSettings* settings = midori_browser_get_settings (browser);
+            char *bvalue = NULL;
+            g_object_get(settings, "night-level", &bvalue,NULL);
+            if(!bvalue)
                queryStr = g_strdup_printf(backgroundSrc,"0.45");
-            else
-               queryStr = g_strdup_printf(backgroundSrc, night_level);
+            else 
+               queryStr = g_strdup_printf(backgroundSrc,bvalue);
             current_web_view = midori_view_get_web_view (view);
             webkit_web_view_run_javascript(WEBKIT_WEB_VIEW (current_web_view), queryStr, NULL, NULL, NULL);
             g_free(queryStr);
@@ -69,13 +71,16 @@ night_mode_console_message_cb (MidoriView*   web_view,
       gchar** wqi_array = NULL;
       wqi_array = g_strsplit (message, "#", -1);
       if(strlen(wqi_array[1]))
-          night_level = wqi_array[1];
+                {
+         MidoriWebSettings* settings = midori_browser_get_settings (browser1);
+         g_object_set(settings, "night-level", wqi_array[1],NULL);
+                }
       GList* children;
       children = midori_browser_get_tabs (MIDORI_BROWSER (browser1));
       for (; children; children = g_list_next (children))
                 {
          MidoriView* view1 =  MIDORI_VIEW (children->data);
-         night_mode_tabs_view_notify_uri_cb (view1, NULL, NULL);
+         night_mode_tabs_view_notify_uri_cb (view1, NULL, browser1);
                 }
       g_list_free (children);
           
@@ -88,15 +93,19 @@ night_mode_extension_browser_add_tab_cb (MidoriBrowser*   browser,
                                          MidoriExtension* extension)
 { 
    g_object_connect (view,"signal::cdosextension-message",night_mode_console_message_cb,view,NULL);
-   night_mode_tabs_view_notify_uri_cb (MIDORI_VIEW (view), NULL, extension);
+   night_mode_tabs_view_notify_uri_cb (MIDORI_VIEW (view), NULL, browser);
    g_signal_connect (view, "notify::icon",
-      G_CALLBACK (night_mode_tabs_view_notify_uri_cb), extension);
+      G_CALLBACK (night_mode_tabs_view_notify_uri_cb), browser);
 }
 
 static void
 night_mode_function_realization (GtkWidget*     botton,
                                  MidoriBrowser* browser)
 {
+   MidoriWebSettings* settings = midori_browser_get_settings (browser);
+   gboolean bvalue = 0;
+   g_object_get(settings, "night-mode", &bvalue, NULL);
+   g_object_set(settings, "night-mode", !bvalue,NULL);
    browser1 = browser;
    gtk_widget_destroy (night_mode_image);
    if(!g_night_mode)
@@ -125,6 +134,20 @@ night_mode_function_realization (GtkWidget*     botton,
 }
 
 static void
+night_mode_function_realization1 (GtkWidget*     botton,
+                                 MidoriBrowser* browser)
+{
+   browser1 = browser;
+   printf("night_mode_function_realization1\n");
+   GList* children;
+   children = midori_browser_get_tabs (MIDORI_BROWSER (browser));
+   for (; children; children = g_list_next (children))
+      night_mode_extension_browser_add_tab_cb (browser, children->data, NULL);
+   g_list_free (children);
+   g_signal_connect (browser, "add-tab",G_CALLBACK (night_mode_extension_browser_add_tab_cb), NULL);
+}
+
+static void
 night_mode_deactivated_cb (MidoriExtension* extension,
                            MidoriBrowser*   browser)
 {
@@ -150,7 +173,13 @@ night_mode_extension_add_browser_cb (MidoriApp*       app,
                                      MidoriExtension* extension)
 {
    GtkStatusbar* tmp = NULL;
-   night_mode_image = gtk_image_new_from_file(midori_paths_get_res_filename("night_mode/19.png"));
+   MidoriWebSettings* settings = midori_browser_get_settings (browser);
+   gboolean bvalue = 0;
+   g_object_get(settings, "night-mode", &bvalue, NULL);
+   if(!bvalue)
+      night_mode_image = gtk_image_new_from_file(midori_paths_get_res_filename("night_mode/19.png"));
+   else
+      night_mode_image = gtk_image_new_from_file(midori_paths_get_res_filename("night_mode/19-2.png"));
    night_mode_button = gtk_button_new();
    gtk_container_add(GTK_CONTAINER(night_mode_button), night_mode_image);
    gtk_widget_set_tooltip_text(night_mode_button,
@@ -159,6 +188,11 @@ night_mode_extension_add_browser_cb (MidoriApp*       app,
    gtk_widget_show(night_mode_button);
    g_object_get (browser, "statusbar", &tmp, NULL);
    gtk_box_pack_end ((GtkBox*) tmp, night_mode_button, FALSE, FALSE, (guint) 3);
+   if (bvalue)
+       {
+      g_night_mode = true;
+      night_mode_function_realization1(night_mode_button,browser);
+        }  
    g_signal_connect(G_OBJECT(night_mode_button),"clicked",G_CALLBACK(night_mode_function_realization),browser);
    g_signal_connect (extension, "deactivate",G_CALLBACK ( night_mode_deactivated_cb), browser);              
 }
@@ -166,8 +200,7 @@ night_mode_extension_add_browser_cb (MidoriApp*       app,
 static void 
 night_mode_activated_cb (MidoriExtension* extension, 
                          MidoriApp*       app) 
-{
-   g_night_mode = false; 
+{ 
    GList* browser_it = NULL;
    GList* browser_collection = midori_app_get_browsers (app);
 
