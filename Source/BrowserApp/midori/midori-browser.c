@@ -1379,7 +1379,6 @@ midori_browser_edit_bookmark_dialog_new (MidoriBrowser* browser,
     gtk_box_pack_start (GTK_BOX (content_area), vbox, FALSE, FALSE, 0);
     gtk_window_set_icon_name (GTK_WINDOW (dialog),
         new_bookmark ? GTK_STOCK_ADD : GTK_STOCK_REMOVE);
-
     if (new_bookmark)
     {
         view = midori_browser_get_current_tab (browser);
@@ -1389,15 +1388,17 @@ midori_browser_edit_bookmark_dialog_new (MidoriBrowser* browser,
             katze_item_set_name (bookmark,
                 midori_view_get_display_title (MIDORI_VIEW (view)));
         }else{
-            if(bookmark &&
-              (katze_item_get_kind((KatzeItem*)bookmark) >= 0 || katze_item_get_kind((KatzeItem*)bookmark) <= 1)){//form history or bookmark db
-                ;//donothing
-              }
-              else{
+        //    if(bookmark &&
+    //          (katze_item_get_kind((KatzeItem*)bookmark) >= 0 || katze_item_get_kind((KatzeItem*)bookmark) <= 1)){//form history or bookmark db
+                bookmark = NULL;
+//                ;//donothing
+//              }
+//              else{
+
                 bookmark = g_object_new (KATZE_TYPE_ITEM,
                     "uri", midori_view_get_display_uri (MIDORI_VIEW (view)),
                     "name", midori_view_get_display_title (MIDORI_VIEW (view)), NULL);
-              }
+//              }
         }
         katze_item_set_meta_integer (
             bookmark, "parentid",
@@ -1448,24 +1449,9 @@ midori_browser_edit_bookmark_dialog_new (MidoriBrowser* browser,
         g_signal_connect (label, "clicked",
             G_CALLBACK (midori_browser_edit_bookmark_add_speed_dial_cb), bookmark);
         gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
-
-// ZRL 屏蔽手动编辑书签中的创建启动器
-#if 0
-        /* FIXME: There's no API for extending the bookmark dialog */
-        GtkAction* action = _action_by_name (browser, "CreateLauncher");
-        if (action != NULL)
-        {
-            label = gtk_button_new_with_mnemonic (gtk_action_get_label (action));
-            g_object_set_data (G_OBJECT (label), "midori-action", action);
-            g_signal_connect (label, "clicked",
-                G_CALLBACK (midori_browser_edit_bookmark_create_launcher_cb), bookmark);
-            gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
-        }
-#endif
     }
 
     gtk_widget_show_all (content_area);
-
     gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_ACCEPT);
     if (midori_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT)
     {
@@ -1478,7 +1464,34 @@ midori_browser_edit_bookmark_dialog_new (MidoriBrowser* browser,
         if (!is_folder)
             katze_item_set_uri (bookmark,
                 gtk_entry_get_text (GTK_ENTRY (entry_uri)));
-
+        //add by luyue 2015/4/29 start
+        //创建目录时，第一级目录不能重名
+        if(is_folder)
+        {
+           GtkTreeModel* model = gtk_combo_box_get_model (GTK_COMBO_BOX (combo_folder));
+           GtkTreeIter iter;
+           char *pitem;
+           gtk_tree_model_get_iter_first(model,&iter);
+           do
+           {
+              gtk_tree_model_get (GTK_TREE_MODEL(model),&iter,0,&pitem,-1);//将指定单元格的值传给pitem
+              if(strcmp(gtk_entry_get_text (GTK_ENTRY (entry_title)),pitem) == 0)
+                 break;
+           }while(gtk_tree_model_iter_next(model,&iter));
+           if(strcmp(gtk_entry_get_text (GTK_ENTRY (entry_title)),pitem) == 0)
+           {
+              GtkWidget* dialog1 = gtk_message_dialog_new(NULL,
+                                                         GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                         GTK_MESSAGE_WARNING,
+                                                         GTK_BUTTONS_CLOSE,
+                                                         "目录已存在");
+              g_signal_connect_swapped (dialog1, "response", G_CALLBACK (gtk_widget_destroy), dialog1);
+              gtk_widget_show (dialog1);
+              gtk_widget_destroy (dialog);
+              return FALSE;
+           }
+        }
+        //add end
         selected = midori_bookmark_folder_button_get_active (combo_folder);
         katze_item_set_meta_integer (bookmark, "parentid", selected);
 
@@ -6250,7 +6263,7 @@ _action_help_link_activate (GtkAction*     action,
         midori_browser_set_current_tab (browser, view);
         g_free (uri);
     }*/
-   system("/usr/bin/cdosfeedback");
+   system("/usr/bin/cdosfeedback -app -browser");
 }
 
 //add by zgh 20141211
@@ -8587,7 +8600,6 @@ midori_bookmarkbar_insert_item (GtkWidget* toolbar,
 
     if (!KATZE_IS_ITEM (item)) /* Separator */
         gtk_tool_item_set_use_drag_window (toolitem, TRUE);
-
     gtk_widget_show (GTK_WIDGET (toolitem));
     gtk_toolbar_insert (GTK_TOOLBAR (toolbar), toolitem, -1);
 }
@@ -8654,10 +8666,14 @@ midori_bookmarkbar_populate_idle (MidoriBrowser* browser)
         _action_set_sensitive (browser, "BookmarkFolderAdd", FALSE);
         return;
     }
-
     KATZE_ARRAY_FOREACH_ITEM (item, array)
     {
-        midori_bookmarkbar_insert_item (browser->bookmarkbar, item);
+       //add by luyue 2015/4/30 start
+       //书签栏中目录中的书签只在目录中出现
+       gint64 parentid = katze_item_get_meta_integer (KATZE_ITEM (item), "parentid");
+       if(parentid<0)
+          midori_bookmarkbar_insert_item (browser->bookmarkbar, item);
+      //add end
     }
     _action_set_sensitive (browser, "BookmarkAdd", TRUE);
     _action_set_sensitive (browser, "BookmarkFolderAdd", TRUE);

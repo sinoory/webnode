@@ -382,13 +382,10 @@ midori_bookmarks_db_add_item_recursive (MidoriBookmarksDb* bookmarks,
     gint64 id = 0;
     gint count = 0;
     gint64 parentid = katze_item_get_meta_integer (item, "parentid");
-
     id = midori_bookmarks_db_insert_item_db (bookmarks->db, item, parentid);
     count++;
-
     g_object_ref (item);
     g_hash_table_insert (bookmarks->all_items, item, item);
-
     if (!KATZE_IS_ARRAY (item))
         return count;
 
@@ -477,10 +474,8 @@ midori_bookmarks_db_insert_item_db (sqlite3*   db,
 
     if (KATZE_ITEM_IS_BOOKMARK (item))
         uri = katze_item_get_uri (item);
-
     if (katze_item_get_text (item))
         desc = katze_item_get_text (item);
-
     /* Use folder, otherwise fallback to parent folder */
     old_parent = katze_item_get_parent (item);
     if (parentid > 0)
@@ -489,7 +484,6 @@ midori_bookmarks_db_insert_item_db (sqlite3*   db,
         new_parentid = g_strdup_printf ("%" G_GINT64_FORMAT, katze_item_get_meta_integer (old_parent, "id"));
     else
         new_parentid = g_strdup_printf ("NULL");
-
     sqlcmd = sqlite3_mprintf (
         "INSERT INTO bookmarks (id, parentid, title, uri, desc, toolbar, app) "
         "VALUES (%q, %q, '%q', '%q', '%q', %d, %d)",
@@ -651,8 +645,7 @@ midori_bookmarks_db_add_item (MidoriBookmarksDb* bookmarks, KatzeItem* item)
                                                     _("the bookmark is already exsit"));
         g_signal_connect_swapped (dialog, "response", G_CALLBACK (gtk_widget_destroy), dialog);
         gtk_widget_show (dialog);
-//        midori_bookmarks_db_update_item(bookmarks, item);
-        }
+    }
     else
     {
     //end add by zgh
@@ -1002,8 +995,7 @@ midori_bookmarks_db_exist_by_uri(MidoriBookmarksDb*  bookmarks,
     g_return_val_if_fail (MIDORI_BOOKMARKS_DB (bookmarks), -1);
     g_return_val_if_fail (bookmarks->db != NULL, -1);
     
-    sqlcmd = g_strdup_printf ("SELECT COUNT(*) FROM bookmarks WHERE parentid IS NULL AND uri = '%s' ",uri);
-                                  
+    sqlcmd = g_strdup_printf ("SELECT COUNT(*) FROM bookmarks WHERE uri = '%s' ",uri);                                
     count = midori_bookmarks_db_count_from_sqlite (bookmarks->db, sqlcmd);
     
     g_free (sqlcmd);
