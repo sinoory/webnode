@@ -1421,7 +1421,11 @@ midori_view_web_view_navigation_decision_cb (WebKitWebView*             web_view
         #endif
         return TRUE;
     }
-
+    //add by luyue 2015/5/4 start
+    //解决空白页点击阅读模式,无法返回原始页面的问题
+    if(strcmp(uri,"about:dial#")==0)
+       midori_view_reload(view,FALSE);
+    //add end
     return FALSE;
 }
 
