@@ -3602,6 +3602,8 @@ webkit_web_view_web_view_ready_cb (GtkWidget*  web_view,
         if (width > 0 && height > 0)
             gtk_widget_set_size_request (toplevel, width, height);
 #ifdef HAVE_WEBKIT2
+        g_signal_handlers_disconnect_by_func (view->web_view,
+            midori_view_web_view_close_cb, view);
         g_signal_connect (web_view, "close",
                           G_CALLBACK (midori_view_web_view_close_cb), new_view);
 #else
@@ -3623,7 +3625,6 @@ webkit_web_view_create_web_view_cb (GtkWidget*      web_view,
                                     MidoriView*     view)
 {
     MidoriView* new_view;
-
     WebKitURIRequest *naviationRequest = webkit_navigation_action_get_request(navigationAction);
     gchar *destUri = webkit_uri_request_get_uri(naviationRequest);
 
@@ -5233,7 +5234,6 @@ webkit_web_view1_console_message_cb (GtkWidget*   web_view,
 }
 //add end
 
-
 /**
  * midori_view_set_uri:
  * @view: a #MidoriView
@@ -5251,8 +5251,13 @@ midori_view_set_uri (MidoriView*  view,
     g_return_if_fail (MIDORI_IS_VIEW (view));
     g_return_if_fail (uri != NULL);
 
+    //add by luyue 2015/5/4 start
+    //解决有些页面要求自动关闭的问题
+    g_signal_connect (view->web_view, "close",
+                      G_CALLBACK (midori_view_web_view_close_cb), view);
+    //add end
     if (!gtk_widget_get_parent (GTK_WIDGET (view)))
-        g_warning ("Calling %s() before adding the view to a browser. This "
+        g_warning ("Calling %s() beore adding the view to a browser. This "
                    "breaks extensions that monitor page loading.", G_STRFUNC);
 
     midori_uri_recursive_fork_protection (uri, TRUE);
