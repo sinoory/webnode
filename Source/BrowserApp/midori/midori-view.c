@@ -153,8 +153,6 @@ struct _MidoriView
 	gboolean show_block_javascript_popup_window_icon;    
 #endif
 
-    //zgh 记录content-length,
-    guint64 content_length;
     gchar** website_record_array;  //网站鉴定信息
 
     //add by luyue
@@ -4169,19 +4167,6 @@ page_created_cb (MidoriApp* app,
                            web_view, 0);
 }
 
-//zgh 20150106
-void midori_view_set_content_length (MidoriView*        view,
-                                        guint content_length)
-{
-    view->content_length = content_length;
-}
-
-guint64 midori_view_get_content_length (MidoriView*        view)
-{
-    return view->content_length;
-}
-//eng zgh
-
 //zgh 20150108
 
 gchar** midori_view_get_website_record (MidoriView*        view)
@@ -4212,7 +4197,6 @@ midori_view_init (MidoriView* view)
 
     view->scrollh = view->scrollv = -2;
     view->tmp_uri = NULL; //luyue 2015/3/6 
-    view->content_length = 0; //zgh 20150106
     view->website_record_array = NULL;  //zgh 20150108
     #ifndef HAVE_WEBKIT2
     /* Adjustments are not created initially, but overwritten later */

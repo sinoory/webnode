@@ -527,32 +527,6 @@ midori_browser_set_current_tab_smartly (MidoriBrowser* browser,
         midori_browser_set_current_tab (browser, view);
 }
 
-//zgh 20150106 获取content length
-midori_browser_get_content_length (GObject*      resource,
-                               GAsyncResult* result,
-                               gpointer*      view)
-{
-    guint64 content_length = 0;
-    MidoriView *midori_view = (MidoriView *)view;
-    webkit_web_resource_get_data_finish (WEBKIT_WEB_RESOURCE (resource),
-        result, &content_length, NULL);
-    midori_view_set_content_length (midori_view, content_length);
-}
-
-//zgh 20150106
-unsigned long get_file_size(const char *path)  
-{  
-    unsigned long filesize = -1;  
-    FILE *fp;  
-    fp = fopen(path, "r");  
-    if(fp == NULL)  
-        return filesize;  
-    fseek(fp, 0L, SEEK_END);  
-    filesize = ftell(fp);  
-    fclose(fp);  
-    return filesize;  
-}  
-
 static void
 _midori_browser_update_progress (MidoriBrowser* browser,
                                  MidoriView*    view)
@@ -577,24 +551,6 @@ _midori_browser_update_progress (MidoriBrowser* browser,
                       "stock-id", NULL,
                       "icon_name", STOCK_REFRESH,
                       "tooltip", _("Reload the current page"), NULL);
-                      
-        //zgh 20150106
-        gchar *uri = midori_tab_get_uri(view);
-        gchar sub[5] = {0};
-        sscanf(uri, "%[^:]", sub);
-        if (strstr(sub, "http"))
-        {
-            GtkWidget* web_view = midori_view_get_web_view (MIDORI_VIEW (view));
-            WebKitWebResource* resource = webkit_web_view_get_main_resource (WEBKIT_WEB_VIEW (web_view));
-            if (resource)
-                webkit_web_resource_get_data (resource, NULL, midori_browser_get_content_length, view);
-        }
-        else if (strstr (sub, "file"))
-        {
-            gchar path[2048+1] = {0};
-            sscanf(uri, "%*[^/]//%s", path);
-            midori_view_set_content_length (view, get_file_size(path));
-        }
     }
     else
     {
@@ -3348,7 +3304,6 @@ _action_window_close_activate (GtkAction*     action,
     GdkEvent* event = gtk_get_current_event();
     g_signal_emit_by_name (G_OBJECT (browser), "delete-event", event, &val);
     gdk_event_free (event);
-
     if (!val)
         gtk_widget_destroy (GTK_WIDGET (browser));
 }
@@ -5677,10 +5632,6 @@ _action_pageinfo_activate ( GtkAction*     action,
     gchar* type = NULL;
     if(response)
        type = webkit_uri_response_get_mime_type (response);
-    gint content_bytes = midori_view_get_content_length(page_view);
-    if (!content_bytes && response)
-        content_bytes = webkit_uri_response_get_content_length (response);
-    gchar* bytes = g_strdup_printf (_("%d bytes"), content_bytes);
     gboolean isEncrypt = false;
     gchar *encrypt = g_strdup_printf (_("Connect Http %s"), connect);
     SoupMessageHeaders* headers = NULL;
@@ -5945,22 +5896,6 @@ _action_pageinfo_activate ( GtkAction*     action,
     
     hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
     gtk_container_set_border_width (GTK_CONTAINER (hbox), 10);
-    lab_title = gtk_label_new(_("Bytes"));
-    gtk_label_set_markup(GTK_LABEL(lab_title),
-        "<span weight='bold' font_desc='10'>大小：</span>");
-    gtk_misc_set_alignment (GTK_MISC (lab_title), 0.0, 0.5);
-    gtk_label_set_width_chars (GTK_LABEL (lab_title), 10);
-    gtk_label_set_ellipsize (GTK_LABEL (lab_title), PANGO_ELLIPSIZE_END);
-    gtk_box_pack_start (GTK_BOX (hbox), lab_title, FALSE, FALSE, 0);
-    lab_text = gtk_label_new(bytes);
-    gtk_box_pack_start (GTK_BOX(hbox), lab_text, FALSE, FALSE, 0);
-    gtk_box_pack_start (GTK_BOX (content_area), hbox, FALSE, FALSE, 0);
-    gtk_widget_show (lab_title);
-    gtk_widget_show (lab_text);
-    gtk_widget_show (hbox);
-    
-    hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
-    gtk_container_set_border_width (GTK_CONTAINER (hbox), 10);
     lab_title = gtk_label_new(_("Create time"));
     gtk_label_set_markup(GTK_LABEL(lab_title),
         "<span weight='bold' font_desc='10'>创建时间：</span>");
@@ -6011,7 +5946,6 @@ _action_pageinfo_activate ( GtkAction*     action,
     //add end
     gtk_widget_show (content_area);
     gtk_widget_show(browser->page_window);
-    g_free(bytes);
     //close window
     g_signal_connect(G_OBJECT(browser->page_window),"delete_event", G_CALLBACK(close_page_window),browser);
 }
@@ -9024,11 +8958,24 @@ midori_browser_close_tab (MidoriBrowser* browser,
     g_return_if_fail (MIDORI_IS_BROWSER (browser));
     g_return_if_fail (GTK_IS_WIDGET (view));
 
-    g_signal_emit (browser, signals[REMOVE_TAB], 0, view);
+   //add by luyue 2015/5/5 start
+   //当前窗口只有一个tab时，关闭整个窗口
+   int tab_num;
+   GList* tabs = midori_browser_get_tabs (browser);
+   for (tab_num=0; tabs != NULL; tabs = g_list_next (tabs),tab_num++);      
+   g_list_free (tabs);
+   if(tab_num >1)
+      g_signal_emit (browser, signals[REMOVE_TAB], 0, view);
+   else
+   {
+      midori_browser_destroy_cb (browser);
+      gtk_widget_destroy (GTK_WIDGET (browser));
+   }
+   //add end
 }
 
 /**
- * midori_browser_add_item:
+ * midori_browser_add_item
  * @browser: a #MidoriBrowser
  * @item: an item
  *
