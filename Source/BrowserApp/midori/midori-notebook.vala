@@ -432,9 +432,20 @@ namespace Midori {
                 var tally = notebook.get_tab_label (tab) as Tally;
                 Gtk.Allocation size;
                 tally.get_allocation (out size);
+
+                //by sunh modified 2015.5.5
+                //if (tally.get_mapped () && event.x >= size.x && event.x <= (size.x + size.width)) {
+                /*
+                stdout.printf("sunh \n\t event.x[%lf]\n\t size.x[%d]\n\t size.xmod(size.width+7)[%lf]\n\t final[%lf]\n\t mid[%lf]\n",
+                                            event.x,
+                                            size.x,
+                                            size.x%(size.width+7),
+                                            ((size.x-size.x%(size.width+7))/(size.width+7))*size.width,
+                                            (size.x-size.x%(size.width+7))/(size.width+7));
+                */
                 if (tally.get_mapped ()
-                 && event.x_root >= size.x
-                 && event.x_root <= (size.x + size.width)) {
+                 && ((event.x + size.x%(size.width+7) + (size.x-size.x%(size.width+7))/(size.width+7)*size.width) >= size.x)
+                 && ((event.x + size.x%(size.width+7) + ((size.x-size.x%(size.width+7))/(size.width+7))*size.width) <= (size.x + size.width))) {
                     tally.button_press_event (event);
                     return true;
                 }
