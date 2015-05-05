@@ -952,19 +952,28 @@ static void _get_website_record_info(MidoriView*        view)
                 view->website_record_array[3] = (char *)malloc(strlen(tmp1)-strlen(tmp)+1);
                 strncpy(view->website_record_array[3],tmp1,strlen(tmp1)-strlen(tmp));
                 view->website_record_array[3][strlen(tmp1)-strlen(tmp)]= '\0';
-                tmp1 = tmp+58;
-                tmp = strstr(tmp1,"<em>");
-                char * tmp2 = (char *)malloc(strlen(tmp1)-strlen(tmp)+1);
-                strncpy(tmp2,tmp1,strlen(tmp1)-strlen(tmp));
-                tmp2[strlen(tmp1)-strlen(tmp)]= '\0';
-                tmp1 = tmp + 4;
-                tmp = strstr(tmp1,"</em>");
-                view->website_record_array[4] = (char *)malloc(strlen(tmp1)-strlen(tmp)+1+strlen(tmp2));
-                strcpy(view->website_record_array[4],tmp2);
-                strncat(view->website_record_array[4],tmp1,strlen(tmp1)-strlen(tmp));
-                view->website_record_array[4][strlen(tmp1)-strlen(tmp)+strlen(tmp2)]= '\0';
-                free(tmp2);
-                tmp1 = tmp+82;
+                tmp1 = tmp+53;
+                if(strncmp(tmp1,"<div>",5) ==0)
+                {
+                   tmp1 = tmp1+5;
+                   tmp = strstr(tmp1,"<em>");
+                   char * tmp2 = (char *)malloc(strlen(tmp1)-strlen(tmp)+1);
+                   strncpy(tmp2,tmp1,strlen(tmp1)-strlen(tmp));
+                   tmp2[strlen(tmp1)-strlen(tmp)]= '\0';
+                   tmp1 = tmp + 4;
+                   tmp = strstr(tmp1,"</em>");
+                   view->website_record_array[4] = (char *)malloc(strlen(tmp1)-strlen(tmp)+1+strlen(tmp2));
+                   strcpy(view->website_record_array[4],tmp2);
+                   strncat(view->website_record_array[4],tmp1,strlen(tmp1)-strlen(tmp));
+                   view->website_record_array[4][strlen(tmp1)-strlen(tmp)+strlen(tmp2)]= '\0';
+                   free(tmp2);
+                   tmp1 = tmp+82;
+                }
+                //add by luyue 2015/5/5 start
+                //解决linuxidc.com的问题
+                else
+                   tmp1 = tmp1+69;
+                //add end
                 tmp = strstr(tmp1,"</s>");
                 view->website_record_array[5] = (char *)malloc(strlen(tmp1)-strlen(tmp)+1);
                 strncpy(view->website_record_array[5],tmp1,strlen(tmp1)-strlen(tmp));
