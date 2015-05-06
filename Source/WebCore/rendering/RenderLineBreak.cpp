@@ -43,7 +43,13 @@ RenderLineBreak::RenderLineBreak(HTMLElement& element, PassRef<RenderStyle> styl
     : RenderBoxModelObject(element, WTF::move(style), 0)
     , m_inlineBoxWrapper(nullptr)
     , m_cachedLineHeight(invalidLineHeight)
+//by sunh 2015.5.6
+//modified cdosbrowser crash in rendering wbrTag
+#if 0
     , m_isWBR(element.hasTagName(HTMLNames::wbrTag))
+#else
+   , m_isWBR(false)
+#endif
 {
     setIsLineBreak();
 }
