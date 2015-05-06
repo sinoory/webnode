@@ -152,9 +152,9 @@ bool NetscapePluginModule::getPluginInfoForLoadedPlugin(RawPluginMetaData& metaD
 
     metaData.mimeDescription = mimeDescription;
 
-#if PLATFORM(GTK)
-    metaData.requiresGtk2 = module->functionPointer<void (*)()>("gtk_progress_get_type");
-#endif
+//#if PLATFORM(GTK)
+//    metaData.requiresGtk2 = module->functionPointer<void (*)()>("gtk_progress_get_type");
+//#endif
 
     return true;
 }

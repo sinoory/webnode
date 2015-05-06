@@ -49,7 +49,7 @@ Vector<String> PluginInfoStore::pluginsDirectories()
 
     result.append(homeDirectoryPath() + "/.mozilla/plugins");
     result.append(homeDirectoryPath() + "/.netscape/plugins");
-    result.append("/opt/java/jdk1.7.0_65/jre/lib/i386"); // Only for cdos browser
+//    result.append("/opt/java/jdk1.7.0_65/jre/lib/i386"); // Only for cdos browser
     result.append("/usr/lib/browser/plugins");
     result.append("/usr/local/lib/mozilla/plugins");
     result.append("/usr/lib/firefox/plugins");

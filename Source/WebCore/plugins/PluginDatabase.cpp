@@ -394,7 +394,7 @@ Vector<String> PluginDatabase::defaultPluginDirectories()
     userPluginPath.append(String("/.netscape/plugins"));
     paths.append(userPluginPath);
 
-    paths.append("/opt/java/jdk1.7.0_65/jre/lib/i386");
+//    paths.append("/opt/java/jdk1.7.0_65/jre/lib/i386");
     paths.append("/usr/lib/browser/plugins");
     paths.append("/usr/local/lib/mozilla/plugins");
     paths.append("/usr/lib/firefox/plugins");

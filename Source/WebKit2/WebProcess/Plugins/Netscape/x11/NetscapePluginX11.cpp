@@ -117,7 +117,7 @@ Display* NetscapePlugin::x11HostDisplay()
 static gboolean socketPlugRemovedCallback(GtkSocket*, GtkWidget* parentPlug)
 {
     // The parent GtkPlug is not required anymore, so it must be destroyed.
-    gtk_widget_destroy(parentPlug);
+//    gtk_widget_destroy(parentPlug);
 
     // Default action is to destroy the GtkSocket, so we just return TRUE here
     // to be able to reuse the socket. For some obscure reason, newer versions
@@ -145,8 +145,8 @@ bool NetscapePlugin::platformPostInitializeWindowed(bool needsXEmbed, uint64_t w
     GtkWidget* socket = gtk_socket_new();
     // Do not show the plug widget until the socket is connected.
     g_signal_connect_swapped(socket, "plug-added", G_CALLBACK(gtk_widget_show), m_platformPluginWidget);
-//    g_signal_connect(socket, "plug-removed", G_CALLBACK(socketPlugRemovedCallback), nullptr);
-    g_signal_connect(socket, "plug-removed", G_CALLBACK(socketPlugRemovedCallback), m_platformPluginWidget);
+    g_signal_connect(socket, "plug-removed", G_CALLBACK(socketPlugRemovedCallback), nullptr);
+//    g_signal_connect(socket, "plug-removed", G_CALLBACK(socketPlugRemovedCallback), m_platformPluginWidget);
     gtk_container_add(GTK_CONTAINER(m_platformPluginWidget), socket);
     gtk_widget_show(socket);
 
@@ -249,7 +249,7 @@ void NetscapePlugin::platformDestroy()
 
 #if PLATFORM(GTK)
     if (m_platformPluginWidget) {
-        m_platformPluginWidget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+//        m_platformPluginWidget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
         gtk_widget_destroy(m_platformPluginWidget);
         m_platformPluginWidget = 0;
     }

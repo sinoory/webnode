@@ -99,9 +99,9 @@ bool PluginProcessProxy::scanPlugin(const String& pluginPath, RawPluginMetaData&
     CString pluginPathCString = fileSystemRepresentation(pluginPath);
 
 //luyue add by 2015/1/15
-    if(memcmp(pluginPathCString.data(),"/opt/java",9) ==0 &&
+ /*   if(memcmp(pluginPathCString.data(),"/opt/java",9) ==0 &&
        strcmp(pluginPathCString.data(),"/opt/java/jdk1.7.0_65/jre/lib/i386/libnpjp2.so") !=0)
-      return false;
+      return false;*/
     char* argv[4];
     argv[0] = const_cast<char*>(binaryPath.data());
     argv[1] = const_cast<char*>("-scanPlugin");
@@ -131,7 +131,7 @@ bool PluginProcessProxy::scanPlugin(const String& pluginPath, RawPluginMetaData&
     }
 
     if (!WIFEXITED(status) || WEXITSTATUS(status) != EXIT_SUCCESS) {
- //       WTFLogAlways("Error scanning plugin %s, %s returned %d exit status", argv[2], argv[0], status);
+        WTFLogAlways("Error scanning plugin %s, %s returned %d exit status", argv[2], argv[0], status);
         return false;
     }
 
