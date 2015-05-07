@@ -257,7 +257,11 @@ endif ()
 set (GETTEXT_PACKAGE "cdosbrowser")
 add_definitions("-DGETTEXT_PACKAGE=\"${GETTEXT_PACKAGE}\"")
 
+if (APP_DEBUG)
 set(CFLAGS "${CFLAGS} -Wall -Wundef -Wno-deprecated-declarations -g")
+else ()
+set(CFLAGS "${CFLAGS} -Wall -Wundef -Wno-deprecated-declarations")
+endif()
 
 if (EXTRA_WARNINGS)
     LIST(APPEND EXTRA_CFLAGS_LIST
@@ -281,7 +285,11 @@ else ()
 endif ()
 
 # Explicitly add -fPIC for older toolchains
+if (APP_DEBUG)
 set(VALA_CFLAGS "-w -g -fPIC")
+else ()
+set(VALA_CFLAGS "-w -fPIC")
+endif()
 
 set(LIBMIDORI "${MIDORI_PROJECT_NAME}-core")
 
