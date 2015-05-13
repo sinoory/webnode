@@ -612,7 +612,7 @@ bool EventHandler::zoomScrollOnClickNode(Node* hitNode)
 {
    Node* n = hitNode;
    int cnt = 0;
-   double scale = m_frame.doubleZoomLevel(); 
+   double scale = m_frame.doubleZoomLevel();
    while (cnt++ < 5) 
    {
       n = n->parentNode();
@@ -630,7 +630,7 @@ bool EventHandler::zoomScrollOnClickNode(Node* hitNode)
                      && equalIgnoringCase(n->nodeName(),"#text"))
    {
       LayoutRect rc = ((RenderBox*)(m->renderer()))->frameRect();
-      if(rc.pixelSnappedSize().width()<0) return false;
+      if(rc.pixelSnappedSize().width()<=0) return false;
       if (scale == 1.0 )
       {   
          if (!m_zoomstatus)
