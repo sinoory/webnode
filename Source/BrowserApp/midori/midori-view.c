@@ -3541,7 +3541,7 @@ static gboolean
 midori_view_web_view_close_cb (WebKitWebView* web_view,
                                GtkWidget*     view)
 {
-    midori_browser_close_tab (midori_browser_get_for_widget (view), view);
+    midori_browser_close_tab1 (midori_browser_get_for_widget (view), view);
     return TRUE;
 }
 

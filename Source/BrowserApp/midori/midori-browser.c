@@ -8958,11 +8958,22 @@ midori_browser_close_tab (MidoriBrowser* browser,
     g_return_if_fail (MIDORI_IS_BROWSER (browser));
     g_return_if_fail (GTK_IS_WIDGET (view));
 
-   //add by luyue 2015/5/5 start
+   g_signal_emit (browser, signals[REMOVE_TAB], 0, view);
+}
+
+//add by luyue 2015/5/16 start
+//解决部分标签需要自动关闭的问题
+void
+midori_browser_close_tab1 (MidoriBrowser* browser,
+                           GtkWidget*     view)
+{
+    g_return_if_fail (MIDORI_IS_BROWSER (browser));
+    g_return_if_fail (GTK_IS_WIDGET (view));
+
    //当前窗口只有一个tab时，关闭整个窗口
    int tab_num;
    GList* tabs = midori_browser_get_tabs (browser);
-   for (tab_num=0; tabs != NULL; tabs = g_list_next (tabs),tab_num++);      
+   for (tab_num=0; tabs != NULL; tabs = g_list_next (tabs),tab_num++);
    g_list_free (tabs);
    if(tab_num >1)
       g_signal_emit (browser, signals[REMOVE_TAB], 0, view);
@@ -8971,8 +8982,8 @@ midori_browser_close_tab (MidoriBrowser* browser,
       midori_browser_destroy_cb (browser);
       gtk_widget_destroy (GTK_WIDGET (browser));
    }
-   //add end
 }
+//add end
 
 /**
  * midori_browser_add_item

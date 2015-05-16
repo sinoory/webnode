@@ -87,6 +87,12 @@ void
 midori_browser_close_tab              (MidoriBrowser*     browser,
                                        GtkWidget*         widget);
 
+//add by luyue 2015/5/16
+void
+midori_browser_close_tab1              (MidoriBrowser*     browser,
+                                       GtkWidget*         widget);
+//add end
+
 GtkWidget*
 midori_browser_add_item               (MidoriBrowser*     browser,
                                        KatzeItem*         item);
