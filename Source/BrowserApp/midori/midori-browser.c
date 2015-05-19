@@ -2429,9 +2429,15 @@ _midori_browser_add_tab (MidoriBrowser* browser,
     else
         n = -1;
     katze_item_set_meta_integer (item, "append", -1);
-
+#if 0 //modified by wangyl in 2015.5.18
     midori_notebook_insert (MIDORI_NOTEBOOK (browser->notebook), MIDORI_TAB (view), n);
     _midori_browser_update_actions (browser);
+#else
+    gint  lastPageIndex = gtk_notebook_get_n_pages(MIDORI_NOTEBOOK(browser->notebook)->notebook); 
+    midori_notebook_insert (MIDORI_NOTEBOOK (browser->notebook), MIDORI_TAB (view), lastPageIndex-1);
+    //gint  lastPageIndex1 = gtk_notebook_get_n_pages(MIDORI_NOTEBOOK(browser->notebook)->notebook); 
+    midori_browser_set_current_page(browser, lastPageIndex-1);
+#endif
 
 //lxx add for much tab warning+
 	if(_midori_show_much_tab_warning(browser))
@@ -6377,7 +6383,8 @@ midori_browser_switched_tab_cb (MidoriNotebook* notebook,
                                 g_strdup (text), g_free);
     }
 
-    g_return_if_fail (MIDORI_IS_VIEW (new_view));
+    //g_return_if_fail (MIDORI_IS_VIEW (new_view));
+	 if(!MIDORI_IS_VIEW (new_view))return;
     g_return_if_fail (new_view != MIDORI_VIEW (old_widget));
 
     uri = g_object_get_data (G_OBJECT (new_view), "midori-browser-typed-text");

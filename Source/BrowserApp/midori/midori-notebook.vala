@@ -8,6 +8,7 @@
 
  See the file COPYING for the full license text.
 */
+  //The .vala file is modified by wangyl to dynamically change the position of the button which is used for adding a new bookmark In 2015.5.18
 
 namespace Midori {
     protected class Tally : Gtk.EventBox {
@@ -25,12 +26,12 @@ namespace Midori {
         public Gtk.Image loc_simbo_icon;
         Gtk.Alignment align;
 
-		  public Gtk.Button ? block_simbo { get; set; default = null; }
-		  public string ? block_uri_title { get; set; default = null; }
-     public Gtk.Image block_simbo_icon;
+        public Gtk.Button ? block_simbo { get; set; default = null; }
+        public string ? block_uri_title { get; set; default = null; }
+        public Gtk.Image block_simbo_icon;
 
         Gtk.HBox hbox;
-		  public Gtk.Button ? loc_simbo { get; set; default = null; }
+        public Gtk.Button ? loc_simbo { get; set; default = null; }
 
         Gtk.Button close;
 
@@ -71,7 +72,7 @@ namespace Midori {
             box.pack_start (spinner, false, false, 0);
             label = new Gtk.Label (null);
             label.set_alignment (0.5f, 0.5f);
-            label.set_padding (0, 0);
+            label.set_padding (2, 2);
             box.pack_start (label, true, true, 0);
             close = new Gtk.Button ();
             close.relief = Gtk.ReliefStyle.NONE;
@@ -277,7 +278,11 @@ namespace Midori {
     public class Notebook : Gtk.EventBox {
         public Gtk.Notebook  notebook;
         int last_tab_size = 0;
-
+        
+      //  bool notebook_tab_press = false;
+        public Gtk.Button add_tab_btn;//the button to add a new bookmark
+        public int have_arrow = 1;//-1 represents no arrows, 0 represents have arrows, 1 represents unknowned
+        public bool  btn_end  = false;//false represents that button  is placed at the end,ture  first 
 #if !HAVE_GTK3
         static const string style_fixup = """
             style "midori-close-button-style"
@@ -333,11 +338,10 @@ namespace Midori {
         public Notebook () {
             visible_window = false;
             notebook = new Gtk.Notebook ();
-            notebook.visible = notebook.scrollable = true;
+            notebook.visible =  notebook.scrollable = true;
             notebook.show_border = false;
             notebook.set ("group-name", PACKAGE_NAME);
             add (notebook);
-
 #if HAVE_GTK3
             get_style_context ().add_class ("dynamic-notebook");
 #else
@@ -356,21 +360,24 @@ namespace Midori {
             notebook.size_allocate.connect (size_allocated);
             notebook.switch_page.connect (page_switched);
             notebook.page_reordered.connect (page_moved);
-            notebook.create_window.connect (window_created);
-
-            var add = new Gtk.Button ();
-            add.tooltip_text = _("Open a new tab");
-            add.relief = Gtk.ReliefStyle.NONE;
-            add.add (new Gtk.Image.from_gicon (new ThemedIcon.with_default_fallbacks ("cdos-add"), Gtk.IconSize.MENU));    //zgh 20150409  /*"gtk-add"*//*"tab-new-symbolic"*/
-            add.show_all ();
-            notebook.set_action_widget (add, Gtk.PackType.START);
-            add.clicked.connect (()=>{
+            notebook.create_window.connect (window_created); 
+            add_tab_btn = new Gtk.Button ();
+            add_tab_btn.tooltip_text = _("Open a new tab");
+            add_tab_btn.relief = Gtk.ReliefStyle.NONE;
+            add_tab_btn.add (new Gtk.Image.from_gicon (new ThemedIcon.with_default_fallbacks ("cdos-add"), Gtk.IconSize.MENU));    //zgh 20150409  /*"gtk-add"*//*"tab-new-symbolic"*/ 
+            add_tab_btn.show_all ();
+           // notebook.set_action_widget (add_tab_btn, Gtk.PackType.START);//modified by wangyl in 2015.5.18
+           //modified by wangyl in 2015.5.18 start
+            notebook.add(add_tab_btn);
+	    Gtk.Widget  page = notebook.get_nth_page(-1);
+	  notebook.set_tab_label(page, add_tab_btn);
+          //modified by wangyl in 2015.5.18  end
+            add_tab_btn.clicked.connect (()=>{
                 new_tab ();
             });
-            take_incoming_uris (add);
-
-            button_press_event.connect (button_pressed);
+            notebook.button_press_event.connect (button_pressed);
         }
+     
 
         void take_incoming_uris (Gtk.Widget widget) {
             Gtk.drag_dest_set (widget, Gtk.DestDefaults.ALL, (Gtk.TargetEntry[])null, Gdk.DragAction.COPY);
@@ -410,6 +417,7 @@ namespace Midori {
         /* Since: 0.5.8 */
         public ContextAction get_context_action () {
             var menu = new Midori.ContextAction ("NotebookContextMenu", null, null, null);
+#if 0     //modified by wangyl in 2015.5.18
             uint counter = 0;
             foreach (var child in notebook.get_children ()) {
                 var tab = child as Midori.Tab;
@@ -423,37 +431,71 @@ namespace Midori {
                 counter++;
             }
             context_menu (menu);
+#else
+        int counter = 0;
+        foreach (var child in notebook.get_children ()) {
+            if(notebook.get_n_pages() == (counter + 1))
+                break;
+            var tab = child as Midori.Tab;
+            var tally = notebook.get_tab_label (tab) as Tally;
+            var action = new Midori.ContextAction.escaped ("Tab%u".printf (counter), tally.label.label, null, null);
+            action.gicon = tally.icon.gicon;
+            action.activate.connect (()=>{
+                notebook.set_current_page (notebook.page_num (tab));
+            });
+            menu.add (action);
+            counter++;
+        }
+        context_menu (menu);
+#endif            
             return menu;
         }
+     bool    is_double_clicked_arrow(Gdk.EventButton event) {
+          Gtk.Allocation size;
+          Gtk.Allocation btn_size;
+          notebook.get_allocation (out size);
+          add_tab_btn.get_allocation (out btn_size);
+          if((event.x > 0 && event.x < 21)||(event.x > size.width-btn_size.width-21 && event.x < size.width-btn_size.width))
+            return true;
 
-        bool button_pressed (Gdk.EventButton event) {
-            /* Propagate events in logical label area */
+          return false;
+        }
+ bool button_pressed (Gdk.EventButton event) {
+            /* Propagate events in logical label area */   
+#if 0//modified by wangyl in 2015.5.18
             foreach (var child in notebook.get_children ()) {
                 var tally = notebook.get_tab_label (tab) as Tally;
                 Gtk.Allocation size;
                 tally.get_allocation (out size);
-
-                //by sunh modified 2015.5.5
-                //if (tally.get_mapped () && event.x >= size.x && event.x <= (size.x + size.width)) {
-                /*
-                stdout.printf("sunh \n\t event.x[%lf]\n\t size.x[%d]\n\t size.xmod(size.width+7)[%lf]\n\t final[%lf]\n\t mid[%lf]\n",
-                                            event.x,
-                                            size.x,
-                                            size.x%(size.width+7),
-                                            ((size.x-size.x%(size.width+7))/(size.width+7))*size.width,
-                                            (size.x-size.x%(size.width+7))/(size.width+7));
-                */
                 if (tally.get_mapped ()
-                 && ((event.x + size.x%(size.width+7) + (size.x-size.x%(size.width+7))/(size.width+7)*size.width) >= size.x)
-                 && ((event.x + size.x%(size.width+7) + ((size.x-size.x%(size.width+7))/(size.width+7))*size.width) <= (size.x + size.width))) {
+                 && event.x_root >= size.x
+                 && event.x_root <= (size.x + size.width)) {
                     tally.button_press_event (event);
                     return true;
-                }
+         }
             }
-
-            if (event.type == Gdk.EventType.2BUTTON_PRESS && event.button == 1
+#else
+ 	int counter = 0;
+            var num = notebook.page_num (tab);
+            double max_size = 0.0;
+	foreach (var child in notebook.get_children ()) {
+                if(notebook.get_n_pages() == (counter + 1)) {
+                    var btn = notebook.get_tab_label(child);
+                    Gtk.Allocation size;
+                    btn.get_allocation (out size); 
+                    max_size = size.x;
+                    break;
+                }    
+                var tally = notebook.get_tab_label (tab) as Tally;
+                Gtk.Allocation size;
+                tally.get_allocation (out size); 
+                counter++;
+            }
+#endif
+            if (event.type == Gdk.EventType.2BUTTON_PRESS && event.button == 1 
              || event.button == 2) {
-                new_tab ();
+                if(btn_end == true && is_double_clicked_arrow(event) == true )return false;//modified by wangyl in 2015.5.18
+               // new_tab ();  //modified by wangyl in 2015.5.18
                 return true;
             }
             else if (event.button == 3) {
@@ -461,9 +503,15 @@ namespace Midori {
                 var popup = menu.create_menu (null, false);
                 popup.show ();
                 popup.attach_to_widget (this, null);
-                popup.popup (null, null, null, event.button, event.time);
+                popup.popup (null, null, null, event.button, event.time); 
                 return true;
             }
+            var c_page = notebook.get_current_page();
+            var n_page = notebook.get_n_pages(); 
+            if(event.button == 1 && event.x > max_size && event.x < (max_size + 24)) {
+                new_tab();
+                notebook.set_current_page(notebook.get_n_pages() - 2);
+            }     
             return false;
         }
 
@@ -492,7 +540,10 @@ namespace Midori {
             relayout ();
         }
 
-        void tab_removed () {
+        void tab_removed () { 
+            var c_page = notebook.get_current_page();
+            var n_page = notebook.get_n_pages();  
+              if(c_page+1 == n_page) notebook.set_current_page(c_page-1);
             count--;
             if (count > 0)
                 relayout ();
@@ -501,11 +552,12 @@ namespace Midori {
         void relayout () {
             Gtk.Allocation size;
             notebook.get_allocation (out size);
-            resize (size.width);
+            resize (size.width);  
         }
 
         /* Since: 0.5.8 */
         public ContextAction get_tab_context_action (Midori.Tab tab) {
+            var page_n = notebook.get_n_pages();
             var menu = new Midori.ContextAction ("TabContextMenu", null, null, null);
             tab_context_menu (tab, menu);
             var action_window = new Midori.ContextAction ("TabWindowNew", _("Open in New _Window"), null, "window-new");
@@ -519,23 +571,35 @@ namespace Midori {
             });
             menu.add (action_minimize);
             var action_right = new Midori.ContextAction ("TabCloseRight", ngettext ("Close Tab to the R_ight", "Close Tabs to the R_ight", count - 1), null, null);
-            action_right.sensitive = count > 1;
+            //action_right.sensitive = count > 1;
+            if(btn_end == false && notebook.page_num (tab) + 2 == page_n)action_right.set_sensitive(false);
+            if(btn_end == true && notebook.page_num (tab) + 1 == page_n)action_right.set_sensitive(false);
             action_right.activate.connect (()=>{
                 bool found_tab = false;
+                int counter = 0; 
                 foreach (var child in notebook.get_children ()) {
-                    if (found_tab)
-                        child.destroy ();
+                    if (found_tab){
+                         if(btn_end == false && page_n == (counter + 1))break;
+                          if(btn_end == true && page_n == counter )break;
+                        child.destroy ();  
+                        }
                     else
                         found_tab = child == tab;
+                    counter++;
                 }
             });
             menu.add (action_right);
             var action_other = new Midori.ContextAction ("TabCloseOther", ngettext ("Close Ot_her Tab", "Close Ot_her Tabs", count - 1), null, null);
             action_other.sensitive = count > 1;
             action_other.activate.connect (()=>{
-                foreach (var child in notebook.get_children ())
+                int counter = 0; 
+                foreach (var child in notebook.get_children ()){
+                 if( btn_end == false &&page_n== (counter + 1))break;
+                 if( btn_end == true &&page_n== counter )break;
                     if (child != tab)
                         child.destroy ();
+                        counter ++;
+                    }
             });
             menu.add (action_other);
             var action_close = new Midori.ContextAction ("TabClose", null, null, Gtk.STOCK_CLOSE);
@@ -548,11 +612,15 @@ namespace Midori {
 
         bool tab_button_pressed (Gtk.Widget label, Gdk.EventButton event) {
             Tally tally = label as Tally;
-            if (event.button == 1) {
+        
+            if (event.type == Gdk.EventType.2BUTTON_PRESS && event.button == 1 
+             || event.button == 2) {
+              //  tally.tab.destroy ();//modified by wangyl in 2015.5.18
+            }
+                if (event.button == 1  ) {
                 /* Leave switching and dragging up to the notebook */
                 return false;
-            } else if (event.button == 2)
-                tally.tab.destroy ();
+            }
             else if (event.button == 3) {
                 var menu = get_tab_context_action (tally.tab);
                 var popup = menu.create_menu (null, false);
@@ -562,13 +630,14 @@ namespace Midori {
             }
             return true;
         }
-
+        
         public void move (Midori.Tab tab, int index) {
             notebook.reorder_child (tab, index);
         }
 
         /* Chain up drawing manually to circumvent parent checks */
 #if HAVE_GTK3
+
         public override bool draw (Cairo.Context cr) {
             notebook.draw (cr);
             return true;
@@ -581,10 +650,21 @@ namespace Midori {
 #endif
 
         public override void forall_internal (bool include_internal, Gtk.Callback callback) {
+        
             if (include_internal)
                 callback (notebook);
+ #if 0//modified by wangyl in 2015.5.18
             foreach (var child in notebook.get_children ())
                 callback (child);
+#else 
+	 int counter = 0;
+            foreach (var child in notebook.get_children ()) {
+                   if(notebook.get_n_pages() == (counter + 1))
+                    break;
+                callback (child);
+                counter++;
+                 }
+#endif
         }
 
         /* Can't override Gtk.Container.remove because it checks the parent */
@@ -624,50 +704,102 @@ namespace Midori {
         }
 
         void close_buttons_visible_changed (GLib.ParamSpec pspec) {
+            int counter = 0;
             foreach (var child in notebook.get_children ()) {
+                 if(notebook.get_n_pages() == (counter + 1))
+                    break;
                 var tally = notebook.get_tab_label (child) as Tally;
                 tally.close_button_visible = close_buttons_visible;
+                counter++;
             }
         }
 
         void close_buttons_left_changed (GLib.ParamSpec pspec) {
+           int counter = 0;
             foreach (var child in notebook.get_children ()) {
+                 if(notebook.get_n_pages() == (counter + 1))
+                    break;
                 var tally = notebook.get_tab_label (child) as Tally;
                 tally.close_button_left = close_buttons_left;
+                counter++;
             }
         }
-
+ //modified by wangyl in 2015.5.18 start 
+int  is_arrrow_appear(Gtk.Allocation allocation,int page_n)
+{
+    Gtk.Allocation size; 
+    Gtk.Allocation tab_size, btn_size;  
+    var tally = notebook.get_tab_label (tab) as Tally;
+    add_tab_btn.get_allocation (out btn_size);   
+    Gtk.Widget tab_label = notebook.get_tab_label (tab);
+    tab_label .get_allocation (out tab_size); 
+    if(btn_end == false && (((tab_size.width+7)*(page_n-1)  + btn_size.width+7) >= allocation.width ))return 0;
+     if(btn_end == true && (((tab_size.width+7)*page_n  + btn_size.width+30) <allocation.width ) )return -1;
+            return 1;         
+}
+ //modified by wangyl in 2015.5.18 end
 #if HAVE_GTK3
         void size_allocated (Gtk.Allocation allocation) {
+        
 #else
         void size_allocated (Gdk.Rectangle allocation) {
 #endif
+  //modified by wangyl in 2015.5.18 start 
+              Gtk.Allocation tab_size, btn_size; 
+            var page_n = notebook.get_n_pages();
+           have_arrow = is_arrrow_appear(allocation,page_n);
+        
+           if(have_arrow == 0)
+            {
+                    notebook.remove_page(page_n -1);
+                    notebook.set_action_widget(add_tab_btn, Gtk.PackType.END);
+                    btn_end  = true;
+            }
+           if(have_arrow == -1)
+            {
+                    notebook.set_action_widget(null, Gtk.PackType.END);
+                    notebook.add(add_tab_btn);
+                    Gtk.Widget last_page = notebook.get_nth_page(-1);
+                    notebook.set_tab_label(last_page, add_tab_btn);
+                    btn_end  = false;         
+            } 
+ //modified by wangyl in 2015.5.18 end 
             if (labels_visible && count > 0)
                 resize (allocation.width);
         }
 
 #if HAVE_GTK3
-        void page_switched (Gtk.Widget new_tab, uint new_index) {
+        void page_switched (Gtk.Widget new_tab_s, uint new_index) {
 #else
-        void page_switched (Gtk.NotebookPage new_tab, uint new_index) {
-#endif
-            tab_switched (previous, new_tab as Tab);
-            previous = (Midori.Tab)new_tab;
-
+        void page_switched (Gtk.NotebookPage new_tab_s, uint new_index) {
+#endif 
+            tab_switched (previous, new_tab_s as Tab);
+            previous = (Midori.Tab)new_tab_s;
             notify["index"].disconnect (index_changed);
             notify["tab"].disconnect (tab_changed);
-            index = (int)new_index;
-            tab = (Midori.Tab)new_tab;
+            index = (int)new_index;    
+            tab = (Midori.Tab)new_tab_s; 
             notify["index"].connect (index_changed);
-            notify["tab"].connect (tab_changed);
+            notify["tab"].connect (tab_changed);            
         }
 
         void page_moved (Gtk.Widget moving_tab, uint new_index) {
+            
             tab_moved (moving_tab as Midori.Tab, new_index);
             /* Indices change, current tab is not in the same position */
             notify["index"].disconnect (index_changed);
-            index = (int)get_tab_index (tab);
+            index = (int)get_tab_index (tab) - 1 ;
             notify["index"].connect (index_changed);
+//modified by wangyl in 2015.5.18 start
+            int page_n = notebook.get_n_pages();
+          
+            if(page_n == new_index + 1) {
+                notebook.remove_page(page_n - 2);
+                notebook.add(add_tab_btn);
+                Gtk.Widget page = notebook.get_nth_page(-1);
+                notebook.set_tab_label(page, add_tab_btn);
+            }
+ //modified by wangyl in 2015.5.18 end 
         }
 
         unowned Gtk.Notebook window_created (Gtk.Widget tab, int x, int y) {
@@ -688,13 +820,16 @@ namespace Midori {
                 min_size += icon_size;
             new_size = new_size.clamp (min_size, max_size);
             if ((new_size - last_tab_size).abs () < 3)
-                return;
-
+                return;     
             last_tab_size = new_size;
+            int counter = 0;
             foreach (var child in notebook.get_children ()) {
+                  if(notebook.get_n_pages() == (counter + 1))
+                    break;
                 var tab = child as Midori.Tab;
                 var tally = notebook.get_tab_label (child) as Tally;
                 tally.set_size_request (tab.minimized ? -1 : last_tab_size, -1);
+                counter++;
             }
         }
     }

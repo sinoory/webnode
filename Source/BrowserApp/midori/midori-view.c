@@ -5455,8 +5455,8 @@ void
 midori_view_set_overlay_text (MidoriView*  view,
                               const gchar* text)
 {
-    g_return_if_fail (MIDORI_IS_VIEW (view));
-
+    //g_return_if_fail (MIDORI_IS_VIEW (view));
+	if(!MIDORI_IS_VIEW (view))return;
     #if GTK_CHECK_VERSION (3, 2, 0)
     if (text == NULL)
         gtk_widget_hide (gtk_widget_get_parent (view->overlay_label));

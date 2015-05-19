@@ -112,6 +112,7 @@ namespace Midori {
             };
             model.foreach(find_index);
             int count = 0;
+	/*
             if (completion.description != null) {
                 model.insert_with_values (null, start,
                     Columns.URI, "about:completion-description",
@@ -122,8 +123,7 @@ namespace Midori {
                     Columns.YALIGN, 0.25,
                     Columns.PRIORITY, completion.position);
                 count++;
-            }
-
+            }*/
             foreach (var suggestion in suggestions) {
                 if (suggestion.uri == null) {
                     warning ("suggestion.uri != null");
@@ -142,7 +142,6 @@ namespace Midori {
                     Columns.BACKGROUND, suggestion.background,
                     Columns.YALIGN, 0.25,
                     Columns.PRIORITY, completion.position);
-
                 count++;
                 if (count > completion.max_items)
                     break;
