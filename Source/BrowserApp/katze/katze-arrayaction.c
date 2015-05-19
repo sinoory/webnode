@@ -490,7 +490,7 @@ katze_array_action_menu_item_need_update (KatzeArrayAction* array_action,
     const gchar* action_name;
     
     //add by zgh 20141218 todo 判断如果action属于历史的，就返回true
-    action_name = gtk_action_get_name(array_action);
+    action_name = gtk_action_get_name((GtkAction *)array_action);
     if (!strcmp(action_name, "Historys"))
         return TRUE;
 
@@ -746,12 +746,13 @@ katze_array_action_create_tool_item_for (KatzeArrayAction* array_action,
 #else
         toolitem = gtk_tool_item_new();
         button = gtk_button_new();
-        gtk_button_set_relief(button, GTK_RELIEF_NONE);
+        gtk_button_set_relief((GtkButton *)button, GTK_RELIEF_NONE);
         gtk_widget_set_size_request(button, 140, -1);  
         gtk_container_add(GTK_CONTAINER(toolitem), button);
         gtk_widget_show(button);
 
-        itembox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, NULL);
+//        itembox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, NULL);
+        itembox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
         gtk_container_add(GTK_CONTAINER(button), itembox);
         gtk_widget_show(itembox);
 #endif
@@ -782,19 +783,9 @@ katze_array_action_create_tool_item_for (KatzeArrayAction* array_action,
        apply a little bit of 'magic' to fix that.  */
     g_signal_connect (toolitem, "notify",
         G_CALLBACK (katze_array_action_label_notify_cb), label);
-#if 0//zghtest
-    if (title)
-        gtk_tool_button_set_label (GTK_TOOL_BUTTON (toolitem), title);
-    else
-        gtk_tool_button_set_label (GTK_TOOL_BUTTON (toolitem), uri);
-//#else
-        if (title)
-        gtk_label_set_text(GTK_LABEL(label), title);
-    else
-        gtk_label_set_text(GTK_LABEL(label), uri);
-#endif
+
     gtk_tool_item_set_is_important (toolitem, TRUE);
-    if (desc && *desc)
+    if (*desc)
         gtk_tool_item_set_tooltip_text (toolitem, desc);
     else
         gtk_tool_item_set_tooltip_text (toolitem, uri);
