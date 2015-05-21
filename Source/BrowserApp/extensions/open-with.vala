@@ -298,7 +298,8 @@ namespace ExternalApplications {
             var browser = Midori.Browser.get_for_widget (widget);
             transient_for = browser;
 
-            title = _("Choose application");
+//            title = _("Choose application");
+              title = "选择应用程序";
 #if !HAVE_GTK3
             has_separator = false;
 #endif
@@ -311,7 +312,8 @@ namespace ExternalApplications {
             var vbox = new Gtk.VBox (false, 8);
             vbox.border_width = 8;
             (get_content_area () as Gtk.Box).pack_start (vbox, true, true, 8);
-            var label = new Gtk.Label (_("Select an application to open \"%s\"".printf (filename)));
+//            var label = new Gtk.Label (_("Select an application to open \"%s\"".printf (filename)));
+            var label = new Gtk.Label ("选择一个应用程序打开 \"%s\"".printf (filename));
             label.ellipsize = Pango.EllipsizeMode.MIDDLE;
             vbox.pack_start (label, false, false, 0);
             if (uri == "")
