@@ -507,8 +507,8 @@ namespace Midori {
                 return true;
             }
             var c_page = notebook.get_current_page();
-            var n_page = notebook.get_n_pages(); 
-            if(event.button == 1 && event.x > max_size && event.x < (max_size + 24)) {
+            var n_page = notebook.get_n_pages();           
+            if(event.button == 1 && event.x > max_size -1&& event.x < (max_size + 24)) {
                 new_tab();
                 notebook.set_current_page(notebook.get_n_pages() - 2);
             }     
