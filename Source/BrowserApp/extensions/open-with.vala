@@ -608,10 +608,23 @@ namespace ExternalApplications {
            If the automatic handler did not exist or could not run, asks for an application.
            Returns whether an application was found and launched successfully. */
         bool open_now (string uri, string content_type, Gtk.Widget widget, NextStep next_step) {
-            if (next_step == NextStep.TRY_OPEN && (new Associations ()).open (content_type, uri))
-            {
-                return true;
-            }
+//add by luyue 2015/5/21 start
+//选择应用程序时，content_type的类型在/etc/gnome/defaults.list中存在时，弹出选择框，否则不弹出
+//目前只对/etc/gnome/defaults.list中前缀为x-scheme-handler进行判断
+
+   //      if (next_step == NextStep.TRY_OPEN && (new Associations ()).open (content_type, uri))
+   //         {
+   //             return true;
+  //          }
+
+          if (content_type.has_prefix("x-scheme-handler/")&&
+              !content_type.has_prefix("x-scheme-handler/apt") &&
+              !content_type.has_prefix("x-scheme-handler/http") &&
+              !content_type.has_prefix("x-scheme-handler/mailto"))
+         {
+            return false;
+         }
+//add end
             /* if opening directly failed or wasn't tried, ask for an association */
             if (open_with (uri, content_type, widget) != null)
             {
