@@ -25,7 +25,8 @@ namespace Midori {
         public HistorySearch (string uri, string keywords, int64 date) {
             GLib.Object (uri: uri,
                          keywords: keywords,
-                         title: _("Search for %s").printf (keywords),
+                         //title: _("Search for %s").printf (keywords),
+                         title: _("%s").printf (keywords),
                          date: date);
         }
     }

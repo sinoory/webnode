@@ -13,7 +13,6 @@
 #define __MIDORI_STOCK_H__ 1
 
 /* Stock items */
-
 #define STOCK_BOOKMARKS          "user-bookmarks-custom"
 #define STOCK_EXTENSION          "extension"
 #define STOCK_HISTORY            "document-open-recent"
@@ -49,9 +48,22 @@
 #define STOCK_REFRESH            "refresh"
 #define STOCK_search             "search"
 #define STOCK_SETTING            "setting"
+#define STOCK_BAIDU     "baidu_favicon"
+#define STOCK_SINA     "sina"
+#define STOCK_IFENG     "ifeng"
+#define STOCK_SOHU     "sohu"
+#define STOCK_TAOBAO     "taobao"
+
+
+
+
+
+
 //lxx, 20150202
 #define STOCK_ALLOW_LOCATION     "allowed_location"
 #define STOCK_BLOCK_LOCATION     "blocked_location"
 #define STOCK_BLOCK_POPUPS     		"blocked_popups"
+
+
 
 #endif /* !__MIDORI_STOCK_H__ */

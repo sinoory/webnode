@@ -33,6 +33,8 @@
 
 #include <config.h>
 
+#include "midori-locationaction.h"
+
 #ifdef HAVE_GCR
     #define GCR_API_SUBJECT_TO_CHANGE
     #include <gcr/gcr.h>
@@ -50,7 +52,8 @@ midori_map_get_message (SoupMessage* message);
 #include <glib/gstdio.h>
 #include <gdk/gdkkeysyms.h>
 #include "katze/katze.h"
-
+__CDOSBROWSER_CORE_H__
+//#include "cdosbrowser_core.h"
 #if HAVE_UNISTD_H
     #include <unistd.h>
 #endif
@@ -105,6 +108,19 @@ midori_view_display_error (MidoriView*     view,
 static gboolean
 midori_view_web_view_close_cb (WebKitWebView* web_view,
                                GtkWidget*     view);
+struct  _ScriptDialogAction 
+{
+    MidoriAutocompleter *autocompleter;
+    GtkWidget* entry_uri;
+    GtkWidget* entry_title;
+    GtkTreeModel* completion_model;
+    MidoriView*         view;
+    GtkWidget *dialog;
+    GtkWidget *treeview_one;
+    GtkWidget *scrolled;
+    GtkWidget *popup_frame;
+};
+typedef struct  _ScriptDialogAction ScriptDialogAction;
 
 struct _MidoriView
 {
@@ -3883,6 +3899,394 @@ midori_view_download_requested_cb (GtkWidget*      web_view,
     return handled;
 }
 
+static gboolean
+midori_dialog_action_button_press_cb_ctn (GtkWidget*            button,
+                                                 GdkEventButton*       event,
+                                                 ScriptDialogAction* action)
+{
+    MidoriView* view =action->view;
+    gchar *uri = gtk_entry_get_text((GtkEntry*)(action->entry_uri)); 
+    if(strlen(uri) == 0)return ;
+    MidoriBrowser* browser = midori_browser_get_for_widget (GTK_WIDGET (midori_view_get_web_view(view)));
+    MidoriSpeedDial* dial = katze_object_get_object (browser, "speed-dial");
+
+    midori_speed_dial_add(dial, uri, "dial-title", NULL);
+
+   //  g_signal_emit (view, signals[NEW_TAB], 0,uri ,  true);
+   gtk_widget_destroy(action->dialog);
+    return TRUE;
+}
+static gboolean
+midori_dialog_action_button_press_cb_dlt (GtkWidget*            button,
+                                                 GdkEventButton*       event,
+                                                 ScriptDialogAction* action)
+{
+    //g_signal_emit(action->dialog,"destroy",0);
+  gtk_widget_destroy(action->dialog);
+     return TRUE;
+}
+
+static gboolean
+midori_dialog_action_treeview1_button_press_cb (GtkWidget*            treeview,
+                                                 GdkEventButton*       event,
+                                                 ScriptDialogAction* action)
+{
+    GtkTreePath* path;
+    gchar* desc;
+	if(gtk_tree_view_get_path_at_pos (GTK_TREE_VIEW (treeview),
+        event->x, event->y, &path, NULL, NULL, NULL))
+	{
+		GtkTreeIter iter;
+		gchar* uri;
+		gchar* title;
+		gtk_tree_model_get_iter (gtk_tree_view_get_model(GTK_TREE_VIEW(treeview)), &iter, path);
+                  gtk_tree_path_free (path);
+		gtk_tree_model_get (gtk_tree_view_get_model(GTK_TREE_VIEW(treeview)), &iter,
+		1, &title, 2, &uri, -1);
+                gtk_entry_set_text(action->entry_uri,uri);
+                gtk_entry_set_text(action->entry_title,title);
+                g_free (uri);
+                g_free (title);
+                return TRUE;
+	} 
+            return FALSE;
+}
+
+static gboolean
+midori_dialog_action_treeview_button_press_cb (GtkWidget*            treeview,
+                                                 GdkEventButton*       event,
+                                                 ScriptDialogAction* action)
+{
+    GtkTreePath* path;
+    gchar* desc;
+    if (gtk_tree_view_get_path_at_pos (GTK_TREE_VIEW (treeview),
+        event->x, event->y, &path, NULL, NULL, NULL))
+    {
+        GtkTreeIter iter;
+        gchar* uri;
+        gchar* title;
+        gtk_tree_model_get_iter (action->completion_model, &iter, path);
+        gtk_tree_path_free (path);
+        gtk_tree_model_get (action->completion_model, &iter,
+            MIDORI_AUTOCOMPLETER_COLUMNS_URI, &uri, 
+           MIDORI_AUTOCOMPLETER_COLUMNS_MARKUP, &title,  -1);   
+         if (strchr (title, '\n')) /* A search engine or action suggestion */
+        {
+            gchar** parts = g_strsplit (title, "\n", 2);
+            desc = g_strdup (parts[0]);
+            g_strfreev (parts);
+            title = desc;
+        }
+        gtk_entry_set_text(action->entry_uri,uri);
+        gtk_entry_set_text(action->entry_title,title);
+        g_free (uri);
+        g_free (title);
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+static void
+midori_dialog_entry_render_title_cb (GtkCellLayout*   layout,
+                                       GtkCellRenderer* renderer,
+                                       GtkTreeModel*    model,
+                                       GtkTreeIter*     iter,
+                                       gpointer         data)
+{
+    MidoriLocationAction* action = data;
+    gchar* title;
+    gchar* desc;
+
+    gtk_tree_model_get (model, iter,
+        MIDORI_AUTOCOMPLETER_COLUMNS_MARKUP, &title,
+        -1);
+
+    if (strchr (title, '\n')) /* A search engine or action suggestion */
+    {
+        gchar** parts = g_strsplit (title, "\n", 2);
+        desc = g_strdup (parts[0]);
+        g_strfreev (parts);
+    }
+    else
+    {
+      //  gchar* key = g_utf8_strdown (action->key ? action->key : "", -1);
+        gchar** keys = g_strsplit_set (key, " %", -1);
+     //   g_free (key);
+        desc = midori_location_action_render_title (keys, title);
+        g_strfreev (keys);
+    }
+
+    g_object_set (renderer, "markup", desc,
+        "ellipsize-set", TRUE, "ellipsize", PANGO_ELLIPSIZE_END, NULL);
+    g_free (desc);
+    g_free (title);
+}
+
+static void midori_dialog_entry_render_uri_cb(GtkCellLayout*   layout,
+                                     GtkCellRenderer* renderer,
+                                     GtkTreeModel*    model,
+                                     GtkTreeIter*     iter,
+                                     gpointer         data)
+{
+    MidoriLocationAction* action = data;
+    gchar* title;
+    gchar* uri_escaped;
+    gchar* desc;
+
+    gtk_tree_model_get (model, iter,
+        MIDORI_AUTOCOMPLETER_COLUMNS_MARKUP, &title,
+        MIDORI_AUTOCOMPLETER_COLUMNS_URI, &uri_escaped,
+        -1);
+
+   
+   if (strchr (title, '\n')) /* A search engine or action suggestion */
+     {
+         gchar** parts = g_strsplit (title, "\n", 2);
+         desc = g_strdup (parts[1]);
+         g_strfreev (parts);
+     }
+     else
+     {
+        // gchar* key = g_utf8_strdown (action->key ? action->key : "", -1);
+         gchar** keys = g_strsplit_set (key, " %", -1);
+       //  g_free (key);
+         desc = midori_location_action_render_uri (keys, uri_escaped);
+         g_strfreev (keys);
+         g_free (uri_escaped);
+     }
+   
+  
+
+    g_object_set (renderer, "markup", desc,
+        "ellipsize-set", TRUE, "ellipsize", PANGO_ELLIPSIZE_END, NULL);
+    g_free (desc);
+    g_free (title);
+}
+gboolean midori_view_script_dialog_popup_cb_destroyed(GtkWidget      *widget,
+		      ScriptDialogAction      *action)
+{
+   
+   g_free(action);
+    action = NULL;
+    //printf("wangyl_midori_view_script_dialog_popup_cb\n");
+    return TRUE;
+}
+
+void list_append(GtkWidget *list, const gchar *icon,const gchar *str,const gchar *str1)
+{
+  GtkListStore *store;
+  GtkTreeIter iter;
+  store = GTK_LIST_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(list)));
+  gtk_list_store_append(store, &iter);
+  gtk_list_store_set(store, &iter, 0,icon,1, str,2,str1,-1);
+}
+
+GtkTreeModel  *list_model_create()
+{  
+  GtkListStore *store;
+  store = gtk_list_store_new(3,G_TYPE_STRING, G_TYPE_STRING,G_TYPE_STRING);
+  return GTK_TREE_MODEL(store);
+}
+
+static void
+midori_view_script_dialog_popup_cb (GtkWidget*          web_view,
+                                  MidoriView*         view)
+{
+        //printf("wangyl_midori_view_script_dialog_popup_cb\n");
+        GtkWidget *button_ctn,*dialog,*label_uri,*label_title,*entry_uri,*entry_title,*button_dlt;
+       GtkWidget  *hbox_uri,*hbox_title,*hbutton_box;
+        GtkWidget *popup_frame,*scrolled,*treeview_one,*notebook,*label_one, *label_two, *popup_frame_one;
+        GtkTreeViewColumn *column;
+        ScriptDialogAction* action;
+        GtkCellRenderer* renderer;
+        MidoriAutocompleter *autocompleter = NULL;
+        GtkTreeModel* completion_model;
+        gint height,sep;
+        MidoriApp* app = midori_app_new_proxy (NULL);
+        action = malloc(sizeof(ScriptDialogAction));
+        action->view = view;
+        autocompleter = midori_autocompleter_new (G_OBJECT (app));
+     //   g_signal_connect (autocompleter, "populated",
+       //     G_CALLBACK (midori_dialog_action_populated_suggestions_cb), action);
+        action->autocompleter = autocompleter;
+        dialog = gtk_dialog_new ();
+        
+        action->dialog = dialog;
+        gtk_window_set_destroy_with_parent(GTK_WINDOW(dialog), TRUE);
+         gtk_window_set_default_size(GTK_WINDOW(dialog), 600, 400);
+        gtk_window_set_resizable(GTK_WINDOW(dialog),FALSE);  
+        gtk_window_set_title(GTK_WINDOW(dialog), "\u6dfb\u52a0\u7f51\u5740");
+        gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
+       // gtk_container_set_border_width(GTK_CONTAINER(dialog),100);
+        GtkWidget *box = gtk_dialog_get_content_area ((GtkDialog *)dialog);
+      
+       gtk_box_set_spacing(GTK_BOX(box),30);
+      //  gtk_window_set_type_hint (GTK_WINDOW (box), GDK_WINDOW_TYPE_HINT_COMBO);
+        /* Window managers may ignore programmatic resize without this */
+      //  gtk_window_set_resizable (GTK_WINDOW (box), FALSE);
+        midori_autocompleter_add (autocompleter,MIDORI_COMPLETION (midori_history_completion_new ()));
+        midori_autocompleter_complete (autocompleter, "http", NULL, NULL);
+        completion_model = (GtkTreeModel*)midori_autocompleter_get_model (autocompleter);
+        action->completion_model = completion_model;
+        g_object_unref (app);
+        
+        label_uri = gtk_label_new( "   \u7f51\u5740:");   
+        entry_uri = gtk_entry_new();
+        action->entry_uri =entry_uri;
+        hbox_uri = gtk_box_new(false ,20);
+        gtk_box_set_spacing(GTK_BOX(hbox_uri),20);  
+        label_title = gtk_label_new("   \u540d\u79f0:");
+      
+        entry_title= gtk_entry_new();
+        action->entry_title =entry_title;  
+        hbox_title = gtk_box_new(false ,20);
+        
+        button_ctn=gtk_button_new_with_label("\u786e\u5b9a");
+        button_dlt=gtk_button_new_with_label("\u53d6\u6d88");
+        
+        hbutton_box =  gtk_hbutton_box_new();
+        gtk_box_set_spacing(GTK_BOX(hbutton_box),10);
+        gtk_button_box_set_layout(GTK_BUTTON_BOX (hbutton_box),GTK_BUTTONBOX_END);
+        gtk_container_add(GTK_CONTAINER (hbutton_box),button_dlt);
+        gtk_container_add(GTK_CONTAINER (hbutton_box),button_ctn); 
+         g_signal_connect (button_ctn, "button-press-event",
+            G_CALLBACK (midori_dialog_action_button_press_cb_ctn), action);
+         g_signal_connect (button_dlt, "button-press-event",
+            G_CALLBACK (midori_dialog_action_button_press_cb_dlt), action);
+        gtk_widget_set_size_request(button_ctn,30,10);
+        gtk_widget_set_size_request(button_dlt,30,10);
+
+        notebook = gtk_notebook_new();
+        label_one = gtk_label_new("\u6253\u5f00\u8bb0\u5f55");
+        popup_frame = gtk_frame_new (NULL);
+        gtk_frame_set_shadow_type (GTK_FRAME (popup_frame), GTK_SHADOW_ETCHED_IN);
+        action->popup_frame = popup_frame;
+        gtk_notebook_append_page(GTK_NOTEBOOK(notebook),popup_frame,label_one);
+         gtk_widget_set_size_request(label_one,300,10);
+         scrolled = g_object_new (GTK_TYPE_SCROLLED_WINDOW,
+        "hscrollbar-policy", GTK_POLICY_AUTOMATIC,
+        "vscrollbar-policy", GTK_POLICY_AUTOMATIC, NULL);
+          action->scrolled = scrolled;
+        gtk_container_add (GTK_CONTAINER (popup_frame), scrolled); 
+        treeview_one = gtk_tree_view_new_with_model (completion_model);
+        action->treeview_one = treeview_one;
+        gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (treeview_one), FALSE);
+        gtk_tree_view_set_hover_selection (GTK_TREE_VIEW (treeview_one), TRUE);
+        gtk_container_add (GTK_CONTAINER (scrolled), treeview_one);
+        g_signal_connect (treeview_one, "button-press-event",
+            G_CALLBACK (midori_dialog_action_treeview_button_press_cb), action);
+       gtk_widget_set_size_request (gtk_scrolled_window_get_vscrollbar (
+            GTK_SCROLLED_WINDOW (scrolled)), -1, 0);
+       gtk_widget_set_size_request (gtk_scrolled_window_get_hscrollbar (
+            GTK_SCROLLED_WINDOW (scrolled)), -1, 0);
+      //  gtk_widget_realize (treeview);
+     
+        column = gtk_tree_view_column_new ();
+        renderer = gtk_cell_renderer_pixbuf_new ();
+        gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (column), renderer, FALSE);
+        gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (column), renderer,
+            "gicon", MIDORI_AUTOCOMPLETER_COLUMNS_ICON,
+            "stock-size", MIDORI_AUTOCOMPLETER_COLUMNS_SIZE,
+            "yalign", MIDORI_AUTOCOMPLETER_COLUMNS_YALIGN,
+            "cell-background", MIDORI_AUTOCOMPLETER_COLUMNS_BACKGROUND,
+            NULL);
+        renderer = gtk_cell_renderer_text_new ();
+        gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (column), renderer, TRUE);
+        gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (column), renderer,
+            "cell-background", MIDORI_AUTOCOMPLETER_COLUMNS_BACKGROUND,
+            NULL);
+      //  g_object_set ((GObject*) renderer, "ellipsize-set", TRUE, "ellipsize", PANGO_ELLIPSIZE_MIDDLE, NULL);
+
+        /*
+        renderer.set ("text", website,
+                            "ellipsize-set", true,
+                            "ellipsize", Pango.EllipsizeMode.MIDDLE);
+        */
+        gtk_tree_view_column_set_expand (column, TRUE);
+        gtk_cell_layout_set_cell_data_func (GTK_CELL_LAYOUT (column), renderer,
+            midori_dialog_entry_render_title_cb, NULL, NULL);
+        /*
+        renderer = gtk_cell_renderer_text_new ();
+        gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (column), renderer, TRUE);
+        gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (column), renderer,
+            "cell-background", MIDORI_AUTOCOMPLETER_COLUMNS_BACKGROUND, NULL);
+        gtk_cell_layout_set_cell_data_func (GTK_CELL_LAYOUT (column), renderer,
+            midori_dialog_entry_render_uri_cb, NULL, NULL);
+            */
+        gtk_tree_view_append_column (GTK_TREE_VIEW (treeview_one), column);
+        gtk_scrolled_window_set_min_content_height (GTK_SCROLLED_WINDOW (action->scrolled), 6 * 23);
+        //gtk_scrolled_window_set_min_content_width(GTK_SCROLLED_WINDOW (action->scrolled), 200);
+        
+        label_two = gtk_label_new("\u70ed\u95e8\u7f51\u9875");
+        popup_frame_one = gtk_frame_new (NULL);
+        gtk_frame_set_shadow_type (GTK_FRAME (popup_frame_one), GTK_SHADOW_ETCHED_IN);
+        gtk_notebook_append_page(GTK_NOTEBOOK(notebook),popup_frame_one,label_two);
+        gtk_widget_set_size_request(label_two,300,10);
+             
+        GtkWidget *scrolled_one = g_object_new (GTK_TYPE_SCROLLED_WINDOW,
+        			"hscrollbar-policy", GTK_POLICY_NEVER,
+        			"vscrollbar-policy", GTK_POLICY_AUTOMATIC, NULL);
+        gtk_container_add (GTK_CONTAINER (popup_frame_one), scrolled_one);
+        GtkWidget *treeview_two = gtk_tree_view_new_with_model (list_model_create());
+        gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (treeview_two), FALSE);
+        gtk_tree_view_set_hover_selection (GTK_TREE_VIEW (treeview_two), TRUE);
+          g_signal_connect (treeview_two, "button-press-event",
+            G_CALLBACK (midori_dialog_action_treeview1_button_press_cb), action);
+        gtk_container_add (GTK_CONTAINER (scrolled_one), treeview_two);
+
+        GtkCellRenderer *renderer_icon = gtk_cell_renderer_pixbuf_new();
+        GtkCellRenderer *renderer_text = gtk_cell_renderer_text_new();
+        //GtkCellRenderer *renderer_text1 = gtk_cell_renderer_text_new();
+        GtkTreeViewColumn *column1=gtk_tree_view_column_new ();
+        gtk_tree_view_column_set_title(column1,"hello world");  
+        gtk_tree_view_column_pack_start(column1,renderer_icon,FALSE);
+        gtk_tree_view_column_pack_start(column1,renderer_text,FALSE); 
+        //gtk_tree_view_column_pack_start(column1,renderer_text1,FALSE); 
+        gtk_tree_view_column_add_attribute(column1,renderer_icon,"stock-id",0); 
+        gtk_tree_view_column_add_attribute(column1,renderer_text,"text",1);
+       // gtk_tree_view_column_add_attribute(column1,renderer_text1,"text",2);
+        //gtk_tree_view_column_add_attribute(column,renderer_text,"foreground",3);
+        gtk_tree_view_append_column(GTK_TREE_VIEW(treeview_two), column1);
+    
+        gtk_tree_view_column_cell_get_size (
+        gtk_tree_view_get_column (GTK_TREE_VIEW (treeview_two), 0),
+            NULL, NULL, NULL, NULL, &height);
+        if (height == 0)
+            return;
+        gtk_widget_style_get (treeview_two, "vertical-separator", &sep, NULL);
+        height += sep;
+        gtk_widget_set_size_request(scrolled_one,150,3 * height);
+
+        //gtk_scrolled_window_set_min_content_height (GTK_SCROLLED_WINDOW (scrolled), 3 * height);
+      
+        list_append(treeview_two, STOCK_BAIDU,"\u767e\u5ea6","https://www.baidu.com/");
+        list_append(treeview_two, STOCK_SINA,"\u65b0\u6d6a","http://www.sina.com.cn/");
+        list_append(treeview_two, STOCK_IFENG,"\u51e4\u51f0","http://www.ifeng.com/");
+        list_append(treeview_two, STOCK_SOHU,"\u641c\u72d0","http://www.sohu.com/");
+        list_append(treeview_two, STOCK_TAOBAO,"\u6dd8\u5b9d","http://www.taobao.com/");
+             
+        gtk_box_pack_start(GTK_BOX(hbox_uri),label_uri,FALSE,FALSE,0);
+        gtk_box_pack_start(GTK_BOX(hbox_uri),entry_uri,TRUE,TRUE,0);
+        gtk_box_pack_start(GTK_BOX(box),hbox_uri,FALSE,FALSE,0);
+        
+          gtk_box_pack_start(GTK_BOX(hbox_title),label_title,FALSE,FALSE,0);
+        gtk_box_pack_start(GTK_BOX(hbox_title),entry_title,TRUE,TRUE,0);
+        gtk_box_pack_start(GTK_BOX(box),hbox_title,FALSE,FALSE,0);
+        
+        gtk_box_pack_start(GTK_BOX(box),notebook,FALSE,FALSE,0);
+        
+       gtk_box_pack_start(GTK_BOX(box),hbutton_box,FALSE,FALSE,0);
+           
+        gtk_widget_show_all(box);
+         gtk_widget_show(dialog);
+       
+        g_signal_connect (dialog, "destroy",
+            G_CALLBACK (midori_view_script_dialog_popup_cb_destroyed), action);
+       
+
+}
+
 // ZRL Implement to receive signal console-message for console.log
 #ifdef HAVE_WEBKIT2
 static gboolean
@@ -3893,7 +4297,7 @@ webkit_web_view_console_message_cb (GtkWidget*   web_view,
                                     MidoriView*  view)
 {
     if (!strncmp (message, "speed_dial-save", 13))
-    {
+    {  
         MidoriBrowser* browser = midori_browser_get_for_widget (GTK_WIDGET (view));
         MidoriSpeedDial* dial = katze_object_get_object (browser, "speed-dial");
         GError* error = NULL;
@@ -4801,6 +5205,8 @@ midori_view_constructor (GType                  type,
 // ZRL add new signal for console.log
                       "signal::console-message",
                       webkit_web_view_console_message_cb, view,
+                      "signal::script-dialog-popup",
+                   midori_view_script_dialog_popup_cb, view,
 #if TRACK_LOCATION_TAB_ICON //lxx, 20150203
 //lxx, 20150127	
                       "signal::permission-request",
@@ -5307,7 +5713,7 @@ midori_view_set_uri (MidoriView*  view,
             if (!new_uri)
             {
                gchar* search = katze_object_get_string (view->settings, "location-entry-search");
-               new_uri = midori_uri_for_search (search, uri);
+               new_uri = midori_uri_for_search (search, uri);  
                g_free (search);
             }
             midori_tab_set_uri (MIDORI_TAB (view), new_uri);

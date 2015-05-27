@@ -48,7 +48,7 @@ namespace Midori {
                 Icon? icon = yield Midori.URI.get_icon_fallback (uri, null, cancellable);
                 string search_desc = search_title + "\n" + desc ?? uri;
                 /* FIXME: Theming? Win32? */
-                string background = "gray";
+                string background = "white";
                 var suggestion = new Suggestion (search_uri, search_desc, false, background, icon);
                 suggestions.append (suggestion);
 

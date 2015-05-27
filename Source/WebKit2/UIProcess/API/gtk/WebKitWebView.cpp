@@ -97,6 +97,7 @@ enum {
     CLOSE,
 
     SCRIPT_DIALOG,
+    SCRIPT_DIALOG_POPUP,
 
     DECIDE_POLICY,
     PERMISSION_REQUEST,
@@ -338,6 +339,7 @@ static gboolean webkitWebViewScriptDialog(WebKitWebView* webView, WebKitScriptDi
         scriptDialog->confirmed = gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK;
         break;
     case WEBKIT_SCRIPT_DIALOG_PROMPT:
+        /*
         dialog = webkitWebViewCreateJavaScriptDialog(webView, GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL, GTK_RESPONSE_OK, scriptDialog->message.data());
         GtkWidget* entry = gtk_entry_new();
         gtk_entry_set_text(GTK_ENTRY(entry), scriptDialog->defaultText.data());
@@ -346,7 +348,9 @@ static gboolean webkitWebViewScriptDialog(WebKitWebView* webView, WebKitScriptDi
         gtk_widget_show(entry);
         if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK)
             scriptDialog->text = gtk_entry_get_text(GTK_ENTRY(entry));
-        break;
+            break;*/
+        g_signal_emit(webView, signals[SCRIPT_DIALOG_POPUP],0);
+        return TRUE;
     }
 
     gtk_widget_destroy(dialog);
@@ -1219,6 +1223,16 @@ static void webkit_web_view_class_init(WebKitWebViewClass* webViewClass)
                      webkit_marshal_BOOLEAN__BOXED,
                      G_TYPE_BOOLEAN, 1,
                      WEBKIT_TYPE_SCRIPT_DIALOG | G_SIGNAL_TYPE_STATIC_SCOPE);
+
+    signals[SCRIPT_DIALOG_POPUP] =
+           g_signal_new("script-dialog_popup",
+              G_TYPE_FROM_CLASS(webViewClass),
+               G_SIGNAL_RUN_LAST,
+               G_STRUCT_OFFSET(WebKitWebViewClass, javascript_popup_window_block_message),
+               0, 0,
+               g_cclosure_marshal_VOID__VOID,
+                        G_TYPE_NONE, 0);
+
 
     /**
      * WebKitWebView::decide-policy:
