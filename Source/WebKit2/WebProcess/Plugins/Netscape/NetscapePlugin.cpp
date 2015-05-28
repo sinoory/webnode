@@ -99,7 +99,7 @@ NetscapePlugin::NetscapePlugin(PassRefPtr<NetscapePluginModule> pluginModule)
 {
     m_npp.ndata = this;
     m_npp.pdata = 0;
-    
+    plugin_url = NULL;
     m_pluginModule->incrementLoadCount();
 }
 
@@ -609,6 +609,16 @@ bool NetscapePlugin::initialize(const Parameters& parameters)
     if (equalIgnoringCase(parameters.mimeType, "application/x-shockwave-flash")) {
         size_t wmodeIndex = parameters.names.find("wmode");
         if (wmodeIndex != notFound) {
+            // add by luyue 2015/5/28 start
+            //获取172网站上flash 插件wmode=transparent的url
+            if (equalIgnoringCase(parameters.values[wmodeIndex], "transparent"))            
+            {
+               if(parameters.url.string().utf8().data())
+                  plugin_url = g_strdup_printf("%s",parameters.url.string().utf8().data());
+               if(strncmp(plugin_url,"http://172",strlen("http://172")))
+                  plugin_url = NULL;
+            }
+            //add end
             // Transparent window mode is not supported by X11 backend.
             if (equalIgnoringCase(parameters.values[wmodeIndex], "transparent")
                 || ((m_pluginModule->pluginQuirks().contains(PluginQuirks::ForceFlashWindowlessMode) && equalIgnoringCase(parameters.values[wmodeIndex], "window")))

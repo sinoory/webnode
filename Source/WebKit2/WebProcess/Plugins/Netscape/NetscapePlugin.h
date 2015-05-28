@@ -302,6 +302,7 @@ private:
     bool m_shouldUseManualLoader;
     bool m_hasCalledSetWindow;
     bool m_isVisible;
+    char* plugin_url;//add by luyue 2015/5/28  保存172上plugin的url
 
     RefPtr<NetscapePluginStream> m_manualStream;
     Vector<bool, 8> m_popupEnabledStates;

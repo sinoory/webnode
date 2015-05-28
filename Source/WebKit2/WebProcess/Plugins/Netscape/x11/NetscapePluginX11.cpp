@@ -348,6 +348,11 @@ void NetscapePlugin::platformPaint(GraphicsContext* context, const IntRect& dirt
     cairo_rectangle(cr, exposedRect.x(), exposedRect.y(), exposedRect.width(), exposedRect.height());
     cairo_clip(cr);
     cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+    //add by luyue 2015/5/28 start
+    //172的flash插件，背景制成透明
+    if(plugin_url)
+       cairo_set_source_rgba (cr, 0, 0, 0, 0);
+    //add end
     cairo_paint(cr);
 
     cairo_restore(cr);
