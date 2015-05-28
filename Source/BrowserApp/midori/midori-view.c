@@ -4017,8 +4017,8 @@ midori_dialog_entry_render_title_cb (GtkCellLayout*   layout,
         g_strfreev (keys);
     }
 
-    g_object_set (renderer, "markup", desc,
-        "ellipsize-set", TRUE, "ellipsize", PANGO_ELLIPSIZE_END, NULL);
+    g_object_set (renderer, "markup", desc,NULL);
+     //   "ellipsize-set", TRUE, "ellipsize", PANGO_ELLIPSIZE_END, NULL);
     g_free (desc);
     g_free (title);
 }
@@ -4196,13 +4196,6 @@ midori_view_script_dialog_popup_cb (GtkWidget*          web_view,
         gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (column), renderer,
             "cell-background", MIDORI_AUTOCOMPLETER_COLUMNS_BACKGROUND,
             NULL);
-      //  g_object_set ((GObject*) renderer, "ellipsize-set", TRUE, "ellipsize", PANGO_ELLIPSIZE_MIDDLE, NULL);
-
-        /*
-        renderer.set ("text", website,
-                            "ellipsize-set", true,
-                            "ellipsize", Pango.EllipsizeMode.MIDDLE);
-        */
         gtk_tree_view_column_set_expand (column, TRUE);
         gtk_cell_layout_set_cell_data_func (GTK_CELL_LAYOUT (column), renderer,
             midori_dialog_entry_render_title_cb, NULL, NULL);
