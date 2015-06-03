@@ -2434,9 +2434,17 @@ _midori_browser_add_tab (MidoriBrowser* browser,
     _midori_browser_update_actions (browser);
 #else
     gint  lastPageIndex = gtk_notebook_get_n_pages(MIDORI_NOTEBOOK(browser->notebook)->notebook); 
-    midori_notebook_insert (MIDORI_NOTEBOOK (browser->notebook), MIDORI_TAB (view), lastPageIndex-1);
-    //gint  lastPageIndex1 = gtk_notebook_get_n_pages(MIDORI_NOTEBOOK(browser->notebook)->notebook); 
-    midori_browser_set_current_page(browser, lastPageIndex-1);
+    if(MIDORI_NOTEBOOK(browser->notebook)->btn_end ==0)
+     {
+             midori_notebook_insert (MIDORI_NOTEBOOK (browser->notebook), MIDORI_TAB (view), lastPageIndex-1);
+            midori_browser_set_current_page(browser, lastPageIndex-1);
+      }
+    else
+      {
+             midori_notebook_insert (MIDORI_NOTEBOOK (browser->notebook), MIDORI_TAB (view), lastPageIndex);
+             midori_browser_set_current_page(browser, lastPageIndex);
+       }
+    
 #endif
 
 //lxx add for much tab warning+
@@ -6375,6 +6383,13 @@ midori_browser_switched_tab_cb (MidoriNotebook* notebook,
     const gchar* text;
     const gchar* uri;
 
+    gint currPageIndex = midori_browser_get_current_page(browser);
+    gint  lastPageIndex = gtk_notebook_get_n_pages(MIDORI_NOTEBOOK(browser->notebook)->notebook); 
+    if(lastPageIndex - 1 == currPageIndex && notebook->btn_end ==0 )
+    {
+     //old_widget = gtk_notebook_get_nth_page(MIDORI_NOTEBOOK(browser->notebook)->notebook,lastPageIndex - 1);
+        new_view = gtk_notebook_get_nth_page(MIDORI_NOTEBOOK(browser->notebook)->notebook,lastPageIndex - 2);
+     }
     if (old_widget != NULL)
     {
         action = _action_by_name (browser, "Location");
@@ -6395,7 +6410,7 @@ midori_browser_switched_tab_cb (MidoriNotebook* notebook,
     midori_location_action_set_text (MIDORI_LOCATION_ACTION (action), uri);
     if (midori_paths_get_runtime_mode () == MIDORI_RUNTIME_MODE_APP)
         gtk_window_set_icon (GTK_WINDOW (browser), midori_view_get_icon (new_view));
-
+    //g_printf("sunh switched_tab las111111111111111[%d] curr[%d]\n", lastPageIndex, currPageIndex);
     g_signal_emit (browser, signals[SWITCH_TAB], 0, old_widget, new_view);
     _midori_browser_set_statusbar_text (browser, new_view, NULL);
     _midori_browser_update_interface (browser, new_view);

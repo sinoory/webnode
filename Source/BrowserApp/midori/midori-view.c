@@ -3898,9 +3898,7 @@ midori_view_download_requested_cb (GtkWidget*      web_view,
 }
 
 static gboolean
-midori_dialog_action_button_press_cb_ctn (GtkWidget*            button,
-                                          GdkEventButton*       event,
-                                          ScriptDialogAction*   action)
+  midori_dialog_action_button_press_cb_ctn (ScriptDialogAction*   action)
 {
     MidoriView* view =action->view;
     gchar *uri = gtk_entry_get_text((GtkEntry*)(action->entry_uri)); 
@@ -3912,9 +3910,7 @@ midori_dialog_action_button_press_cb_ctn (GtkWidget*            button,
     return TRUE;
 }
 static gboolean
-midori_dialog_action_button_press_cb_dlt (GtkWidget*            button,
-                                          GdkEventButton*       event,
-                                          ScriptDialogAction*   action)
+ midori_dialog_action_button_press_cb_dlt ( ScriptDialogAction*   action)
 {  
   gtk_widget_destroy(action->dialog);
   return TRUE;
@@ -4087,18 +4083,18 @@ midori_view_script_dialog_popup_cb (GtkWidget*          web_view,
    GtkCellRenderer* renderer;
    MidoriAutocompleter *autocompleter = NULL;
    GtkTreeModel* completion_model;
-   gint height,sep;
    MidoriApp* app = midori_app_new_proxy (NULL);
    action = malloc(sizeof(ScriptDialogAction));
    action->view = view;
    autocompleter = midori_autocompleter_new (G_OBJECT (app));
    action->autocompleter = autocompleter;
-   dialog = gtk_dialog_new ();        
+   //dialog = gtk_dialog_new ();
+   dialog = gtk_dialog_new_with_buttons("添加网址",NULL,GTK_DIALOG_MODAL,GTK_STOCK_OK,GTK_RESPONSE_OK,GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,NULL);        
    action->dialog = dialog;
    gtk_window_set_destroy_with_parent(GTK_WINDOW(dialog), TRUE);
    gtk_window_set_default_size(GTK_WINDOW(dialog), 600, 400);
    gtk_window_set_resizable(GTK_WINDOW(dialog),FALSE);  
-   gtk_window_set_title(GTK_WINDOW(dialog), "\u6dfb\u52a0\u7f51\u5740");
+   //gtk_window_set_title(GTK_WINDOW(dialog), "\u6dfb\u52a0\u7f51\u5740");
    gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
    GtkWidget *box = gtk_dialog_get_content_area ((GtkDialog *)dialog);      
    gtk_box_set_spacing(GTK_BOX(box),30);
@@ -4108,34 +4104,19 @@ midori_view_script_dialog_popup_cb (GtkWidget*          web_view,
    action->completion_model = completion_model;
    g_object_unref (app);
         
-   label_uri = gtk_label_new( "   \u7f51\u5740:");   
+   label_uri = gtk_label_new( "   网址:");   
    entry_uri = gtk_entry_new();
    action->entry_uri =entry_uri;
    hbox_uri = gtk_box_new(false ,20);
    gtk_box_set_spacing(GTK_BOX(hbox_uri),20);  
-   label_title = gtk_label_new("   \u540d\u79f0:");
+   label_title = gtk_label_new("   名称:");
       
    entry_title= gtk_entry_new();
    action->entry_title =entry_title;  
    hbox_title = gtk_box_new(false ,20);
         
-   button_ctn=gtk_button_new_with_label("\u786e\u5b9a");
-   button_dlt=gtk_button_new_with_label("\u53d6\u6d88");
-        
-   hbutton_box =  gtk_hbutton_box_new();
-   gtk_box_set_spacing(GTK_BOX(hbutton_box),10);
-   gtk_button_box_set_layout(GTK_BUTTON_BOX (hbutton_box),GTK_BUTTONBOX_END);
-   gtk_container_add(GTK_CONTAINER (hbutton_box),button_dlt);
-   gtk_container_add(GTK_CONTAINER (hbutton_box),button_ctn); 
-   g_signal_connect (button_ctn, "button-press-event",
-         G_CALLBACK (midori_dialog_action_button_press_cb_ctn), action);
-   g_signal_connect (button_dlt, "button-press-event",
-         G_CALLBACK (midori_dialog_action_button_press_cb_dlt), action);
-   gtk_widget_set_size_request(button_ctn,30,10);
-   gtk_widget_set_size_request(button_dlt,30,10);
-
    notebook = gtk_notebook_new();
-   label_one = gtk_label_new("\u6253\u5f00\u8bb0\u5f55");
+   label_one = gtk_label_new("打开记录");
    popup_frame = gtk_frame_new (NULL);
    gtk_frame_set_shadow_type (GTK_FRAME (popup_frame), GTK_SHADOW_ETCHED_IN);
    action->popup_frame = popup_frame;
@@ -4178,7 +4159,7 @@ midori_view_script_dialog_popup_cb (GtkWidget*          web_view,
    gtk_tree_view_append_column (GTK_TREE_VIEW (treeview_one), column);
    gtk_scrolled_window_set_min_content_height (GTK_SCROLLED_WINDOW (action->scrolled), 6 * 23);
         
-   label_two = gtk_label_new("\u70ed\u95e8\u7f51\u9875");
+   label_two = gtk_label_new("热门网页");
    popup_frame_one = gtk_frame_new (NULL);
    gtk_frame_set_shadow_type (GTK_FRAME (popup_frame_one), GTK_SHADOW_ETCHED_IN);
    gtk_notebook_append_page(GTK_NOTEBOOK(notebook),popup_frame_one,label_two);
@@ -4198,28 +4179,20 @@ midori_view_script_dialog_popup_cb (GtkWidget*          web_view,
    GtkCellRenderer *renderer_icon = gtk_cell_renderer_pixbuf_new();
    GtkCellRenderer *renderer_text = gtk_cell_renderer_text_new();
    GtkTreeViewColumn *column1=gtk_tree_view_column_new ();
-   gtk_tree_view_column_set_title(column1,"hello world");  
+   //gtk_tree_view_column_set_title(column1,"hello world");  
    gtk_tree_view_column_pack_start(column1,renderer_icon,FALSE);
    gtk_tree_view_column_pack_start(column1,renderer_text,FALSE); 
    gtk_tree_view_column_add_attribute(column1,renderer_icon,"stock-id",0); 
    gtk_tree_view_column_add_attribute(column1,renderer_text,"text",1);
    gtk_tree_view_append_column(GTK_TREE_VIEW(treeview_two), column1);
-    
-   gtk_tree_view_column_cell_get_size (
-        gtk_tree_view_get_column (GTK_TREE_VIEW (treeview_two), 0),
-        NULL, NULL, NULL, NULL, &height);
-   if (height == 0)
-      return;
-   gtk_widget_style_get (treeview_two, "vertical-separator", &sep, NULL);
-   height += sep;
-   gtk_widget_set_size_request(scrolled_one,150,3 * height);
-   
-   list_append(treeview_two, STOCK_BAIDU,"\u767e\u5ea6","https://www.baidu.com/");
-   list_append(treeview_two, STOCK_SINA,"\u65b0\u6d6a","http://www.sina.com.cn/");
-   list_append(treeview_two, STOCK_IFENG,"\u51e4\u51f0","http://www.ifeng.com/");
-   list_append(treeview_two, STOCK_SOHU,"\u641c\u72d0","http://www.sohu.com/");
-   list_append(treeview_two, STOCK_TAOBAO,"\u6dd8\u5b9d","http://www.taobao.com/");
-             
+    gtk_scrolled_window_set_min_content_height (GTK_SCROLLED_WINDOW (scrolled_one), 6 * 23);
+	 
+   list_append(treeview_two, STOCK_BAIDU,"百度","https://www.baidu.com/");
+   list_append(treeview_two, STOCK_SINA,"新浪","http://www.sina.com.cn/");
+   list_append(treeview_two, STOCK_IFENG,"凤凰","http://www.ifeng.com/");
+   list_append(treeview_two, STOCK_SOHU,"搜狐","http://www.sohu.com/");
+   list_append(treeview_two, STOCK_TAOBAO,"淘宝","http://www.taobao.com/");
+            
    gtk_box_pack_start(GTK_BOX(hbox_uri),label_uri,FALSE,FALSE,0);
    gtk_box_pack_start(GTK_BOX(hbox_uri),entry_uri,TRUE,TRUE,0);
    gtk_box_pack_start(GTK_BOX(box),hbox_uri,FALSE,FALSE,0);        
@@ -4227,11 +4200,23 @@ midori_view_script_dialog_popup_cb (GtkWidget*          web_view,
    gtk_box_pack_start(GTK_BOX(hbox_title),entry_title,TRUE,TRUE,0);
    gtk_box_pack_start(GTK_BOX(box),hbox_title,FALSE,FALSE,0);        
    gtk_box_pack_start(GTK_BOX(box),notebook,FALSE,FALSE,0);        
-   gtk_box_pack_start(GTK_BOX(box),hbutton_box,FALSE,FALSE,0);           
+   //gtk_box_pack_start(GTK_BOX(box),hbutton_box,FALSE,FALSE,0);           
    gtk_widget_show_all(box);
    gtk_widget_show(dialog);       
    g_signal_connect (dialog, "destroy",
-        G_CALLBACK (midori_view_script_dialog_popup_cb_destroyed), action);       
+        G_CALLBACK (midori_view_script_dialog_popup_cb_destroyed), action);
+	gint result = gtk_dialog_run(GTK_DIALOG(dialog));
+	switch(result){
+		case GTK_RESPONSE_OK:
+			midori_dialog_action_button_press_cb_ctn(action);
+			break;
+		case GTK_RESPONSE_CANCEL:
+			midori_dialog_action_button_press_cb_dlt(action);
+			break;
+		default:
+			gtk_widget_destroy(dialog);
+			break;
+	}       
 }
 
 // ZRL Implement to receive signal console-message for console.log

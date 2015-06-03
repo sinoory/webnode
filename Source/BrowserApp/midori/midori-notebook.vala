@@ -11,6 +11,23 @@
   //The .vala file is modified by wangyl to dynamically change the position of the button which is used for adding a new bookmark In 2015.5.18
 
 namespace Midori {
+
+ public   class gtkNotebookPage
+    {
+      Gtk.Widget child;
+     public  Gtk.Widget tab_label;
+       Gtk.Widget menu_label;
+       Gtk.Widget last_focus_child;  /* Last descendant of the page that had focus */
+    
+      int save_byte;
+    
+      Gtk.Requisition requisition;
+      Gtk.Allocation allocation;
+    
+      long mnemonic_activate_signal;
+      long  notify_visible_handler;
+    }
+
     protected class Tally : Gtk.EventBox {
         public Midori.Tab tab { get; set; }
 //add by luyue 2015/2/13 start
@@ -369,8 +386,8 @@ namespace Midori {
            // notebook.set_action_widget (add_tab_btn, Gtk.PackType.START);//modified by wangyl in 2015.5.18
            //modified by wangyl in 2015.5.18 start
             notebook.add(add_tab_btn);
-	    Gtk.Widget  page = notebook.get_nth_page(-1);
-	  notebook.set_tab_label(page, add_tab_btn);
+	         Gtk.Widget  page = notebook.get_nth_page(-1);
+	         notebook.set_tab_label(page, add_tab_btn);
           //modified by wangyl in 2015.5.18  end
             add_tab_btn.clicked.connect (()=>{
                 new_tab ();
@@ -508,7 +525,7 @@ namespace Midori {
             }
             var c_page = notebook.get_current_page();
             var n_page = notebook.get_n_pages(); 
-            if(event.button == 1 && event.x > max_size -1 && event.x < (max_size + 24)) {
+            if(event.button == 1 && event.x > max_size -3 && event.x < (max_size + 24)) {
                 new_tab();
                 notebook.set_current_page(notebook.get_n_pages() - 2);
             }     
@@ -540,13 +557,14 @@ namespace Midori {
             relayout ();
         }
 
-        void tab_removed () { 
+        void tab_removed () {  
             var c_page = notebook.get_current_page();
             var n_page = notebook.get_n_pages();  
-              if(c_page+1 == n_page) notebook.set_current_page(c_page-1);
+              if(btn_end == false && c_page+1 == n_page) notebook.set_current_page(c_page-1);
             count--;
             if (count > 0)
                 relayout ();
+           
         }
 
         void relayout () {
@@ -670,7 +688,6 @@ namespace Midori {
         /* Can't override Gtk.Container.remove because it checks the parent */
         public new void remove (Midori.Tab tab) {
             return_if_fail (notebook.get_children ().find (tab) != null);
-
             notebook.remove (tab);
             tab.destroy.disconnect (tab_removed);
             tab.notify["minimized"].disconnect (tab_minimized);
@@ -728,15 +745,30 @@ namespace Midori {
 int  is_arrrow_appear(Gtk.Allocation allocation,int page_n)
 {
     Gtk.Allocation size; 
-    Gtk.Allocation tab_size, btn_size;  
-    var tally = notebook.get_tab_label (tab) as Tally;
+    Gtk.Allocation tab_size, btn_size,page_size,tab_size1;  
+    int counter=0,total_size=10;
+    var c_page = notebook.get_current_page();
+    var n_page = notebook.get_n_pages();  
     add_tab_btn.get_allocation (out btn_size);   
     Gtk.Widget tab_label = notebook.get_tab_label (tab);
     tab_label .get_allocation (out tab_size); 
-    if(btn_end == false && (((tab_size.width+7)*(page_n-1)  + btn_size.width+7) >= allocation.width ))return 0;
-     if(btn_end == true && (((tab_size.width+7)*page_n  + btn_size.width+30) <allocation.width ) )return -1;
-            return 1;         
+    foreach (var child in notebook.get_children ()) {
+        if(btn_end == false && page_n == (counter + 1))
+			 break;
+			var tab1 = child as Midori.Tab;
+			Gtk.Widget tab_label1 = notebook.get_tab_label (tab1);
+			tab_label1 .get_allocation (out tab_size1); 
+
+			total_size+=tab_size1.width + 7;
+			counter++;
+                }
+    if(btn_end == false)total_size+= btn_size.width +7+10;
+    else if (btn_end == true)total_size+= btn_size.width +8+32;
+    if(btn_end == false && total_size>= allocation.width)return 0;
+    if(btn_end == true && total_size< allocation.width)return -1;
+    return 1;         
 }
+ 
  //modified by wangyl in 2015.5.18 end
 #if HAVE_GTK3
         void size_allocated (Gtk.Allocation allocation) {
@@ -744,25 +776,24 @@ int  is_arrrow_appear(Gtk.Allocation allocation,int page_n)
 #else
         void size_allocated (Gdk.Rectangle allocation) {
 #endif
+  
   //modified by wangyl in 2015.5.18 start 
-              Gtk.Allocation tab_size, btn_size; 
+             Gtk.Allocation tab_size, btn_size; 
             var page_n = notebook.get_n_pages();
-           have_arrow = is_arrrow_appear(allocation,page_n);
-        
-           if(have_arrow == 0)
-            {
-                    notebook.remove_page(page_n -1);
-                    notebook.set_action_widget(add_tab_btn, Gtk.PackType.END);
-                    btn_end  = true;
-            }
-           if(have_arrow == -1)
-            {
-                    notebook.set_action_widget(null, Gtk.PackType.END);
-                    notebook.add(add_tab_btn);
-                    Gtk.Widget last_page = notebook.get_nth_page(-1);
-                    notebook.set_tab_label(last_page, add_tab_btn);
-                    btn_end  = false;         
-            } 
+      
+           have_arrow = is_arrrow_appear(allocation,page_n);   
+           if(have_arrow == 0){
+				notebook.remove_page(page_n -1);
+				notebook.set_action_widget(add_tab_btn, Gtk.PackType.END);
+				btn_end  = true;
+				}
+           if(have_arrow == -1){
+            notebook.set_action_widget(null, Gtk.PackType.END);
+            notebook.add(add_tab_btn);
+            Gtk.Widget last_page = notebook.get_nth_page(-1);
+            notebook.set_tab_label(last_page, add_tab_btn);
+            btn_end  = false;         
+                   		} 
  //modified by wangyl in 2015.5.18 end 
             if (labels_visible && count > 0)
                 resize (allocation.width);
