@@ -245,6 +245,7 @@ struct _WebKitWebViewClass {
     void       (* insecure_content_detected)   (WebKitWebView               *web_view,
                                                 WebKitInsecureContentEvent   event);
     gboolean   (* web_process_crashed)         (WebKitWebView               *web_view);
+    void       (* check_phish)                 (WebKitWebView               *web_view);//add by luyue 2015/6/8
 
     gboolean   (* authenticate)                (WebKitWebView               *web_view,
                                                 WebKitAuthenticationRequest *request);

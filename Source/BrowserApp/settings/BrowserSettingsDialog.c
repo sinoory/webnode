@@ -309,8 +309,18 @@ static void dangerUrlCallback(GtkToggleButton *togglebutton, MidoriWebSettings *
 {
     bool bvalue = gtk_toggle_button_get_active(togglebutton);
     g_object_set(settings,
-             "danger-url", !bvalue,
-             NULL);
+                 "danger-url", !bvalue,
+                 NULL);
+}
+//add end
+
+//add by luyue 2015/6/8 start
+static void phishCheckCallback(GtkToggleButton *togglebutton, MidoriWebSettings *settings)
+{
+    bool bvalue = gtk_toggle_button_get_active(togglebutton);
+    g_object_set(settings,
+                 "phish-check", !bvalue,
+                 NULL);
 }
 //add end
 
@@ -1195,7 +1205,17 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
    gtk_grid_attach(grid,button,2,6,2,1);
    label = gtk_label_new("警告:该功能会导致部分网页加载速度变慢");
    gtk_grid_attach(grid,label,2,7,2,1);
-   //add end     
+   //add end
+   //add by luyue 2015/6/8 start
+   widget = gtk_label_new("钓鱼网站检测：");
+   gtk_grid_attach(grid, widget, 1, 8, 1, 1);
+   button = gtk_check_button_new_with_label("打开钓鱼网站检测功能");
+   g_object_get(settings, "phish-check", &bvalue, NULL);
+   if(!bvalue)
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
+   g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(phishCheckCallback), settings);
+   gtk_grid_attach(grid,button,2,9,2,1);
+   //add end
    gchar *security_pic = midori_paths_get_res_filename("settings-icons/security.png");
    label = xpm_label_box( security_pic, "安 全" );
    g_free(security_pic);

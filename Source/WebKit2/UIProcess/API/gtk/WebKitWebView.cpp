@@ -122,6 +122,8 @@ enum {
 
     WEB_PROCESS_CRASHED,
 
+    CHECK_PHISH, //add by luyue 2015/6/8
+
     AUTHENTICATE,
 
     CONSOLE_MESSAGE, /*ZRL create for console.log*/
@@ -603,12 +605,10 @@ static gboolean webkitWebViewRunFileChooser(WebKitWebView* webView, WebKitFileCh
     return TRUE;
 }
 
-// Only for cdos browser. When download confirmed, close is emitted to browser.
 static void webkitWebViewHandleDownloadRequest(WebKitWebViewBase* webViewBase, DownloadProxy* downloadProxy)
 {
     GRefPtr<WebKitDownload> download = webkitWebContextGetOrCreateDownload(downloadProxy);
     webkitDownloadSetWebView(download.get(), WEBKIT_WEB_VIEW(webViewBase));
-    g_signal_emit(WEBKIT_WEB_VIEW(webViewBase), signals[CLOSE], 0, NULL);
 }
 
 static void webkitWebViewConstructed(GObject* object)
@@ -1651,6 +1651,17 @@ static void webkit_web_view_class_init(WebKitWebViewClass* webViewClass)
         0,
         webkit_marshal_BOOLEAN__VOID,
         G_TYPE_BOOLEAN, 0);
+
+     //add by luyue 2015/6/8 start
+     signals[CHECK_PHISH] = g_signal_new(
+        "check-phish",
+        G_TYPE_FROM_CLASS(webViewClass),
+        G_SIGNAL_RUN_LAST,
+        G_STRUCT_OFFSET(WebKitWebViewClass, check_phish),
+        0, 0,
+        g_cclosure_marshal_VOID__STRING,
+        G_TYPE_NONE, 0);
+    //add end
 
     /**
      * WebKitWebView::authenticate:
@@ -3512,6 +3523,14 @@ cairo_surface_t* webkit_web_view_get_snapshot_finish(WebKitWebView* webView, GAs
 
     return static_cast<cairo_surface_t*>(g_task_propagate_pointer(G_TASK(result), error));
 }
+
+//add by luyue 2015/6/8 start
+//发出钓鱼网站检测信号
+void webkitWebViewCheckPhish(WebKitWebView* webView)
+{
+   g_signal_emit(webView, signals[CHECK_PHISH], 0);
+}
+//add end
 
 void webkitWebViewWebProcessCrashed(WebKitWebView* webView)
 {

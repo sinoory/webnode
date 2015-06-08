@@ -71,6 +71,16 @@ static void didCommitLoadForFrame(WKPageRef, WKFrameRef frame, WKTypeRef /* user
     webkitWebViewLoadChanged(WEBKIT_WEB_VIEW(clientInfo), WEBKIT_LOAD_COMMITTED);
 }
 
+//add by luyue 2015/6/8 start
+static void didFinishDocumentLoadForFrame(WKPageRef, WKFrameRef frame, WKTypeRef /* userData */, const void* clientInfo)
+{
+    if (!WKFrameIsMainFrame(frame))
+        return;
+
+    webkitWebViewCheckPhish(WEBKIT_WEB_VIEW(clientInfo));
+}
+//add end
+
 static void didFinishLoadForFrame(WKPageRef, WKFrameRef frame, WKTypeRef /* userData */, const void* clientInfo)
 {
     if (!WKFrameIsMainFrame(frame))
@@ -127,7 +137,7 @@ void attachLoaderClientToView(WebKitWebView* webView)
         didReceiveServerRedirectForProvisionalLoadForFrame,
         didFailProvisionalLoadWithErrorForFrame,
         didCommitLoadForFrame,
-        0, // didFinishDocumentLoadForFrame
+        didFinishDocumentLoadForFrame,
         didFinishLoadForFrame,
         didFailLoadWithErrorForFrame,
         0, // didSameDocumentNavigationForFrame

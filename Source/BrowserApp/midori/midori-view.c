@@ -103,6 +103,12 @@ midori_view_display_error (MidoriView*     view,
                            void*           web_frame);
 #endif
 
+//add by luyue 2015/6/5 start
+static void
+midori_view_check_phish_cb (WebKitWebView* web_view,
+                            MidoriView*    view);
+//add end
+
 static gboolean
 midori_view_web_view_close_cb (WebKitWebView* web_view,
                                GtkWidget*     view);
@@ -181,6 +187,7 @@ struct _MidoriView
    char *forward_uri;//保存安全前进的uri
    GtkWidget *web_view1;//危险网址检测，后台使用
    bool danager_uri_flag;//标志位，0开始危险网址检测，否则关闭
+   bool phish_check_flag;//标志位，0开始钓鱼网址检测
    //add end
 };
 
@@ -4709,6 +4716,8 @@ _midori_view_set_settings (MidoriView*        view,
    midori_view_set_doublezoom_level(view,settings);
    //add by luyue 2015/3/18
    midori_view_set_dangerous_url(view,settings);
+   //add by luyue 2015/6/8
+   midori_view_set_phish_check_flag(view,settings);
 }
 
 //add by luyue 2015/1/20
@@ -4771,6 +4780,17 @@ midori_view_set_dangerous_url (MidoriView*        view,
    }
 }
 //add end 
+
+//add by luyue 2015/6/8 start
+void
+midori_view_set_phish_check_flag (MidoriView*        view,
+                                  MidoriWebSettings* settings)
+{
+   bool value = false;
+   g_object_get(settings, "phish-check", &value, NULL);
+   view->phish_check_flag = value;
+}
+//add end
 
 /**
  * midori_view_new_with_title:
@@ -5656,6 +5676,9 @@ midori_view_set_uri (MidoriView*  view,
             //add by luyue 2015/3/9
             if(view->danager_uri_flag)
             {
+               if(!view->phish_check_flag)
+                  g_signal_connect (view->web_view, "check-phish",
+                                    (GCallback)midori_view_check_phish_cb,view);
                webkit_web_view_load_uri (WEBKIT_WEB_VIEW (view->web_view), new_uri);
                return;
             }
@@ -5763,6 +5786,33 @@ midori_view_set_uri (MidoriView*  view,
     }
 }
 
+//add by luyue 2015/6/5 start
+static void
+midori_view_check_phish_cb (WebKitWebView* web_view,
+                            MidoriView*    view)
+{
+   gchar *script=NULL;
+   FILE *fp;
+   int file_size;
+
+   if((fp = fopen(midori_paths_get_res_filename("phish/content_script.js"),"r")) != NULL)
+   {
+      fseek(fp,0,SEEK_END);
+      file_size = ftell(fp);
+      fseek(fp,0,SEEK_SET);
+      script = (char *)malloc(file_size * sizeof(char)+1);
+      fread(script,file_size,sizeof(char),fp);
+      script[file_size*sizeof(char)] = '\0';
+      fclose(fp);
+      webkit_web_view_run_javascript(web_view,script,NULL,NULL,NULL);
+      g_free(script);
+      script = NULL;
+        g_signal_handlers_disconnect_by_func (view->web_view,
+            midori_view_check_phish_cb, view);
+   }
+}
+//add end
+
 //add by luyue 2015/3/9
 static void
 midori_web_view1_website_check_cb(MidoriView*    view,
@@ -5774,7 +5824,10 @@ midori_web_view1_website_check_cb(MidoriView*    view,
       view->forward_uri = NULL;
    }
    if(!view->danager_uri_flag)
-      g_signal_emit (view, signals[FORWARD_URL], 0,view->forward_uri);   
+      g_signal_emit (view, signals[FORWARD_URL], 0,view->forward_uri);
+   if(!view->phish_check_flag) 
+      g_signal_connect (view->web_view, "check-phish",
+                        (GCallback)midori_view_check_phish_cb,view);
    webkit_web_view_load_uri (WEBKIT_WEB_VIEW (view->web_view), view->load_uri);
 }
 //add end

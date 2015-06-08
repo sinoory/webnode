@@ -266,9 +266,15 @@ midori_view_set_doublezoom_level       (MidoriView*        view,
                                         MidoriWebSettings* settings);
 //add by luyue 2015/3/18
 void
-midori_view_set_dangerous_url       (MidoriView*        view,
-                                     MidoriWebSettings* settings);
-//add end             
+midori_view_set_dangerous_url          (MidoriView*        view,
+                                        MidoriWebSettings* settings);
+//add end 
+
+//add by luyue 2015/6/8 start
+void
+midori_view_set_phish_check_flag       (MidoriView*        view,
+                                        MidoriWebSettings* settings);
+//add end
 
 G_END_DECLS
 

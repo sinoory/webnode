@@ -8539,6 +8539,15 @@ midori_browser_settings_notify (MidoriWebSettings* web_settings,
         g_list_free (tabs);
     }
     //add end
+    //luyue add by 2015/6/8 start
+    else if(name == g_intern_string("phish-check"))
+    {
+        GList* tabs = midori_browser_get_tabs (browser);
+        for (; tabs; tabs = g_list_next (tabs))
+           midori_view_set_phish_check_flag (tabs->data, browser->settings);
+        g_list_free (tabs);
+    }
+    //add end
 
 #endif
     g_value_unset (&value);
