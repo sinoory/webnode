@@ -6609,7 +6609,7 @@ static const GtkActionEntry entries[] =
         N_("Find _Previous"), "<Ctrl><Shift>g",
         NULL, G_CALLBACK (_action_find_previous_activate) },
     { "Preferences", GTK_STOCK_PREFERENCES,
-        NULL, "<Ctrl><Alt>p",
+        NULL, "<Ctrl><Shift>p",
         N_("Configure the application preferences"), G_CALLBACK (_action_preferences_activate) },
 
     { "View", NULL, N_("_View") },
