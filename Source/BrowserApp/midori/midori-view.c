@@ -2958,7 +2958,15 @@ midori_web_view_menu_save_activate_cb (GtkAction* action,
                                        gpointer   user_data)
 {
     MidoriView* view = user_data;
-    midori_view_download_uri (view, MIDORI_DOWNLOAD_SAVE_AS, view->link_uri);
+    //add by luyue 2015/6/9
+    //保存页面，不走下载流程，走页面另存为流程
+    //midori_view_download_uri (view, MIDORI_DOWNLOAD_SAVE_AS, view->link_uri);
+    MidoriBrowser* browser = midori_browser_get_for_widget (GTK_WIDGET (view));
+    KatzeItem* item = katze_item_new ();
+    item->uri = g_strdup (view->link_uri);
+    MidoriView* new_view = (MidoriView*)midori_view_new_from_view (view,item,NULL);
+    webkit_web_view_load_uri (WEBKIT_WEB_VIEW (new_view->web_view),view->link_uri);
+    midori_browser_save_uri (browser,new_view,view->link_uri,"s");
 }
 
 static void

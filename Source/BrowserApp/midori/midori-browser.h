@@ -197,7 +197,8 @@ midori_browser_update_history         (KatzeItem*         item,
 void
 midori_browser_save_uri               (MidoriBrowser*     browser,
                                        MidoriView*        view,
-                                       const gchar*       uri);
+                                       const gchar*       uri,
+                                       gchar*             title);
 
 void
 midori_browser_set_inactivity_reset   (MidoriBrowser*     browser,

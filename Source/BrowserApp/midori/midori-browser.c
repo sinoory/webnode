@@ -1529,11 +1529,13 @@ midori_browser_save_resources (GList*       resources,
 void
 midori_browser_save_uri (MidoriBrowser* browser,
                          MidoriView*    view,
-                         const gchar*   uri)
+                         const gchar*   uri,
+                         gchar*         title)
 {
     static gchar* last_dir = NULL;
     GtkWidget* dialog;
-    const gchar* title = midori_view_get_display_title (view);
+    if(!title)
+       title = midori_view_get_display_title (view);
     gchar* filename;
 
     dialog = (GtkWidget*)midori_file_chooser_dialog_new (_("Save file as"),
@@ -3200,7 +3202,7 @@ _action_save_as_activate (GtkAction*     action,
                           MidoriBrowser* browser)
 {
     GtkWidget* view = midori_browser_get_current_tab (browser);
-    midori_browser_save_uri (browser, MIDORI_VIEW (view), NULL);
+    midori_browser_save_uri (browser, MIDORI_VIEW (view), NULL,NULL);
 }
 
 static void
