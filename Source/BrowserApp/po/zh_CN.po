@@ -165,7 +165,7 @@ msgstr "书签(_B)"
 
 #: ../midori/midori-app.c:1154
 msgid "Add Boo_kmark"
-msgstr "添加书签(_K)"
+msgstr "添加书签(_D)"
 
 #: ../midori/midori-app.c:1155
 msgid "_Extensions"
@@ -202,7 +202,7 @@ msgstr "已关闭的标签(_C)"
 
 #: ../midori/midori-app.c:1163 ../midori/midori-browser.c:5069
 msgid "New _Window"
-msgstr "新建窗口(_W)"
+msgstr "新建窗口(_N)"
 
 #: ../midori/midori-app.c:1164
 msgid "New _Folder"
@@ -526,7 +526,7 @@ msgstr "打开一个新标签"
 
 #: ../midori/midori-browser.c:5075
 msgid "New P_rivate Browsing Window"
-msgstr "新建隐私浏览窗口(_R)"
+msgstr "新建隐私浏览窗口(_W)"
 
 #: ../midori/midori-browser.c:5079
 msgid "Open a file"
@@ -566,7 +566,7 @@ msgstr "打印当前页面"
 
 #: ../midori/midori-browser.c:5102
 msgid "Close a_ll Windows"
-msgstr "关闭所有窗口(_L)"
+msgstr "关闭所有窗口(Q)"
 
 #: ../midori/midori-browser.c:5105
 msgid "_Edit"
@@ -672,7 +672,7 @@ msgid "ManageHistorys"
 msgstr "管理所有历史记录"
 
 msgid "ManageBookmarks"
-msgstr "管理所有书签"
+msgstr "管理所有书签(B)"
 
 # add by zgh 
 msgid "ClearHistorys"
@@ -3663,5 +3663,5 @@ msgid "homepage"
 msgstr "主页"
 
 msgid "preferences"
-msgstr "首选项"
+msgstr "首选项(N)"
 

@@ -3834,7 +3834,7 @@ _action_historys_populate_folder (GtkAction*     action,
     #endif
     
     menuitem = gtk_action_create_menu_item (_action_by_name (browser, "ManageHistorys"));
-    gtk_menu_item_set_label(GTK_MENU_ITEM(menuitem), N_("管理历史记录"));
+    gtk_menu_item_set_label(GTK_MENU_ITEM(menuitem), N_("管理历史记录(H)"));
     gtk_menu_shell_append (menu, menuitem);
     gtk_widget_show (menuitem);
     }
@@ -6540,7 +6540,7 @@ static const GtkActionEntry entries[] =
         NULL, "<Ctrl>t",
         N_("Open a new tab"), G_CALLBACK (_action_tab_new_activate) },
     { "PrivateBrowsing", NULL,
-        N_("New P_rivate Browsing Window"), "<Ctrl><Shift>n",
+        N_("New P_rivate Browsing Window"), "<Ctrl><Shift>p",
         NULL, G_CALLBACK (_action_private_browsing_activate), },
     { "Open", GTK_STOCK_OPEN,
         NULL, "<Ctrl>o",
@@ -6594,7 +6594,7 @@ static const GtkActionEntry entries[] =
         NULL, "<Ctrl>v",
         NULL, G_CALLBACK (_action_paste_activate) },
     { "Delete", GTK_STOCK_DELETE,
-        NULL, NULL,
+        NULL, "Delete",
         NULL, G_CALLBACK (_action_delete_activate) },
     { "SelectAll", GTK_STOCK_SELECT_ALL,
         NULL, "<Ctrl>a",
@@ -6609,7 +6609,7 @@ static const GtkActionEntry entries[] =
         N_("Find _Previous"), "<Ctrl><Shift>g",
         NULL, G_CALLBACK (_action_find_previous_activate) },
     { "Preferences", GTK_STOCK_PREFERENCES,
-        NULL, "<Ctrl><Shift>p",
+        NULL, "<Ctrl><Shift>n",
         N_("Configure the application preferences"), G_CALLBACK (_action_preferences_activate) },
 
     { "View", NULL, N_("_View") },
@@ -6717,10 +6717,10 @@ static const GtkActionEntry entries[] =
         N_("Add a new _folder"), "",
         NULL, G_CALLBACK (_action_bookmark_add_activate) },
     { "BookmarksImport", NULL,
-        N_("_Import bookmarks…"), "",
+        N_("_Import bookmarks…"), "<Ctrl>i",
         NULL, G_CALLBACK (_action_bookmarks_import_activate) },
     { "BookmarksExport", NULL,
-        N_("_Export bookmarks…"), "",
+        N_("_Export bookmarks…"), "<Ctrl>e",
         NULL, G_CALLBACK (_action_bookmarks_export_activate) },
 // ZRL 暂时屏蔽搜索框功能
 #if ENABLE_SEARCH_ACTION 
@@ -6735,7 +6735,7 @@ static const GtkActionEntry entries[] =
         N_("_Inspect Page"), "<Ctrl><Shift>i",
         NULL, G_CALLBACK (_action_inspect_page_activate) },
     { "PageInfo", NULL, //add by zgh 20141225
-        N_("Page _Info"), "<Ctrl>I",
+        N_("Page _Info"), "<Shift>p",
         NULL, G_CALLBACK (_action_pageinfo_activate) },
 
     { "TabPrevious", GTK_STOCK_GO_BACK,
@@ -6806,7 +6806,7 @@ static const GtkToggleActionEntry toggle_entries[] =
         NULL, G_CALLBACK (_action_bookmarkbar_activate),
         FALSE },
     { "Statusbar", NULL,
-        N_("_Statusbar"), "<Ctrl>j",
+        N_("_Statusbar"), "",
         NULL, G_CALLBACK (_action_statusbar_activate),
         FALSE },
 };
