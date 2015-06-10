@@ -11,23 +11,6 @@
   //The .vala file is modified by wangyl to dynamically change the position of the button which is used for adding a new bookmark In 2015.5.18
 
 namespace Midori {
-
- public   class gtkNotebookPage
-    {
-      Gtk.Widget child;
-     public  Gtk.Widget tab_label;
-       Gtk.Widget menu_label;
-       Gtk.Widget last_focus_child;  /* Last descendant of the page that had focus */
-    
-      int save_byte;
-    
-      Gtk.Requisition requisition;
-      Gtk.Allocation allocation;
-    
-      long mnemonic_activate_signal;
-      long  notify_visible_handler;
-    }
-
     protected class Tally : Gtk.EventBox {
         public Midori.Tab tab { get; set; }
 //add by luyue 2015/2/13 start
@@ -525,7 +508,7 @@ namespace Midori {
             }
             var c_page = notebook.get_current_page();
             var n_page = notebook.get_n_pages(); 
-            if(event.button == 1 && event.x > max_size -3 && event.x < (max_size + 24)) {
+            if(event.button == 1 && event.x > max_size -4 && event.x < (max_size + 24)) {
                 new_tab();
                 notebook.set_current_page(notebook.get_n_pages() - 2);
             }     

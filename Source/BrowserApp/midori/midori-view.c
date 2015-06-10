@@ -4107,12 +4107,12 @@ midori_view_script_dialog_popup_cb (GtkWidget*          web_view,
    dialog = gtk_dialog_new_with_buttons("添加网址",NULL,GTK_DIALOG_MODAL,GTK_STOCK_OK,GTK_RESPONSE_OK,GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,NULL);        
    action->dialog = dialog;
    gtk_window_set_destroy_with_parent(GTK_WINDOW(dialog), TRUE);
-   gtk_window_set_default_size(GTK_WINDOW(dialog), 600, 400);
+   gtk_window_set_default_size(GTK_WINDOW(dialog), 500, 400);
    gtk_window_set_resizable(GTK_WINDOW(dialog),FALSE);  
    //gtk_window_set_title(GTK_WINDOW(dialog), "\u6dfb\u52a0\u7f51\u5740");
-   gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
+   //gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
    GtkWidget *box = gtk_dialog_get_content_area ((GtkDialog *)dialog);      
-   gtk_box_set_spacing(GTK_BOX(box),30);
+   gtk_box_set_spacing(GTK_BOX(box),10);
    midori_autocompleter_add (autocompleter,MIDORI_COMPLETION (midori_history_completion_new ()));
    midori_autocompleter_complete (autocompleter, "http", NULL, NULL);
    completion_model = (GtkTreeModel*)midori_autocompleter_get_model (autocompleter);
@@ -4136,7 +4136,7 @@ midori_view_script_dialog_popup_cb (GtkWidget*          web_view,
    gtk_frame_set_shadow_type (GTK_FRAME (popup_frame), GTK_SHADOW_ETCHED_IN);
    action->popup_frame = popup_frame;
    gtk_notebook_append_page(GTK_NOTEBOOK(notebook),popup_frame,label_one);
-   gtk_widget_set_size_request(label_one,300,10);
+   gtk_widget_set_size_request(label_one,250,10);
    scrolled = g_object_new (GTK_TYPE_SCROLLED_WINDOW,
         "hscrollbar-policy", GTK_POLICY_AUTOMATIC,
         "vscrollbar-policy", GTK_POLICY_AUTOMATIC, NULL);
@@ -4178,7 +4178,7 @@ midori_view_script_dialog_popup_cb (GtkWidget*          web_view,
    popup_frame_one = gtk_frame_new (NULL);
    gtk_frame_set_shadow_type (GTK_FRAME (popup_frame_one), GTK_SHADOW_ETCHED_IN);
    gtk_notebook_append_page(GTK_NOTEBOOK(notebook),popup_frame_one,label_two);
-   gtk_widget_set_size_request(label_two,300,10);
+   gtk_widget_set_size_request(label_two,250,10);
              
    GtkWidget *scrolled_one = g_object_new (GTK_TYPE_SCROLLED_WINDOW,
         	"hscrollbar-policy", GTK_POLICY_NEVER,

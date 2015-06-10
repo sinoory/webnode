@@ -421,7 +421,18 @@ namespace Tabby {
                     double sorting = this.get_tab_sorting (view);
                     item.set_meta_string ("sorting", sorting.to_string ());
                     this.add_item (item);
+                }			
+					//wangyl 2015.6.10 start 解决浏览器异常关闭后，再次启动不能显示以前打开的页面
+					GLib.DateTime time = new DateTime.now_local ();
+                string sqlcmd = "UPDATE `sessions` SET closed = 1 WHERE id = :session_id;";
+                try {
+                    database.prepare (sqlcmd,
+                        ":session_id", typeof (int64), this.id,
+                        ":tstamp", typeof (int64), time.to_unix ()).exec ();
+                } catch (Error error) {
+                    critical (_("Failed to update database: %s"), error.message);
                 }
+					// wangyl 2015.6.10 end 
            }
 
             protected override void tab_removed (Midori.Browser browser, Midori.View view) {
@@ -436,6 +447,17 @@ namespace Tabby {
                 } catch (Error error) {
                     critical (_("Failed to update database: %s"), error.message);
                 }
+					//wangyl 2015.6.10 start
+					GLib.DateTime time = new DateTime.now_local ();
+               sqlcmd = "UPDATE `sessions` SET closed = 1 WHERE id = :session_id;";
+                try {
+                    database.prepare (sqlcmd,
+                        ":session_id", typeof (int64), this.id,
+                        ":tstamp", typeof (int64), time.to_unix ()).exec ();
+                } catch (Error error) {
+                    critical (_("Failed to update database: %s"), error.message);
+                }
+					// wangyl 2015.6.10 end 
             }
 
             protected override void tab_switched (Midori.View? old_view, Midori.View? new_view) {

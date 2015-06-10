@@ -420,7 +420,58 @@ midori_location_entry_render_title_cb (GtkCellLayout*   layout,
     g_free (desc);
     g_free (title);
 }
+//wangyl 2015.6.10 start
+// function :修改以前title和uri的内容显示的方式，将其显示在两行上。
+static void
+midori_location_entry_render_text_cb (GtkCellLayout*   layout,
+                                       GtkCellRenderer* renderer,
+                                       GtkTreeModel*    model,
+                                       GtkTreeIter*     iter,
+                                       gpointer         data)
+{
+    MidoriLocationAction* action = data;
+    gchar* title;
+    gchar* uri_escaped;
+    gchar* desc_title;
+    gchar* desc_uri;
+    gchar* desc_text;
+    int len;	
+    gtk_tree_model_get (model, iter,
+        MIDORI_AUTOCOMPLETER_COLUMNS_MARKUP, &title,
+        MIDORI_AUTOCOMPLETER_COLUMNS_URI, &uri_escaped,
+        -1);
+    if (strchr (title, '\n')) /* A search engine or action suggestion */
+	 {
+		gchar** parts = g_strsplit (title, "\n", 2);
+		desc_title = g_strdup (parts[0]);
+	   desc_uri = g_strdup (parts[1]);
+	   len = strlen(desc_title) + strlen(desc_uri);
+	   desc_text = malloc(len+3);
+	   sprintf(desc_text,"%s\n%s",desc_title,desc_uri);
+		g_strfreev (parts);
+	}
+   else
+    	{
+		gchar* key = g_utf8_strdown (action->key ? action->key : "", -1);
+		gchar** keys = g_strsplit_set (key, " %", -1);
+		g_free (key);
+		desc_title = midori_location_action_render_title (keys, title);
+		desc_uri = midori_location_action_render_uri (keys, uri_escaped);
+		len = strlen(title) + strlen(uri_escaped);
+		desc_text = malloc(len+3);
+		sprintf(desc_text,"%s\n%s",title,uri_escaped);
+		g_strfreev (keys);
+		g_free (title);
+		g_free (uri_escaped);
+   	 }
 
+    g_object_set (renderer, "text", desc_text,NULL);
+      //  "ellipsize-set", TRUE, "ellipsize", PANGO_ELLIPSIZE_END, NULL);
+    g_free (desc_title);  
+    g_free (desc_uri);
+    g_free (desc_text);
+}
+//wangyl 2015.6.10 end 
 static void
 midori_location_entry_render_uri_cb (GtkCellLayout*   layout,
                                      GtkCellRenderer* renderer,
@@ -531,12 +582,13 @@ midori_location_action_popup_position (MidoriLocationAction* action,
 
     column = gtk_tree_view_get_column(GTK_TREE_VIEW (action->treeview),0);
 	 gtk_tree_view_column_set_fixed_width (column,width-15);
+	   /*   //wangyl 2015.6.10 
     if (wx < monitor.x)
         wx = monitor.x;
     //else if (wx + menu_req.width > monitor.x + monitor.width)
 	 else if (wx + width > monitor.x + monitor.width)
         wx = monitor.x + monitor.width - menu_req.width;
-
+	*/
     if (wy + widget_req.height + menu_req.height <= monitor.y + monitor.height ||
         wy - monitor.y < (monitor.y + monitor.height) - (wy + widget_req.height))
         wy += widget_req.height;
@@ -717,7 +769,7 @@ midori_location_action_popup_timeout_cb (gpointer data)
         gtk_frame_set_shadow_type (GTK_FRAME (popup_frame), GTK_SHADOW_ETCHED_IN);
         gtk_container_add (GTK_CONTAINER (popup), popup_frame);
         scrolled = g_object_new (GTK_TYPE_SCROLLED_WINDOW,
-            "hscrollbar-policy", GTK_POLICY_NEVER,
+            "hscrollbar-policy", GTK_POLICY_AUTOMATIC,
             "vscrollbar-policy", GTK_POLICY_AUTOMATIC, NULL);
         gtk_container_add (GTK_CONTAINER (popup_frame), scrolled);
         treeview = gtk_tree_view_new_with_model (action->completion_model);
@@ -750,14 +802,15 @@ midori_location_action_popup_timeout_cb (gpointer data)
             NULL);
         gtk_tree_view_column_set_expand (column, TRUE);
         gtk_cell_layout_set_cell_data_func (GTK_CELL_LAYOUT (column), renderer,
-            midori_location_entry_render_title_cb, action, NULL);
-
+            midori_location_entry_render_text_cb, action, NULL);
+		/*  //wangyl 2015.6.10
         renderer = gtk_cell_renderer_text_new ();
         gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (column), renderer, TRUE);
         gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (column), renderer,
             "cell-background", MIDORI_AUTOCOMPLETER_COLUMNS_BACKGROUND, NULL);
         gtk_cell_layout_set_cell_data_func (GTK_CELL_LAYOUT (column), renderer,
             midori_location_entry_render_uri_cb, action, NULL);
+*/
         gtk_tree_view_append_column (GTK_TREE_VIEW (treeview), column);
 
         action->popup = popup;
