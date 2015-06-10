@@ -698,13 +698,13 @@ static void downloadPathCallback(GtkEntry *entry, MidoriWebSettings *settings)
    g_object_set(settings, "download-folder", entry_content, NULL);
 }
 
-static void askEverytimeBeforeDownloadCallback(GtkToggleButton *button, MidoriWebSettings *settings)
+/*static void askEverytimeBeforeDownloadCallback(GtkToggleButton *button, MidoriWebSettings *settings)
 {
     bool bvalue = gtk_toggle_button_get_active(button); 
     g_object_set(settings,
                  "ask_every_time_before_download_file", bvalue,
                  NULL);
-}
+}*/
 
 GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
 {
@@ -1278,14 +1278,14 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
    button = gtk_button_new_with_label("更改...");
    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(alterDownloadSaveCatalogCallback), settings);
    gtk_grid_attach(grid, button, 5, 10, 1, 1);
-   button = gtk_check_button_new_with_label("每次下载时询问下载位置");
+/*   button = gtk_check_button_new_with_label("每次下载时询问下载位置");
    bvalue = katze_object_get_boolean(settings, "ask_every_time_before_download_file");
    if(TRUE == bvalue) 
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);     
    else 
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), FALSE); 
    g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(askEverytimeBeforeDownloadCallback), settings);
-   gtk_grid_attach(grid, button, 2, 11, 3, 1);
+   gtk_grid_attach(grid, button, 2, 11, 3, 1);*/
    gchar *advanced_pic = midori_paths_get_res_filename("settings-icons/advanced.png");
    label = xpm_label_box( advanced_pic, "高 级" );
    g_free(advanced_pic);

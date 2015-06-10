@@ -189,7 +189,7 @@ namespace Midori {
         public bool much_tab_warning { get; set; default = false; } //lianxx add, 20141210
         public bool close_window_warning { get; set; default = true; } //luyue add, 20150420
 	public bool show_homepage_button {get; set; default = true; } //lianxx add, 20141210
-	public bool ask_every_time_before_download_file {get; set; default = false; } //lianxx add, 20141210
+//	public bool ask_every_time_before_download_file {get; set; default = false; } //lianxx add, 20141210
         public bool zoom_text_and_images {get; set; default = true; } //lianxx add, 20141211
 	public bool auto_load_images {get; set; default = true; } //lianxx add, 20141211 
 	public bool enable_scripts {get; set; default = true; } //lianxx add, 20141211 
