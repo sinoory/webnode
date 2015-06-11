@@ -64,6 +64,16 @@ midori_map_get_message (SoupMessage* message);
     #include <sys/utsname.h>
 #endif
 
+//ykhu
+#define AUTH_INFO_MAX_LEN (64)
+#define CMD_MAX (AUTH_INFO_MAX_LEN * 16)
+#define GST_DEV "gstreamer1.0-dev"
+#define GST_TOOLS "gstreamer1.0-tools"
+#define GST_BASE "gstreamer1.0-plugins-base"
+#define GST_GOOD "gstreamer1.0-plugins-good"
+#define GST_UGLY "gstreamer1.0-plugins-ugly"
+#define GST_BAD "gstreamer1.0-plugins-bad"
+
 static void
 midori_view_item_meta_data_changed (KatzeItem*   item,
                                     const gchar* key,
@@ -189,6 +199,8 @@ struct _MidoriView
    bool danager_uri_flag;//标志位，0开始危险网址检测，否则关闭
    bool phish_check_flag;//标志位，0开始钓鱼网址检测
    //add end
+
+   gboolean media_info_bar_lock;  //ykhu
 };
 
 struct _MidoriViewClass
@@ -267,6 +279,12 @@ webkit_web_view_console_message_cb (GtkWidget*   web_view,
                                     const gchar* message,
                                     guint        line,
                                     const gchar* source_id,
+                                    MidoriView*  view);
+
+//ykhu
+static void
+webkit_web_view_media_failed_text_cb (GtkWidget*   web_view,
+                                    const gchar* text,
                                     MidoriView*  view);
 
 //add by luyue 2015/3/9
@@ -871,6 +889,223 @@ webkit_web_view_javascript_popup_window_block_cb(WebKitWebView *web_view,
     g_signal_emit(view, signals[JAVASCRIPT_POPUP_WINDOW_UI_MESSAGE], 0, str);
 }
 #endif //#if TRACK_LOCATION_TAB_ICON //lxx, 20150203
+
+//ykhu
+static gboolean
+get_authentication_info(gchar* auth_info)
+{
+    gboolean ret = FALSE;
+    //create a dialog
+    GtkDialogFlags flags = GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT;
+    GtkWidget *dialog = gtk_dialog_new_with_buttons (g_strdup_printf(_("Media plugin install")),
+                                                                                              NULL,
+                                                                                              flags,
+                                                                                              _("_Cancel"),
+                                                                                              GTK_RESPONSE_CANCEL,
+                                                                                              _("_OK"),
+                                                                                              GTK_RESPONSE_OK,
+                                                                                              NULL);
+    gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK); //Sets dialog default response
+    gtk_container_set_border_width(GTK_CONTAINER(dialog),10); //Sets dialog border width
+    gtk_window_set_resizable(GTK_WINDOW(dialog), FALSE); //Sets whether the user can resize a window
+    gtk_window_set_keep_above(GTK_WINDOW(dialog), TRUE); //Sets whether to keep window above other windows
+
+    //get the content area box
+    GtkWidget *box = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+    gtk_box_set_homogeneous(GTK_BOX(box), TRUE);
+    gtk_box_set_spacing(GTK_BOX(box), 10);
+
+    //create a label to show the notice information
+    GtkWidget *info_label = gtk_label_new(g_strdup_printf(_("You must have administrator rights to complete this installation!")));
+    gtk_label_set_max_width_chars(GTK_LABEL(info_label), 30);
+    gtk_label_set_line_wrap(GTK_LABEL(info_label), TRUE);
+    gtk_container_add(GTK_CONTAINER(box), info_label);
+
+    //create a label and text box
+    GtkWidget *password_label = gtk_label_new(g_strdup_printf(_("_Password:")));
+    GtkWidget *password_entry = gtk_entry_new();
+    gtk_entry_set_visibility(GTK_ENTRY(password_entry), FALSE);
+    gtk_entry_set_input_purpose(GTK_ENTRY(password_entry), GTK_INPUT_PURPOSE_PASSWORD);
+
+    //create a grid container
+    GtkWidget *grid = gtk_grid_new();
+    gtk_grid_set_row_spacing((GtkGrid *)grid, 20);
+    gtk_grid_set_column_spacing((GtkGrid *)grid, 10);
+    gtk_container_add(GTK_CONTAINER(box), grid);
+
+    //assemble widget
+    gtk_grid_attach(GTK_GRID(grid), password_label, 0, 1, 1, 1);
+    gtk_grid_attach((GtkGrid *)grid, password_entry, 1, 1, 1, 1);
+
+    //show the dialog
+    gtk_widget_show_all(dialog);
+    gint dialog_result = gtk_dialog_run(GTK_DIALOG(dialog));
+
+    switch(dialog_result){
+        case GTK_RESPONSE_OK:
+        {
+             const gchar *entry_text = gtk_entry_get_text(GTK_ENTRY(password_entry));
+             guint16 entry_len = gtk_entry_get_text_length(GTK_ENTRY(password_entry));
+             if (entry_text && entry_len > 0 && entry_len < AUTH_INFO_MAX_LEN) {
+                 strncpy(auth_info, entry_text, entry_len);
+                 //printf("Auth info:%s==%s\n", auth_info,  entry_text);
+                 ret = TRUE;
+             } else {
+                 //printf("Warning: your input is wrong!\n");
+                 ret = FALSE;
+             }
+         }
+            break;
+        case GTK_RESPONSE_CANCEL:
+            //printf("Cancel is press!\n");
+            ret = FALSE;
+            break;
+        default:
+            //printf("Something wrong!\n");
+            ret = FALSE;
+            break;
+    }
+
+    //destroy the dialog
+    gtk_widget_destroy(dialog);
+
+    return ret;
+}
+
+//ykhu
+static gboolean
+exec_install_command(const gchar* auth_info)
+{
+    gboolean ret = FALSE;
+    gchar cmd_install[CMD_MAX] = {0};
+
+#if 1
+    gchar tmp[AUTH_INFO_MAX_LEN * 2]= {0};
+    int info_index = 0;
+    int info_len = strlen(auth_info);
+    int tmp_index = 0;
+
+    while (info_index < info_len) {
+        if (auth_info[info_index] == '$' || auth_info[info_index] == '\\') {
+            tmp[tmp_index++] = '\\';
+        }
+        tmp[tmp_index++] = auth_info[info_index++];
+    }
+    snprintf(cmd_install, CMD_MAX, "echo \"%s\" |sudo -S apt-get -y --force-yes install %s %s %s %s %s %s > /dev/null 2>&1 &", tmp, \
+                   GST_DEV, GST_TOOLS, GST_BASE, GST_GOOD, GST_UGLY, GST_BAD);
+#else
+    snprintf(cmd_install, CMD_MAX, "echo '%s' |sudo -S apt-get -y --force-yes install %s %s %s %s %s %s > /dev/null 2>&1 &", auth_info, \
+                   GST_DEV, GST_TOOLS, GST_BASE, GST_GOOD, GST_UGLY, GST_BAD); //can't cover '\''
+#endif
+    //printf("[%s]===%s===\n", __FUNCTION__, cmd_install);
+
+    pid_t ret_status = system(cmd_install);
+    if (ret_status == -1) {
+        //printf("[%s]===system error===\n", __FUNCTION__);
+        ret = FALSE;
+    } else {
+        if (WIFEXITED(ret_status)) {
+            if (0 == WEXITSTATUS(ret_status)) {
+                //printf("[%s]===success to install media plugin===\n", __FUNCTION__);
+                ret = TRUE;
+            } else {
+                //printf("[%s]===run failed %d===\n", __FUNCTION__, WEXITSTATUS(ret_status));
+                ret = FALSE;
+            }
+        } else {
+            //printf("[%s]===exit code %d===\n",__FUNCTION__, WEXITSTATUS(ret_status));
+            ret = FALSE;
+        }
+    }
+
+    return ret;
+}
+
+//ykhu
+static void
+midori_view_install_media_plugin_cb (GtkWidget*  web_view,
+                                GtkResponseType        response_type,
+                                MidoriView* view)
+{
+    switch (response_type) {
+        case GTK_RESPONSE_ACCEPT:
+        {
+            //printf("[%s]===accept===\n", __FUNCTION__);
+            gchar *auth_info = (char *)malloc(AUTH_INFO_MAX_LEN);
+            if (auth_info) {
+                memset(auth_info, 0 , AUTH_INFO_MAX_LEN);
+                if (get_authentication_info(auth_info)) {
+                    if (exec_install_command(auth_info)) {
+                        gchar *message = g_strdup_printf(_("Plugin installation is successful, in order to make effective plugin, please restart your browser!"));
+                        midori_view_add_info_bar(view, GTK_MESSAGE_INFO, message,
+                            NULL, NULL,
+                            GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
+                            NULL);
+                    }
+                }
+                free(auth_info);
+                auth_info = NULL;
+            }
+            break;
+        }
+        case GTK_RESPONSE_REJECT:
+        default:
+            //printf("[%s]===reject===\n", __FUNCTION__);
+            break;
+    }
+
+    if (view) {
+        view->media_info_bar_lock = FALSE;
+    }
+}
+
+//ykhu
+static void
+midori_view_media_warning_cb (GtkWidget*  web_view,
+                                GtkResponseType        response_type,
+                                MidoriView* view)
+{
+    if (view) {
+        view->media_info_bar_lock = FALSE;
+    }
+}
+
+//ykhu
+static void
+webkit_web_view_media_failed_text_cb (GtkWidget*   web_view,
+                                    const gchar* text,
+                                    MidoriView*  view)
+{
+    if (view && !view->media_info_bar_lock && text) {
+        view->media_info_bar_lock = TRUE;
+        if (strncasecmp(text, "MissingPlugin", 13) == 0) {
+            gchar *message = g_strdup_printf(_("Lack media plugins, if install it?"));
+            midori_view_add_info_bar(view, GTK_MESSAGE_WARNING, message,
+                G_CALLBACK (midori_view_install_media_plugin_cb), view,
+                _("_Deny"), GTK_RESPONSE_REJECT,
+                _("_Allow"), GTK_RESPONSE_ACCEPT,
+                NULL);
+        } else if (strncasecmp(text, "FormatError", 11) == 0) {
+            gchar *message = g_strdup_printf(_("Video format or MIME type is not supported."));
+            midori_view_add_info_bar(view, GTK_MESSAGE_ERROR, message,
+                G_CALLBACK (midori_view_media_warning_cb), view,
+                GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
+                NULL);
+        } else if (strncasecmp(text, "NetworkError", 12) == 0) {
+            gchar *message = g_strdup_printf(_("Video can't play, a fatally network error!"));
+            midori_view_add_info_bar(view, GTK_MESSAGE_ERROR, message,
+                G_CALLBACK (midori_view_media_warning_cb), view,
+                GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
+                NULL);
+        } else if (strncasecmp(text, "DecodeError", 11) == 0) {
+            gchar *message = g_strdup_printf(_("Video can't play, a fatally decoder error!"));
+            midori_view_add_info_bar(view, GTK_MESSAGE_ERROR, message,
+            G_CALLBACK (midori_view_media_warning_cb), view,
+                GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
+                NULL);
+        }
+    }
+}
 
 //add by luyue 2015/2/9
 static void
@@ -1554,7 +1789,9 @@ midori_view_load_committed (MidoriView* view)
 
     view->find_links = -1;
     view->load_commited = TRUE; // ZRL initialize var
-    
+
+    view->media_info_bar_lock = FALSE;  //ykhu
+
     midori_view_update_load_status (view, MIDORI_LOAD_COMMITTED);
 
 }
@@ -4558,6 +4795,9 @@ midori_view_init (MidoriView* view)
     view->scrollh = view->scrollv = -2;
     view->tmp_uri = NULL; //luyue 2015/3/6 
     view->website_record_array = NULL;  //zgh 20150108
+
+    view->media_info_bar_lock = FALSE;  //ykhu
+
     #ifndef HAVE_WEBKIT2
     /* Adjustments are not created initially, but overwritten later */
     view->scrolled_window = gtk_scrolled_window_new (NULL, NULL);
@@ -5218,6 +5458,9 @@ midori_view_constructor (GType                  type,
                       midori_view_download_requested_cb, view,
                       #endif
 
+                      //ykhu
+                      "signal::show-media-failed-text",
+                      webkit_web_view_media_failed_text_cb, view,
                       "signal::notify::title",
                       webkit_web_view_notify_title_cb, view,
                       "signal::leave-notify-event",

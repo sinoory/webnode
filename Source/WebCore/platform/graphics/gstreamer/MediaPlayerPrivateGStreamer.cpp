@@ -119,11 +119,13 @@ static GstFlowReturn mediaPlayerPrivateNewTextSampleCallback(GObject*, MediaPlay
 }
 #endif
 
+#if defined (GST_PLUGIN_INSTALL_ENABLE)  //ykhu
 static void mediaPlayerPrivatePluginInstallerResultFunction(GstInstallPluginsReturn result, gpointer userData)
 {
     MediaPlayerPrivateGStreamer* player = reinterpret_cast<MediaPlayerPrivateGStreamer*>(userData);
     player->handlePluginInstallerResult(result);
 }
+#endif
 
 void MediaPlayerPrivateGStreamer::setAudioStreamProperties(GObject* object)
 {
@@ -214,7 +216,9 @@ MediaPlayerPrivateGStreamer::MediaPlayerPrivateGStreamer(MediaPlayer* player)
     , m_totalBytes(0)
     , m_preservesPitch(false)
     , m_requestedState(GST_STATE_VOID_PENDING)
+#if defined (GST_PLUGIN_INSTALL_ENABLE)  //ykhu
     , m_missingPlugins(false)
+#endif
 {
 }
 
@@ -921,8 +925,10 @@ gboolean MediaPlayerPrivateGStreamer::handleMessage(GstMessage* message)
     case GST_MESSAGE_ERROR:
         if (m_resetPipeline)
             break;
+#if defined (GST_PLUGIN_INSTALL_ENABLE)  //ykhu
         if (m_missingPlugins)
             break;
+#endif
         gst_message_parse_error(message, &err.outPtr(), &debug.outPtr());
         ERROR_MEDIA_MESSAGE("Error %d: %s (url=%s)", err->code, err->message, m_url.string().utf8().data());
 
@@ -932,9 +938,15 @@ gboolean MediaPlayerPrivateGStreamer::handleMessage(GstMessage* message)
         if (err->code == GST_STREAM_ERROR_CODEC_NOT_FOUND
             || err->code == GST_STREAM_ERROR_WRONG_TYPE
             || err->code == GST_STREAM_ERROR_FAILED
+#if defined (GST_PLUGIN_INSTALL_ENABLE)  //ykhu
             || err->code == GST_CORE_ERROR_MISSING_PLUGIN
+#endif
             || err->code == GST_RESOURCE_ERROR_NOT_FOUND)
             error = MediaPlayer::FormatError;
+#if !defined (GST_PLUGIN_INSTALL_ENABLE)  //ykhu
+        else if (err->code == GST_CORE_ERROR_MISSING_PLUGIN)
+            error = MediaPlayer::MissingPlugin;
+#endif
         else if (err->domain == GST_STREAM_ERROR) {
             // Let the mediaPlayerClient handle the stream error, in
             // this case the HTMLMediaElement will emit a stalled
@@ -995,11 +1007,17 @@ gboolean MediaPlayerPrivateGStreamer::handleMessage(GstMessage* message)
         break;
     case GST_MESSAGE_ELEMENT:
         if (gst_is_missing_plugin_message(message)) {
+//ykhu
+#if defined (GST_PLUGIN_INSTALL_ENABLE)
             gchar* detail = gst_missing_plugin_message_get_installer_detail(message);
             gchar* detailArray[2] = {detail, 0};
             GstInstallPluginsReturn result = gst_install_plugins_async(detailArray, 0, mediaPlayerPrivatePluginInstallerResultFunction, this);
             m_missingPlugins = result == GST_INSTALL_PLUGINS_STARTED_OK;
             g_free(detail);
+#else
+            error = MediaPlayer::MissingPlugin;
+            loadingFailed(error);
+#endif
         }
 #if ENABLE(VIDEO_TRACK) && USE(GSTREAMER_MPEGTS)
         else {
@@ -1024,6 +1042,7 @@ gboolean MediaPlayerPrivateGStreamer::handleMessage(GstMessage* message)
     return TRUE;
 }
 
+#if defined (GST_PLUGIN_INSTALL_ENABLE)  //ykhu
 void MediaPlayerPrivateGStreamer::handlePluginInstallerResult(GstInstallPluginsReturn result)
 {
     m_missingPlugins = false;
@@ -1032,6 +1051,7 @@ void MediaPlayerPrivateGStreamer::handlePluginInstallerResult(GstInstallPluginsR
         changePipelineState(GST_STATE_PAUSED);
     }
 }
+#endif
 
 void MediaPlayerPrivateGStreamer::processBufferingStats(GstMessage* message)
 {
@@ -1759,7 +1779,8 @@ static HashSet<String> mimeTypeCache()
         "video/x-msvideo",
         "video/x-mve",
         "video/x-nuv",
-        "video/x-vcd"
+        "video/x-vcd",
+        "video/x-theora+ogg"  //ykhu
     };
 
     for (unsigned i = 0; i < (sizeof(mimeTypes) / sizeof(*mimeTypes)); ++i)

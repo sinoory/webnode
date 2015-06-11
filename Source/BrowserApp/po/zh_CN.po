@@ -3665,3 +3665,35 @@ msgstr "主页"
 msgid "preferences"
 msgstr "首选项(N)"
 
+#ykhu add start
+#: ../midori/midori-view.c:1061
+msgid "Lack media plugins, if install it?"
+msgstr "缺少多媒体插件，是否允许安装？"
+
+msgid "Video format or MIME type is not supported."
+msgstr "视频格式或MIME类型不支持。"
+
+msgid "Video can't play, a fatally network error!"
+msgstr "视频不能播放，网络发生致命错误！"
+
+msgid "Video can't play, a fatally decoder error!"
+msgstr "视频不能播放，解码器发生致命错误！"
+
+msgid "Media plugin install"
+msgstr "多媒体插件安装"
+
+msgid "_Cancel"
+msgstr "取消"
+
+msgid "_OK"
+msgstr "确认"
+
+msgid "_Password:"
+msgstr "密码："
+
+msgid "You must have administrator rights to complete this installation!"
+msgstr "您需要获取管理员权限来完成安装！"
+
+msgid "Plugin installation is successful, in order to make effective plugin, please restart your browser!"
+msgstr "插件安装成功,为了使插件生效,请重启浏览器!"
+#ykhu add end

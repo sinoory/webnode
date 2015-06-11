@@ -413,7 +413,7 @@ public:
 
     PassNativeImagePtr nativeImageForCurrentTime();
 
-    enum NetworkState { Empty, Idle, Loading, Loaded, FormatError, NetworkError, DecodeError };
+    enum NetworkState { Empty, Idle, Loading, Loaded, FormatError, NetworkError, DecodeError, MissingPlugin };  //ykhu add MissingPlugin
     NetworkState networkState();
 
     enum ReadyState  { HaveNothing, HaveMetadata, HaveCurrentData, HaveFutureData, HaveEnoughData };

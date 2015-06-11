@@ -70,6 +70,13 @@ private:
 	{
 		webkitWebViewJavascriptPopupWindowIntercepted(m_webView, str.utf8());
 	}
+
+    //ykhu
+    virtual void showMediaFailedText(WebPageProxy*, const String& text) override
+    {
+        webkitWebViewShowMediaFailedText(m_webView, text.utf8());
+    }
+
     virtual void runJavaScriptAlert(WebPageProxy*, const String& message, WebFrameProxy*, std::function<void ()> completionHandler) override
     {
         webkitWebViewRunJavaScriptAlert(m_webView, message.utf8());

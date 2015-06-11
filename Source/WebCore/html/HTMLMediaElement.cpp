@@ -1842,6 +1842,16 @@ static void logMediaLoadRequest(Page* page, const String& mediaEngine, const Str
     page->sawMediaEngine(mediaEngine);
 }
 
+//ykhu
+static void showMediaFailedText(Page* page, const String& textMessage)
+{
+    if (!page)
+        return;
+
+    ChromeClient& chromeClient = page->chrome().client();
+    chromeClient.showMediaFailedText(textMessage);
+}
+
 static String stringForNetworkState(MediaPlayer::NetworkState state)
 {
     switch (state) {
@@ -1852,6 +1862,7 @@ static String stringForNetworkState(MediaPlayer::NetworkState state)
     case MediaPlayer::FormatError: return ASCIILiteral("FormatError");
     case MediaPlayer::NetworkError: return ASCIILiteral("NetworkError");
     case MediaPlayer::DecodeError: return ASCIILiteral("DecodeError");
+    case MediaPlayer::MissingPlugin: return ASCIILiteral("MissingPlugin");  //ykhu
     default: return emptyString();
     }
 }
@@ -1899,6 +1910,8 @@ void HTMLMediaElement::mediaLoadingFailed(MediaPlayer::NetworkState error)
     }
 
     logMediaLoadRequest(document().page(), String(), stringForNetworkState(error), false);
+
+    showMediaFailedText(document().page(), stringForNetworkState(error));  //ykhu
 }
 
 void HTMLMediaElement::setNetworkState(MediaPlayer::NetworkState state)
@@ -1908,6 +1921,12 @@ void HTMLMediaElement::setNetworkState(MediaPlayer::NetworkState state)
     if (state == MediaPlayer::Empty) {
         // Just update the cached state and leave, we can't do anything.
         m_networkState = NETWORK_EMPTY;
+        return;
+    }
+
+    //ykhu
+    if (state == MediaPlayer::MissingPlugin) {
+        showMediaFailedText(document().page(), stringForNetworkState(state));
         return;
     }
 

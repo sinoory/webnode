@@ -3109,6 +3109,12 @@ void WebPageProxy::setStatusText(const String& text)
     m_uiClient->setStatusText(this, text);
 }
 
+//ykhu
+void WebPageProxy::showMediaFailedText(const String& text)
+{
+    m_uiClient->showMediaFailedText(this, text);
+}
+
 void WebPageProxy::mouseDidMoveOverElement(const WebHitTestResult::Data& hitTestResultData, uint32_t opaqueModifiers, IPC::MessageDecoder& decoder)
 {
     RefPtr<API::Object> userData;

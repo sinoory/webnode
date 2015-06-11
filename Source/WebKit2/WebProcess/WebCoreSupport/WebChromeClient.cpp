@@ -424,6 +424,12 @@ void WebChromeClient::setStatusbarText(const String& statusbarText)
     m_page->send(Messages::WebPageProxy::SetStatusText(statusbarText));
 }
 
+//ykhu
+void WebChromeClient::showMediaFailedText(const String& text)
+{
+    m_page->send(Messages::WebPageProxy::ShowMediaFailedText(text));
+}
+
 bool WebChromeClient::shouldInterruptJavaScript()
 {
     bool shouldInterrupt = false;

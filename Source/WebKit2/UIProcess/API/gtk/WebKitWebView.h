@@ -262,6 +262,8 @@ struct _WebKitWebViewClass {
     // lxx define javascript_popup_window_block_message, 20150215
     void   (* javascript_popup_window_block_message)              (WebKitWebView               *web_view);
 
+    gboolean       (* show_media_failed_text)   (WebKitWebView               *web_view,
+                                                const gchar                 *text);  //ykhu
 
     // lxx define dnt_http_header, 20150116
 /*    gboolean   (* dnt_http_header)              (WebKitWebView               *web_view,

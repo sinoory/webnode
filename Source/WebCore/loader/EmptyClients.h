@@ -122,6 +122,8 @@ public:
 
     virtual void setStatusbarText(const String&) override { }
 
+    virtual void showMediaFailedText(const String&) override { }  //ykhu
+
     virtual KeyboardUIMode keyboardUIMode() override { return KeyboardAccessDefault; }
 
     virtual IntRect windowResizerRect() const override { return IntRect(); }

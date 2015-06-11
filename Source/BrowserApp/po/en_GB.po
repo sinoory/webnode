@@ -3599,3 +3599,36 @@ msgstr "Let article is more conducive to reading"
 #: ../midori/midori-browser.c:9500
 msgid "This operation will remove all history first, Are you sure?"
 msgstr "This operation will remove all history first, Are you sure?"
+
+#ykhu add start
+#: ../midori/midori-view.c:1061
+msgid "Lack media plugins, if install it?"
+msgstr "Lack media plugins, if install it?"
+
+msgid "Video format or MIME type is not supported."
+msgstr "Video format or MIME type is not supported."
+
+msgid "Video can't play, a fatally network error!"
+msgstr "Video can't play, a fatally network error!"
+
+msgid "Video can't play, a fatally decoder error!"
+msgstr "Video can't play, a fatally decoder error!"
+
+msgid "Media plugin install"
+msgstr "Media plugin install"
+
+msgid "_Cancel"
+msgstr "Cancel"
+
+msgid "_OK"
+msgstr "OK"
+
+msgid "_Password:"
+msgstr "Password"
+
+msgid "You must have administrator rights to complete this installation!"
+msgstr "You must have administrator rights to complete this installation!"
+
+msgid "Plugin installation is successful, in order to make effective plugin, please restart your browser!"
+msgstr "Plugin installation is successful, in order to make effective plugin, please restart your browser!"
+#ykhu add end

@@ -64,4 +64,5 @@ void webkitWebViewWebProcessCrashed(WebKitWebView*);
 void webkitWebViewAddMessageToConsole(WebKitWebView*, const CString& message, unsigned lineNumber, const CString& sourceID);
 //lxx, 20150215, lead JavascriptPopupWindowIntercepted to midori-view
 void webkitWebViewJavascriptPopupWindowIntercepted(WebKitWebView*, const CString& str);
+void webkitWebViewShowMediaFailedText(WebKitWebView*, const CString& text);  //ykhu
 #endif // WebKitWebViewPrivate_h

@@ -130,6 +130,8 @@ enum {
 
     JAVASCRIPT_POPUP_WINDOW_BLOCK_MESSAGE, /*lxx create for javascript popup window message*/
 
+    SHOW_MEDIA_FAILED_TEXT,  //ykhu Notify the user media failed infomation
+
     LAST_SIGNAL
 };
 
@@ -294,6 +296,13 @@ private:
 static gboolean webkitWebViewConsoleMessage(WebKitWebView* webView, const gchar* message, unsigned lineNumber, const char* sourceID)
 {
     //g_message("console message: %s @%d: %s\n", sourceID, lineNumber, message);
+    return TRUE;
+}
+
+//ykhu
+static gboolean webkitWebViewMediaFailedText(WebKitWebView* webView, const gchar* text)
+{
+    //g_message("media failed text: %s\n", text);
     return TRUE;
 }
 
@@ -768,6 +777,8 @@ static void webkit_web_view_class_init(WebKitWebViewClass* webViewClass)
     webViewClass->console_message = webkitWebViewConsoleMessage;
 //    webViewClass->javascript_popup_window_block_message = webkitWebViewPopupWindowBlockMessage;
 
+    webViewClass->show_media_failed_text = webkitWebViewMediaFailedText;  //ykhu
+
     /**
      * WebKitWebView:web-context:
      *
@@ -1176,6 +1187,14 @@ static void webkit_web_view_class_init(WebKitWebViewClass* webViewClass)
             g_cclosure_marshal_VOID__STRING,
                          G_TYPE_NONE, 1, G_TYPE_STRING);
 
+    //ykhu
+    signals[SHOW_MEDIA_FAILED_TEXT] = g_signal_new("show-media-failed-text",
+		G_TYPE_FROM_CLASS(webViewClass),
+		G_SIGNAL_RUN_LAST,
+		G_STRUCT_OFFSET(WebKitWebViewClass, show_media_failed_text),
+		0, 0,
+		g_cclosure_marshal_VOID__STRING,
+					 G_TYPE_NONE, 1, G_TYPE_STRING);
 
 /*    // lxx create DNT_HTTP_HEADER signal
     signals[DNT_HTTP_HEADER] = g_signal_new("dnt-http-header",
@@ -1849,6 +1868,13 @@ void webkitWebViewAddMessageToConsole(WebKitWebView* webView, const CString& mes
 void webkitWebViewJavascriptPopupWindowIntercepted(WebKitWebView* webView, const CString& str)
 {
     g_signal_emit(webView, signals[JAVASCRIPT_POPUP_WINDOW_BLOCK_MESSAGE], 0, str.data());
+}
+
+//ykhu
+void webkitWebViewShowMediaFailedText(WebKitWebView* webView, const CString& text)
+{
+    gboolean returnValue;
+    g_signal_emit(webView, signals[SHOW_MEDIA_FAILED_TEXT], 0, text.data(), &returnValue);
 }
 
 void webkitWebViewRunJavaScriptAlert(WebKitWebView* webView, const CString& message)

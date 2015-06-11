@@ -79,6 +79,8 @@ public:
     // ZRL create new API
     virtual void addMessageToConsole(WebKit::WebPageProxy*, const WTF::String& message, unsigned lineNumber, const WTF::String& sourceID, std::function<void ()> completionHandler) { completionHandler(); }
 
+    virtual void showMediaFailedText(WebKit::WebPageProxy*, const WTF::String& textMessage) {};  //ykhu
+
     virtual void runJavaScriptAlert(WebKit::WebPageProxy*, const WTF::String&, WebKit::WebFrameProxy*, std::function<void ()> completionHandler) { completionHandler(); }
     virtual void runJavaScriptConfirm(WebKit::WebPageProxy*, const WTF::String&, WebKit::WebFrameProxy*, std::function<void (bool)> completionHandler) { completionHandler(false); }
     virtual void runJavaScriptPrompt(WebKit::WebPageProxy*, const WTF::String&, const WTF::String&, WebKit::WebFrameProxy*, std::function<void (const WTF::String&)> completionHandler) { completionHandler(WTF::String()); }

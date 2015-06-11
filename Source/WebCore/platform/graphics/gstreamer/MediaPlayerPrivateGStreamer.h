@@ -60,7 +60,10 @@ public:
     ~MediaPlayerPrivateGStreamer();
     static void registerMediaEngine(MediaEngineRegistrar);
     gboolean handleMessage(GstMessage*);
+
+#if defined (GST_PLUGIN_INSTALL_ENABLE)  //ykhu
     void handlePluginInstallerResult(GstInstallPluginsReturn);
+#endif
 
     bool hasVideo() const { return m_hasVideo; }
     bool hasAudio() const { return m_hasAudio; }
@@ -212,7 +215,9 @@ private:
     bool m_preservesPitch;
     GstState m_requestedState;
     GRefPtr<GstElement> m_autoAudioSink;
+#if defined (GST_PLUGIN_INSTALL_ENABLE)  //ykhu
     bool m_missingPlugins;
+#endif
 #if ENABLE(VIDEO_TRACK)
     Vector<RefPtr<AudioTrackPrivateGStreamer>> m_audioTracks;
     Vector<RefPtr<InbandTextTrackPrivateGStreamer>> m_textTracks;
