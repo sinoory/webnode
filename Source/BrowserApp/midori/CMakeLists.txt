@@ -3,6 +3,7 @@
 set(LIBMIDORI_VERSION 0.0.1)
 set(LIBMIDORI_SOVERSION 0)
 set(EXTRALIB_DIR_secret "/usr/include/libsecret-1")
+#set(BOOKMARK_SYNC 1)
 
 set(MIDORI_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Source/BrowserApp")
 
@@ -44,8 +45,11 @@ set_target_properties("${LIBMIDORI}-vala" PROPERTIES
 add_library(${LIBMIDORI} SHARED ${LIBMIDORI_SOURCE})
 add_dependencies(${LIBMIDORI} WebKit2)
 if(USE_64BITS)
+#if(BOOKMARK_SYNC)
+#else()
     target_link_libraries(${LIBMIDORI} "-Wl,--whole-archive ../../../lib/libcrypto.so.1.0.0 -Wl,--no-whole-archive")
     target_link_libraries(${LIBMIDORI} "-Wl,--whole-archive ../../../lib/libssl.so.1.0.0 -Wl,--no-whole-archive")
+#endif()
 endif()
 include_directories(
                     ${MIDORI_SOURCE_DIR}
@@ -89,6 +93,9 @@ include_directories(
                     ${OPTS_INCLUDE_DIRS}
                     #add openssl path by luyue
                     ${CMAKE_SOURCE_DIR}/Source/ThirdParty/openssl-1.0.0d/include
+#if(BOOKMARK_SYNC)
+                    ${CMAKE_SOURCE_DIR}/Source/ThirdParty/account/include
+#endif()
                     )
 target_link_libraries(${LIBMIDORI}
                       "${LIBMIDORI}-vala"
@@ -113,6 +120,12 @@ target_link_libraries(${LIBMIDORI}
                       m
                       X11
                       pthread
+#if(BOOKMARK_SYNC)
+                      ssl
+                      crypto
+														 middlewareAPI
+  													 curl
+#endif
                       )
 set_target_properties(${LIBMIDORI} PROPERTIES
                       COMPILE_FLAGS ${CFLAGS}
@@ -157,6 +170,12 @@ target_link_libraries(${MIDORI_PROJECT_NAME}
                       m
                       X11
                       pthread
+#if(BOOKMARK_SYNC)
+                      ssl
+                      crypto
+														 middlewareAPI
+  													 curl
+#endif()
                       )
 set_target_properties(${MIDORI_PROJECT_NAME} PROPERTIES
                       COMPILE_FLAGS ${CFLAGS}

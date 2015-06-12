@@ -655,5 +655,10 @@ midori_normal_app_on_quit (MidoriApp* app)
 	{
 		DeletePreferencesFile();
 	}
+	g_object_get(app->settings, "auto-login", &bValue, NULL);
+	if(!bValue)
+	{
+		g_object_set(app->settings, "bookmark-user-password", "", NULL);
+	}
 }
 

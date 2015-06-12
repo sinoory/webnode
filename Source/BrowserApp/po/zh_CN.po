@@ -708,11 +708,27 @@ msgstr "添加新文件夹(_F)"
 
 #: ../midori/midori-browser.c:5227
 msgid "_Import bookmarks…"
-msgstr "导入书签(_I)..."
+msgstr "导入书签(_I)"
+
+#: ../midori/midori-browser.c:5227
+msgid "_From Server"
+msgstr "从服务器端导入"
+
+#: ../midori/midori-browser.c:5227
+msgid "_From Local"
+msgstr "从本地导入"
+
+#: ../midori/midori-browser.c:5227
+msgid "_From Server2"
+msgstr "导出到服务器"
+
+#: ../midori/midori-browser.c:5227
+msgid "_From Local2"
+msgstr "导出到本地"
 
 #: ../midori/midori-browser.c:5230
 msgid "_Export bookmarks…"
-msgstr "导出书签(_E)..."
+msgstr "导出书签(_E)"
 
 #: ../midori/midori-browser.c:5233
 msgid "_Manage Search Engines…"
@@ -1641,6 +1657,9 @@ msgstr "在此打开新页面："
 
 msgid "Page _Info"
 msgstr "页面属性(_P)"
+
+msgid "_Bookmarks Sync"
+msgstr "书签同步(_U)"
 
 #: ../midori/midori-preferences.c:478
 msgid "New tab behavior:"
@@ -3518,6 +3537,24 @@ msgstr "查看下载管理器"
 
 msgid "the bookmark is already exsit"
 msgstr "要添加的书签已存在"
+
+msgid "bookmarks import finished!"
+msgstr "导入书签完成！"
+
+msgid "importing..."
+msgstr "导入中..."
+
+msgid "exporting..."
+msgstr "导出中..."
+
+msgid "bookmarks import failed!"
+msgstr "导入书签失败！"
+
+msgid "bookmarks export finished!"
+msgstr "导出书签完成！"
+
+msgid "bookmarks export failed!"
+msgstr "导出书签失败！"
 
 msgid "Protocol"
 msgstr "协议："

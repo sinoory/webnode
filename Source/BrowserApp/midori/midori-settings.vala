@@ -186,7 +186,14 @@ namespace Midori {
         public bool strip_referer { get; set; default = true; }
         /* Since: 0.4.2 */
         public bool first_party_cookies_only { get; set; default = true; }
+	public string bookmark_user_name{get; set; default = "";}
+	public string bookmark_user_email{get; set; default = "";}
+	public string bookmark_user_token{get; set; default = "";}
+	public string bookmark_user_password{get; set; default = "";}
+	public string bookmarks_path {get; set; default = "bookmarks.xbel"; } //lianxx add, 20150522
+	public string bookmarks_url {get; set; default = "http://localhost/bookmarks.xbel"; } //lianxx add, 20150522	
         public bool much_tab_warning { get; set; default = false; } //lianxx add, 20141210
+        public bool auto_login { get; set; default = true; } //lianxx add, 20150610
         public bool close_window_warning { get; set; default = true; } //luyue add, 20150420
 	public bool show_homepage_button {get; set; default = true; } //lianxx add, 20141210
 //	public bool ask_every_time_before_download_file {get; set; default = false; } //lianxx add, 20141210

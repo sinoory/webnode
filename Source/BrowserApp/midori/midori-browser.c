@@ -8,6 +8,8 @@
  2014.12.30 屏蔽书签编辑窗口中创建启动器功能,见midori_browser_edit_bookmark_dialog_new()
 */
 
+#define BOOKMARK_SYNC//书签与服务器同步开关
+
 #include "midori-browser.h"
 
 #include "midori-app.h"
@@ -115,6 +117,9 @@ struct _MidoriBrowser
 GtkWidget *page_button, *page_record_box;
 GtkWidget *page_lab_signal_text, *page_view;
 gboolean page_isConnectSignal;
+
+//char* BookmarkToken;//用户登陆时得到，用于导入导出书签
+char* BookmarkEmail;
 
 G_DEFINE_TYPE (MidoriBrowser, midori_browser, GTK_TYPE_WINDOW)
 
@@ -258,6 +263,8 @@ _update_tooltip_if_changed (GtkAction* action,
 #define _action_set_active(brwsr, nme, actv) \
     gtk_toggle_action_set_active (GTK_TOGGLE_ACTION ( \
     _action_by_name (brwsr, nme)), actv);
+#define _action_set_label(brwsr, nme, label) \
+    gtk_action_set_label (_action_by_name (brwsr, nme), label);
 
 static void
 midori_browser_disconnect_tab (MidoriBrowser* browser,
@@ -488,7 +495,7 @@ _midori_browser_set_statusbar_text (MidoriBrowser* browser,
         GtkAction* action = _action_by_name (browser, "Location");
         MidoriLocationAction* location_action = MIDORI_LOCATION_ACTION (action);
         midori_browser_update_secondary_icon (browser, view, action);   //zgh 1203 +放开1224
-        midori_location_action_set_text (location_action,
+        midori_location_action_set_text (location_action, 
             midori_view_get_display_uri (view));
         #endif
     }
@@ -3790,6 +3797,9 @@ _action_tools_populate_popup (GtkAction*     action,
     midori_context_action_add_by_name (menu, "ClearPrivateData");
     midori_context_action_add_by_name (menu, "InspectPage");
     midori_context_action_add_by_name (menu, "PageInfo");   //zgh 20141225
+#ifdef BOOKMARK_SYNC
+    midori_context_action_add_by_name (menu, "Bookmarks_Sync");
+#endif
     g_signal_emit (browser, signals[POPULATE_TOOL_MENU], 0, default_menu);
 //    midori_context_action_add (menu, NULL);   //zgh
 #if 0 //zgh
@@ -3857,6 +3867,40 @@ _action_historys_populate_folder (GtkAction*     action,
 
     return TRUE;
 }
+#ifdef BOOKMARK_SYNC //lxx, 20150612
+GtkWidget *createSecondMenu(MidoriBrowser* browser,char *name)
+{
+     GtkWidget *rootFileItem;
+     GtkWidget *fileMenu;
+     GtkWidget *importMenuItem;
+     GtkWidget *exportMenuItem;
+      rootFileItem = gtk_action_create_menu_item(_action_by_name (browser, name));
+      fileMenu = gtk_menu_new();
+      importMenuItem=gtk_action_create_menu_item (_action_by_name (browser, "From_Server"));
+      exportMenuItem=gtk_action_create_menu_item (_action_by_name (browser, "From_Local"));
+      gtk_menu_shell_append(GTK_MENU_SHELL(fileMenu),importMenuItem);
+      gtk_menu_shell_append(GTK_MENU_SHELL(fileMenu),exportMenuItem);
+      gtk_menu_item_set_submenu(GTK_MENU_ITEM(rootFileItem), fileMenu);
+      return rootFileItem;
+}
+
+GtkWidget *createSecondMenu2(MidoriBrowser* browser,char *name)
+{
+     GtkWidget *rootFileItem;
+     GtkWidget *fileMenu;
+     GtkWidget *importMenuItem;
+     GtkWidget *exportMenuItem;
+      rootFileItem = gtk_action_create_menu_item(_action_by_name (browser, name));
+      fileMenu = gtk_menu_new();
+      importMenuItem=gtk_action_create_menu_item (_action_by_name (browser, "From_Server2"));
+      exportMenuItem=gtk_action_create_menu_item (_action_by_name (browser, "From_Local2"));
+      gtk_menu_shell_append(GTK_MENU_SHELL(fileMenu),importMenuItem);
+      gtk_menu_shell_append(GTK_MENU_SHELL(fileMenu),exportMenuItem);
+
+      gtk_menu_item_set_submenu(GTK_MENU_ITEM(rootFileItem), fileMenu);
+      return rootFileItem;
+}
+#endif //BOOKMARK_SYNC
 
 static gboolean
 _action_bookmarks_populate_folder (GtkAction*     action,
@@ -3883,12 +3927,18 @@ _action_bookmarks_populate_folder (GtkAction*     action,
         menuitem = gtk_action_create_menu_item (_action_by_name (browser, "BookmarkAdd"));
         gtk_menu_shell_append (menu, menuitem);
         gtk_widget_show (menuitem);
+#if 0
         menuitem = gtk_action_create_menu_item (_action_by_name (browser, "BookmarksImport"));
         gtk_menu_shell_append (menu, menuitem);
         gtk_widget_show (menuitem);
         menuitem = gtk_action_create_menu_item (_action_by_name (browser, "BookmarksExport"));
         gtk_menu_shell_append (menu, menuitem);
         gtk_widget_show (menuitem);
+#else
+        gtk_menu_shell_append(menu,createSecondMenu(browser,"BookmarksImport"));
+         gtk_menu_shell_append(menu,createSecondMenu2(browser,"BookmarksExport"));
+#endif
+
         #if 0 //zgh
         menuitem = gtk_separator_menu_item_new ();
         gtk_menu_shell_append (menu, menuitem);
@@ -5179,7 +5229,7 @@ _action_bookmark_add_activate (GtkAction*     action,
 }
 
 static void
-_action_bookmarks_import_activate (GtkAction*     action,
+_action_bookmarks_import_from_local_activate (GtkAction*     action,
                                    MidoriBrowser* browser)
 {
     typedef struct
@@ -5343,8 +5393,670 @@ _action_bookmarks_import_activate (GtkAction*     action,
         gtk_widget_destroy (dialog);
 }
 
+#ifdef BOOKMARK_SYNC
+static int winDownFlag;
+static int winUpFlag;
+
+void
+midori_browser_bookmarks_delete_exist(MidoriBookmarksDb* bookmarks,
+                               KatzeArray* array)
+{
+    GList* list;
+    KatzeItem* item;
+
+    g_return_if_fail (IS_MIDORI_BOOKMARKS_DB (bookmarks));
+    g_return_if_fail (KATZE_IS_ARRAY (array));
+
+    KATZE_ARRAY_FOREACH_ITEM_L (item, array, list)
+    {
+		if(midori_bookmarks_db_exist_by_uri(bookmarks, item->uri))
+			katze_array_remove_item(array, item);
+    }
+    g_list_free (list);
+}
+
+//多线程
 static void
-_action_bookmarks_export_activate (GtkAction*     action,
+handle_data_and_window()
+{
+static int count = 0;
+//g_print("handle_data_and_window 	%d\n", count++);
+//加入到书签列表中
+    KatzeArray* bookmarks;
+		 GError* error;
+    static gint64 selected = -1;
+	   char* path = "bookmarks.xbel";
+
+    error = NULL;
+    bookmarks = katze_array_new (KATZE_TYPE_ARRAY);
+    if (path && !midori_array_from_file (bookmarks, path, NULL, &error))
+        	{
+				sokoke_message_dialog (GTK_MESSAGE_ERROR, 
+											_("Failed to import bookmarks"),
+                error ? error->message : "", FALSE);
+				if (error)
+					g_error_free (error);
+			}
+//g_print("handle_data_and_window 	1\n");
+		MidoriApp *app = midori_app_get_default();
+		MidoriBrowser *browser = midori_app_get_browser(app);
+//g_print("handle_data_and_window 	2\n");
+#if 1
+//判断该条书签是否已存在在浏览器现有书签列表中
+		midori_browser_bookmarks_delete_exist(browser->bookmarks, bookmarks);
+#endif
+//g_print("handle_data_and_window 	3\n");
+			midori_bookmarks_db_import_array (browser->bookmarks, bookmarks, selected);
+//g_print("handle_data_and_window 	4\n");
+			if(0 == selected)selected = -1;
+			else selected = 0;
+
+//g_print("handle_data_and_window 	5\n");
+			g_object_unref (bookmarks);
+			remove(path);
+//g_print("handle_data_and_window 	6\n");
+//提示用户
+			if(1 == winDownFlag)
+					system("notify-send 导入书签完成！");
+			else if(2 == winDownFlag)
+					system("notify-send 导入书签失败！");
+
+	_action_set_sensitive (browser, "From_Server", TRUE);
+	_action_set_label(browser, "From_Server", _("_From Server")); 
+//g_print("handle_data_and_window 	7\n");
+
+}
+
+static void DownloadThread(void *dat)
+{
+    FILE *fp;
+
+	    MidoriApp *app = midori_app_get_default();
+    MidoriBrowser *browser = midori_app_get_browser(app);
+		gchar *path = "bookmarks.xbel";
+
+//		g_object_get(browser->settings, "bookmarks-path", &path, NULL);
+
+    if((fp=fopen(/*"bookmarks.xbel"*/path,"w"))==NULL)
+        return;
+
+		char* username = NULL;
+		g_object_get(browser->settings, "bookmark-user-name", &username, NULL);
+		char* email = NULL;
+		g_object_get(browser->settings, "bookmark-user-email", &email, NULL);
+		char* password = NULL;
+		g_object_get(browser->settings, "bookmark-user-password", &password, NULL);
+
+		if("" == password)
+		{
+					GtkWidget *dialog = gtk_message_dialog_new(NULL,
+                                													GTK_DIALOG_MODAL,
+                                   											GTK_MESSAGE_WARNING,
+                                   											GTK_BUTTONS_OK,
+															                                   											"您还未登陆，请先登陆！!");
+
+   			gtk_dialog_run(GTK_DIALOG (dialog));
+	      gtk_widget_destroy (dialog);
+		}
+
+	char* token;
+ login(&token, username, email, password);
+
+		 char* stringRec = NULL;
+		 if(download(&stringRec, email, token))
+			{
+//g_print("DownloadThread 444444444\n\n%s\n\n%d  %d\n", stringRec, sizeof(stringRec), strlen(stringRec));
+				winDownFlag = 1;
+				fwrite (stringRec , strlen(stringRec), 1 , fp );
+				printf("send ok!\n");
+			}
+			else
+			{
+				winDownFlag = 2;
+				printf("send failed!\n");
+			}
+		if(NULL != token)
+		{
+			free(token);
+			token = NULL;
+		}
+    fclose(fp);
+		 if(NULL != stringRec)
+		   {
+		 		free(stringRec);
+		 		stringRec= NULL;
+			}
+
+	pthread_kill(g_object_get_data(browser, "main-pthread"), SIGUSR2); //给主线程发送信号
+
+    return;
+}
+
+static void
+_action_bookmarks_import_from_server_activate (GtkAction*     action,
+                                   MidoriBrowser* browser)
+{
+	_action_set_sensitive (browser, "From_Server", FALSE);
+	_action_set_label(browser, "From_Server", _("importing...")); 
+
+		 int threadID = 0;
+		 int ret = 0;
+
+	pthread_t mainThreadId = pthread_self();
+	g_object_set_data(browser, "main-pthread", mainThreadId);
+	signal(SIGUSR2, handle_data_and_window);
+	ret = pthread_create(&threadID, NULL, DownloadThread, NULL);	//    g_thread_new(NULL,(GThreadFunc)download,&data);
+}
+
+//重写把数据读入上传数据流函数   
+/*static size_t read_file(void* buff, size_t size, size_t nmemb, void* userp)   
+{   
+    size_t sizes = fread(buff, size, nmemb, (FILE *)userp);   
+    return sizes;   
+}   */
+
+static void
+handle_data_and_window_up()
+{
+  MidoriApp *app = midori_app_get_default();
+  MidoriBrowser *browser = midori_app_get_browser(app);
+
+	if(1 == winUpFlag)
+		system("notify-send 导出书签完成！");
+	else if(2 == winUpFlag)
+		system("notify-send 导出书签失败！");
+
+	_action_set_sensitive (browser, "From_Server2", TRUE);
+	_action_set_label(browser, "From_Server2", _("_From Server2")); 
+}
+
+static void uploadThread(void *dat)
+{
+    gchar* path = "cdos-bookmarks.xbel";
+
+    MidoriApp *app = midori_app_get_default();
+    MidoriBrowser *browser = midori_app_get_browser(app);
+
+    //获取要上传的文件指针   
+   FILE* r_file = fopen(path, "rb");   
+    if (0 == r_file)   
+    {   
+       printf( "the file %s isnot exit\n",path);   
+      return;   
+    }   
+    
+		char* email = NULL;
+		g_object_get(browser->settings, "bookmark-user-email", &email, NULL);
+		char* username = NULL;
+		g_object_get(browser->settings, "bookmark-user-name", &username, NULL);
+		g_print("This is the exact thing I want! %s\n", username);
+		char* password = NULL;
+		g_object_get(browser->settings, "bookmark-user-password", &password, NULL);
+
+		if("" == password)
+		{
+					GtkWidget *dialog = gtk_message_dialog_new(NULL,
+                                													GTK_DIALOG_MODAL,
+                                   											GTK_MESSAGE_WARNING,
+                                   											GTK_BUTTONS_OK,
+															                                   											"您还未登陆，请先登陆！!");
+
+   			gtk_dialog_run(GTK_DIALOG (dialog));
+	      gtk_widget_destroy (dialog);
+		}
+	char* token = NULL;
+ login(&token, username, email, password);
+
+    // 获取文件大小   
+   fseek(r_file, 0, 2);   
+   int file_size = ftell(r_file);   
+   rewind(r_file);   
+
+		char* buffer = NULL;
+		buffer = (char*)malloc((file_size + 1)*sizeof(char));
+	buffer[file_size] ='\0';
+		fread (buffer, file_size, 1, r_file);
+
+		if(upload(buffer, email, token))
+		{   
+			printf("success\n"); 
+			winUpFlag = 1;  
+		}   
+   else   
+		{   
+			winUpFlag = 2;
+			printf("failure\n");   
+		}   
+		free(buffer);
+		if(NULL != token)
+		{
+			free(token);
+			token = NULL;
+		}
+	pthread_kill(g_object_get_data(browser, "main-pthread"), SIGUSR1); //给主线程发送信号
+    return;
+}
+
+static void
+_action_bookmarks_export_from_server_activate (GtkAction*     action,
+                                   MidoriBrowser* browser)
+{
+    _action_set_sensitive (browser, "From_Server2", FALSE);
+			_action_set_label(browser, "From_Server2", _("exporting...")); 
+
+    GtkWidget* file_dialog;
+    GtkFileFilter* filter;
+    const gchar* format = "xbel";
+
+    gchar* path = "cdos-bookmarks.xbel";
+    GError* error;
+    KatzeArray* bookmarks;
+    GtkWidget *progress_bar;
+		 int threadID = 0;
+		 int ret = 0;
+
+    error = NULL;
+    bookmarks = midori_bookmarks_db_query_recursive (browser->bookmarks,
+        "*", "parentid IS NULL", NULL, TRUE);
+    if (!midori_array_to_file (bookmarks, path, format, &error))
+    {
+        sokoke_message_dialog (GTK_MESSAGE_ERROR,
+            _("Failed to export bookmarks"), error ? error->message : "", FALSE);
+        if (error)
+            g_error_free (error);
+    }
+    g_object_unref (bookmarks);
+
+    pthread_t mainThreadId = pthread_self();
+    g_object_set_data(browser, "main-pthread", mainThreadId);
+    signal(SIGUSR1, handle_data_and_window_up);
+
+    ret = pthread_create(&threadID, NULL, uploadThread, NULL);
+}
+
+char* userNameApply = "";
+char* nicknameApply = "";
+char* emailApply = "";
+char* userPasswordApply = "";
+char* userPasswordApplyConform = "";
+static void userNameApplyCallback(GtkEntry *entry, gpointer data) 
+{
+		 if(NULL == entry)return;
+    userNameApply =  gtk_entry_get_text(GTK_ENTRY(entry));
+}
+static void userPasswordApplyCallback(GtkEntry *entry, gpointer data)
+{
+		 if(NULL == entry)return;
+    userPasswordApply =  gtk_entry_get_text(GTK_ENTRY(entry));
+}
+static void nicknameApplyCallback(GtkEntry *entry, gpointer data)
+{
+		 if(NULL == entry)return;
+    nicknameApply =  gtk_entry_get_text(GTK_ENTRY(entry));
+}
+static void emailApplyCallback(GtkEntry *entry, gpointer data)
+{
+		 if(NULL == entry)return;
+    emailApply =  gtk_entry_get_text(GTK_ENTRY(entry));
+}
+static void userPasswordApplyConformCallback(GtkEntry *entry, gpointer data) 
+{
+		 if(NULL == entry)return;
+    userPasswordApplyConform =  gtk_entry_get_text(GTK_ENTRY(entry));
+			g_print("3! %s  %s\n", userPasswordApply, userPasswordApplyConform);
+}
+
+static void userRegisterApplyCallback(GtkEntry *entry, gpointer data)
+{
+		 if(strcmp(userPasswordApply, userPasswordApplyConform))
+
+			{
+					GtkWidget *dialog = gtk_message_dialog_new(NULL,
+                                													GTK_DIALOG_MODAL,
+                                   											GTK_MESSAGE_WARNING,
+                                   											GTK_BUTTONS_OK,
+
+                                   											"password and conform password is not the same, please reset!");
+
+   			gtk_dialog_run(GTK_DIALOG (dialog));
+	      gtk_widget_destroy (dialog);
+			}
+
+			else
+			{
+				printf("%s   %s %s %s\n", userNameApply, userPasswordApply, emailApply, nicknameApply);
+				gtk_widget_destroy(GTK_WIDGET(data));
+
+				bool ret = registerUser/*(registerUser("qqqq", "bbb", "ccc@ddd.com", "asdfgh"));*/(userNameApply, nicknameApply, emailApply, userPasswordApply);
+				if(1 == ret)
+				{
+						printf("user register success!\n");
+					GtkWidget *dialog = gtk_message_dialog_new(NULL,
+                                													GTK_DIALOG_MODAL,
+
+                                   											GTK_MESSAGE_WARNING,
+                                   											GTK_BUTTONS_OK,
+                                   											"user register success!");
+
+   			gtk_dialog_run(GTK_DIALOG (dialog));
+
+	      gtk_widget_destroy (dialog);
+				}
+				else
+				{
+						printf("user register failed!\n");
+					GtkWidget *dialog = gtk_message_dialog_new(NULL,
+
+                                													GTK_DIALOG_MODAL,
+                                   											GTK_MESSAGE_WARNING,
+                                   											GTK_BUTTONS_OK,
+                                   											"user register failed!");
+
+
+   			gtk_dialog_run(GTK_DIALOG (dialog));
+	      gtk_widget_destroy (dialog);
+				}
+			}
+}
+
+static void userRegisterCallback(GtkButton *buttons, gpointer data) 
+{
+		gtk_widget_destroy(GTK_WIDGET(data));
+			g_print("userRegisterCallback\n");
+
+   GtkWidget *window;
+   GtkWidget *button;
+   GtkWidget *label;
+   GtkWidget *widget;
+   GtkGrid *grid;
+
+   window = gtk_window_new (GTK_WINDOW_TOPLEVEL/*GTK_WINDOW_POPUP*/);
+   gtk_window_set_resizable (GTK_WINDOW(window), FALSE);
+   gtk_window_set_title (GTK_WINDOW (window), "用户注册");
+
+   gtk_container_set_border_width (GTK_CONTAINER (window), 0);
+   gtk_window_set_position(GTK_WINDOW (window),GTK_WIN_POS_CENTER);
+
+   grid = (GtkGrid*)gtk_grid_new();//创建网格
+   gtk_grid_set_row_spacing (grid, 8);
+
+   gtk_grid_set_column_spacing (grid, 5);
+   label = gtk_label_new("    ");
+   gtk_grid_attach( grid, label, 0, 0, 1, 1);	
+   label = gtk_label_new("用户名：");
+   gtk_grid_attach( grid, label, 1, 1, 1, 1);
+		widget = gtk_entry_new();
+
+   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(userNameApplyCallback), NULL);
+   gtk_grid_attach( grid, widget, 2, 1, 3, 1);
+   label = gtk_label_new("    ");
+   gtk_grid_attach( grid, label, 5, 1, 1, 1);
+
+
+   label = gtk_label_new("昵称：");
+   gtk_grid_attach( grid, label, 1, 3, 1, 1);
+		widget = gtk_entry_new();
+   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(nicknameApplyCallback), NULL);
+   gtk_grid_attach( grid, widget, 2, 3, 3, 1);
+
+
+   label = gtk_label_new("邮箱：");
+   gtk_grid_attach( grid, label, 1, 4, 1, 1);
+		widget = gtk_entry_new();
+   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(emailApplyCallback), NULL);
+   gtk_grid_attach( grid, widget, 2, 4, 3, 1);
+
+
+   label = gtk_label_new("密码：");
+   gtk_grid_attach( grid, label, 1, 5, 1, 1);
+		widget = gtk_entry_new();
+		gtk_entry_set_visibility(GTK_ENTRY(widget), FALSE);
+
+		gtk_entry_set_invisible_char (GTK_ENTRY(widget), '*');
+   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(userPasswordApplyCallback), NULL);
+   gtk_grid_attach( grid, widget, 2, 5, 3, 1);
+
+   label = gtk_label_new("确认密码：");
+   gtk_grid_attach( grid, label, 1, 6, 1, 1);
+
+		widget = gtk_entry_new();
+		gtk_entry_set_visibility(GTK_ENTRY(widget), FALSE);
+		gtk_entry_set_invisible_char (GTK_ENTRY(widget), '*');
+   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(userPasswordApplyConformCallback), NULL);
+   gtk_grid_attach( grid, widget, 2, 6, 3, 1);
+
+   button = gtk_button_new_with_label("注 册");
+   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(userRegisterApplyCallback), window);
+   gtk_grid_attach(grid, button, 2, 7, 2, 1);
+
+
+   gtk_container_add (GTK_CONTAINER (window),GTK_WIDGET(grid));
+
+   gtk_widget_show_all(window);
+}
+
+static bool isLogin = 0;
+char* userName = NULL;
+char* userPassword = NULL;
+
+static void userNameCallback(GtkEntry *entry, gpointer data) 
+{
+		 if(NULL == entry)return;
+    userName =  gtk_entry_get_text(GTK_ENTRY(entry));
+}
+
+static void userPasswordCallback(GtkEntry *entry, gpointer data)
+{
+		 if(NULL == entry)return;
+    userPassword =  gtk_entry_get_text(GTK_ENTRY(entry));
+}
+
+static void userEmailCallback(GtkEntry *entry, gpointer data)
+{
+		 if(NULL == entry)return;
+    BookmarkEmail =  gtk_entry_get_text(GTK_ENTRY(entry));
+}
+static void 
+
+userLoginCallback(GtkButton *button, gpointer data) 
+{
+  	MidoriApp *app = midori_app_get_default();
+ 		MidoriBrowser *browser = midori_app_get_browser(app);
+
+		if(1 == isLogin)
+		{
+			g_print("%s   %s %s\n", userName, BookmarkEmail, userPassword);
+
+			if((NULL == userName) || (NULL == userPassword))
+			{
+				g_object_get(browser->settings, "bookmark-user-name", &userName, NULL);
+				g_object_get(browser->settings, "bookmark-user-email", &BookmarkEmail, NULL);
+
+			}
+			if((NULL == userName) || (NULL == BookmarkEmail))
+			{
+				printf("NULL NULL NULL NULL NULL NULL\n");
+				return;
+
+			}
+			char* token = NULL;
+ 			login(&token, userName, BookmarkEmail, userPassword);
+//			printf("1111 NULL NULL NULL NULL NULL NULL %s %p  %s\n", BookmarkToken, &BookmarkToken, userPassword);
+
+			if(strcmp(token, "check user is failed."))
+			{
+				g_print("This is the exact thing I want!!!!!");
+				g_object_set(browser->settings, "bookmark-user-email", BookmarkEmail, NULL);
+				g_object_set(browser->settings, "bookmark-user-name", userName, NULL);
+				g_object_set(browser->settings, "bookmark-user-password", userPassword, NULL);
+			}
+		if(NULL != token)
+		{
+			free(token);
+			token = NULL;
+		}
+				g_print("this is user login\n");
+		}
+		else if(0 == isLogin)
+		{
+
+			bool bvalue = 0;
+			g_object_set(browser->settings, "auto-login", bvalue, NULL);
+//			g_object_set(browser->settings, "bookmark-user-email", "", NULL);
+//			g_object_set(browser->settings, "bookmark-user-name", "", NULL);
+			g_object_set(browser->settings, "bookmark-user-password", "", NULL);
+			g_print("this is cancel user login\n");
+		}
+		gtk_widget_destroy(GTK_WIDGET(data));
+}
+
+
+static void autoLoginCallback(GtkToggleButton *togglebutton, gpointer data)
+{
+  	MidoriApp *app = midori_app_get_default();
+  	MidoriBrowser *browser = midori_app_get_browser(app);
+
+   bool bvalue = gtk_toggle_button_get_active(togglebutton); 
+   g_object_set(browser->settings, "auto-login", bvalue, NULL);
+		if(0 == bvalue)
+		{
+//			g_object_set(browser->settings, "bookmark-user-email", "", NULL);
+//			g_object_set(browser->settings, "bookmark-user-name", "", NULL);
+			g_object_set(browser->settings, "bookmark-user-password", "", NULL);
+		}
+} 
+
+static void 
+_action_bookmarks_sync_activate ( GtkAction*     action,
+                            MidoriBrowser* browser)
+{
+g_print("_action_bookmarks_sync_activate\n");
+#if 1
+   GtkWidget *window;
+
+   GtkWidget *button;
+//   GtkWidget *notebook;
+   GtkWidget *label;
+   GtkWidget *widget;
+   GtkGrid *grid;
+
+//   GSList *group;
+//   int i;
+ 
+   window = gtk_window_new (GTK_WINDOW_TOPLEVEL/*GTK_WINDOW_POPUP*/);
+   gtk_window_set_resizable (GTK_WINDOW(window), FALSE);
+   gtk_window_set_title (GTK_WINDOW (window), "用户登陆");
+
+   gtk_container_set_border_width (GTK_CONTAINER (window), 0);
+   gtk_window_set_position(GTK_WINDOW (window),GTK_WIN_POS_CENTER);
+
+		bool autoLogin = 0;
+		bool bvalue = 1;
+
+   g_object_get(browser->settings, "auto-login", &bvalue, NULL);
+		gchar *userNameStr = NULL;
+		g_object_get(browser->settings, "bookmark-user-name", &userNameStr, NULL);
+		gchar *userEmailStr = NULL;
+		g_object_get(browser->settings, "bookmark-user-email", &userEmailStr, NULL);
+		gchar *password = NULL;
+		g_object_get(browser->settings, "bookmark-user-password", &password, NULL);
+		if(bvalue && ("" != userNameStr) && ("" != userEmailStr) && ("" != password) )
+			autoLogin = 1;
+
+   grid = (GtkGrid*)gtk_grid_new();//创建网格
+
+   gtk_grid_set_row_spacing (grid, 8);
+   gtk_grid_set_column_spacing (grid, 5);
+   label = gtk_label_new("    ");
+   gtk_grid_attach( grid, label, 0, 0, 1, 1);	
+   label = gtk_label_new("用户名：");
+
+   gtk_grid_attach( grid, label, 1, 1, 1, 1);
+		widget = gtk_entry_new();
+		gchar *strval = NULL;
+		g_object_get(browser->settings, "bookmark-user-name", &strval, NULL);
+		gtk_entry_set_text(GTK_ENTRY(widget),strval);
+		if(autoLogin)
+
+			gtk_widget_set_sensitive(GTK_WIDGET(widget), false);
+   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(userNameCallback), NULL);
+   gtk_grid_attach( grid, widget, 2, 1, 3, 1);
+   label = gtk_label_new("    ");
+   gtk_grid_attach( grid, label, 5, 1, 1, 1);
+
+
+   label = gtk_label_new("邮箱：");
+   gtk_grid_attach( grid, label, 1, 2, 1, 1);
+		widget = gtk_entry_new();
+		g_object_get(browser->settings, "bookmark-user-email", &strval, NULL);
+		gtk_entry_set_text(GTK_ENTRY(widget),strval);
+
+		if(autoLogin)
+			gtk_widget_set_sensitive(GTK_WIDGET(widget), false);
+   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(userEmailCallback), NULL);
+   gtk_grid_attach( grid, widget, 2, 2, 3, 1);
+
+
+   label = gtk_label_new("密码：");
+   gtk_grid_attach( grid, label, 1, 3, 1, 1);
+		widget = gtk_entry_new();
+		if(autoLogin)
+		{
+			gtk_entry_set_text(GTK_ENTRY(widget), "******");
+
+			gtk_widget_set_sensitive(GTK_WIDGET(widget), false);
+		}
+   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(userPasswordCallback), NULL);
+   gtk_grid_attach( grid, widget, 2, 3, 3, 1);
+		gtk_entry_set_visibility(GTK_ENTRY(widget), FALSE);
+
+		gtk_entry_set_invisible_char (GTK_ENTRY(widget), '*');
+
+   button = gtk_check_button_new_with_label("自动登陆");
+   g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(autoLoginCallback), NULL);
+   gtk_grid_attach( grid, button, 1, 4, 2, 1);
+
+//		bool bvalue = 1;
+//   g_object_get(browser->settings, "auto-login", &bvalue, NULL);
+   if(bvalue)
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
+//   label = gtk_label_new("    ");
+//   gtk_grid_attach(grid, label, 1, 3, 1, 1);
+
+
+		if(autoLogin)
+		{
+   	button = gtk_button_new_with_label("注 销");
+			isLogin = 0;
+
+		}
+		else
+		{
+			button = gtk_button_new_with_label("登 陆");
+			isLogin = 1;
+		}
+
+   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(userLoginCallback), window);
+   gtk_grid_attach(grid, button, 1, 5, 2, 1);
+		gchar* str = gtk_button_get_label(button);
+		g_print("str str str str str = %s\n", str);
+
+
+   button = gtk_button_new_with_label("注 册");
+   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(userRegisterCallback), window);
+   gtk_grid_attach(grid, button, 4, 5, 2, 1);
+
+   gtk_container_add (GTK_CONTAINER (window),GTK_WIDGET(grid));
+
+
+   gtk_widget_show_all(window);
+//   return window;
+#endif
+}
+#endif //BOOKMARK_SYNC
+
+static void
+_action_bookmarks_export_from_local_activate (GtkAction*     action,
                                    MidoriBrowser* browser)
 {
     GtkWidget* file_dialog;
@@ -6716,12 +7428,32 @@ static const GtkActionEntry entries[] =
     { "BookmarkFolderAdd", NULL,
         N_("Add a new _folder"), "",
         NULL, G_CALLBACK (_action_bookmark_add_activate) },
+
+#ifdef BOOKMARK_SYNC //lxx, 20150612
+     { "BookmarksImport", NULL, N_("_Import bookmarks…") },
+
+    { "From_Server", NULL,
+        N_("_From Server"), "",
+        NULL, G_CALLBACK (_action_bookmarks_import_from_server_activate) },
+    { "From_Local", NULL,
+        N_("_From Local"), "",
+        NULL, G_CALLBACK (_action_bookmarks_import_from_local_activate) },	
+
+     { "BookmarksExport", NULL, N_("_Export bookmarks…") },
+    { "From_Server2", NULL,
+        N_("_From Server2"), "",
+        NULL, G_CALLBACK (_action_bookmarks_export_from_server_activate) },
+    { "From_Local2", NULL,
+        N_("_From Local2"), "",
+        NULL, G_CALLBACK (_action_bookmarks_export_from_local_activate) },
+#else
     { "BookmarksImport", NULL,
-        N_("_Import bookmarks…"), "<Ctrl>i",
-        NULL, G_CALLBACK (_action_bookmarks_import_activate) },
+        N_("_Import bookmarks…"), "",
+        NULL, G_CALLBACK (_action_bookmarks_import_from_local_activate) },
     { "BookmarksExport", NULL,
-        N_("_Export bookmarks…"), "<Ctrl>e",
-        NULL, G_CALLBACK (_action_bookmarks_export_activate) },
+        N_("_Export bookmarks…"), "",
+        NULL, G_CALLBACK (_action_bookmarks_export_from_local_activate) },
+#endif
 // ZRL 暂时屏蔽搜索框功能
 #if ENABLE_SEARCH_ACTION 
     { "ManageSearchEngines", GTK_STOCK_PROPERTIES,
@@ -6737,7 +7469,11 @@ static const GtkActionEntry entries[] =
     { "PageInfo", NULL, //add by zgh 20141225
         N_("Page _Info"), "<Shift>p",
         NULL, G_CALLBACK (_action_pageinfo_activate) },
-
+#ifdef BOOKMARK_SYNC
+    { "Bookmarks_Sync", NULL, 
+        N_("_Bookmarks Sync"), "<Ctrl>U",
+        NULL, G_CALLBACK (_action_bookmarks_sync_activate) },
+#endif
     { "TabPrevious", GTK_STOCK_GO_BACK,
         N_("_Previous Tab"), "<Ctrl>Page_Up",
         NULL, G_CALLBACK (_action_tab_previous_activate) },
@@ -7153,8 +7889,20 @@ static const gchar* ui_markup =
             "<menu action='Bookmarks'>"
                 "<menuitem action='ManageBookmarks'/>"
                 "<menuitem action='BookmarkAdd'/>"
+
+#ifdef BOOKMARK_SYNC
+            "<menu action='BookmarksImport'>"
+                        "<menuitem action='From_Server'/>"
+                        "<menuitem action='From_Local'/>"
+                    "</menu>"
+        "<menu action='BookmarksExport'>"
+                    "<menuitem action='From_Server2'/>"
+                    "<menuitem action='From_Local2'/>"
+                "</menu>"
+#else
                 "<menuitem action='BookmarksImport'/>"
                 "<menuitem action='BookmarksExport'/>"
+#endif
             "</menu>"
             "<menuitem action='Tools'/>"
 //            "<menuitem action='Window'/>" //zgh
@@ -7199,6 +7947,9 @@ static const gchar* ui_markup =
             "<menuitem action='Preferences'/>"
             "<menuitem action='InspectPage'/>"
             "<menuitem action='PageInfo'/>"  //zgh 20141225
+#ifdef BOOKMARK_SYNC
+            "<menuitem action='Bookmarks_Sync'/>"  
+#endif
             "<menuitem action='ReloadUncached'/>"
             "<menuitem action='CaretBrowsing'/>"
             "</menu>"
