@@ -52,6 +52,8 @@ messages -> WebPageProxy {
     SetCursorHiddenUntilMouseMoves(bool hiddenUntilMouseMoves)
 #endif
     SetStatusText(String statusText)
+    #ykhu
+    ShowMediaFailedText(String text)
     SetToolTip(String toolTip)
     SetFocus(bool focused)
     TakeFocus(uint32_t direction)
