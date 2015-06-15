@@ -575,6 +575,11 @@ public:
 
     //add by luyue 2015/6/14
     void setAutoDownloadState(bool);
+    //add 
+
+    //add by luyue 2015/6/15
+    void setObfuscateCodeState(bool);
+    //add
 
     void setPageAndTextZoomFactors(double pageZoomFactor, double textZoomFactor);
 

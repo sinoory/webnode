@@ -414,6 +414,11 @@ WEBKIT_API void
 webkit_web_view_set_autodownload_state               (WebKitWebView             *web_view,
                                                       bool                       value);
 
+//luyue add by 2015/6/14
+WEBKIT_API void
+webkit_web_view_set_obfuscatecode_state              (WebKitWebView             *web_view,
+                                                      bool                       value);
+
 //luyue add by 2015/1/20
 WEBKIT_API void
 webkit_web_view_set_doublezoom_level                 (WebKitWebView             *web_view,

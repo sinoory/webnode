@@ -346,6 +346,17 @@ autodownloadCheckCallback(GtkToggleButton *togglebutton, MidoriWebSettings *sett
 }
 //add end
 
+//add by luyue 2015/6/15 start
+static void
+obfuscatecodeCheckCallback(GtkToggleButton *togglebutton, MidoriWebSettings *settings)
+{
+    bool bvalue = gtk_toggle_button_get_active(togglebutton);
+    g_object_set(settings,
+                 "obfuscatecode-check", !bvalue,
+                 NULL);
+}
+//add end
+
 //add by luyue 2015/3/26
 static void rememberWebPasswordCallback(GtkToggleButton *togglebutton, MidoriWebSettings *settings)
 {
@@ -1258,6 +1269,18 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
    g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(autodownloadCheckCallback), settings);
    gtk_grid_attach(grid,button,2,12,2,1);
    //add end
+
+   //add by luyue 2015/6/15 start
+   widget = gtk_label_new("混淆代码检测：");
+   gtk_grid_attach(grid, widget, 1, 14, 1, 1);
+   button = gtk_check_button_new_with_label("打开混淆代码检测功能");
+   g_object_get(settings, "obfuscatecode-check", &bvalue, NULL);
+   if(!bvalue)
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
+   g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(obfuscatecodeCheckCallback), settings);
+   gtk_grid_attach(grid,button,2,14,2,1);
+   //add end
+
    gchar *security_pic = midori_paths_get_res_filename("settings-icons/security.png");
    label = xpm_label_box( security_pic, "安 全" );
    g_free(security_pic);

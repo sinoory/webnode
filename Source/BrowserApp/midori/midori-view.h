@@ -288,6 +288,12 @@ midori_view_set_autodownload_check_state (MidoriView*        view,
                                           MidoriWebSettings* settings);
 //add end
 
+//add by luyue 2015/6/14 start
+void
+midori_view_set_obfuscatecode_check_state (MidoriView*        view,
+                                           MidoriWebSettings* settings);
+//add end
+
 G_END_DECLS
 
 #endif /* __MIDORI_VIEW_H__ */

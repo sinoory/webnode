@@ -33,7 +33,14 @@
 #include "Parser.h"
 #include <wtf/WTFThreadData.h>
 
+bool m_ObfuscateCodeSate=false;
+
 namespace JSC {
+
+void setObfuscateCodeSate(bool obfuscateCodeSate)
+{
+   m_ObfuscateCodeSate = obfuscateCodeSate;
+}
 
 bool checkSyntax(ExecState* exec, const SourceCode& source, JSValue* returnedException)
 {
@@ -79,6 +86,46 @@ JSValue evaluate(ExecState* exec, const SourceCode& source, JSValue thisValue, J
     if (!thisValue || thisValue.isUndefinedOrNull())
         thisValue = exec->vmEntryGlobalObject();
     JSObject* thisObj = jsCast<JSObject*>(thisValue.toThis(exec, NotStrictMode));
+    /*****
+      add by gwg 判断source是否为混淆代码
+      混淆代码检测部分有两个值需要设定为可被用户配置的：
+         熵的阈值【默认为1.1】
+        字串长度阈值【默认为350】
+    ***/
+    if(m_ObfuscateCodeSate)
+    {
+       String code_str=source.toString();
+       double count[128],sum=0.0,entropy=0.0;
+       unsigned i,len=code_str.length(),wordsize=0,metric_size=0;  //长度
+       UChar ch;
+       memset(count,0,sizeof(double)*128);
+       for(i=0;i<len;i++) {  
+          ch=code_str.at(i);
+	  if(ch<128) {
+	     if(ch==32||ch==10) {
+	        if(wordsize>350)  // 这里的350需要处理为可以由用户配置的值
+		   metric_size=1;
+		wordsize=0;
+		count[ch]=count[ch]+1.0;
+	     }
+	     else {
+	        count[ch]=count[ch]+1.0;
+		wordsize=wordsize+1;
+	     }
+          }
+       }
+       if(wordsize>350)  // 这里的350需要处理为可以由用户配置的值
+          metric_size=1;
+       for(i=0;i<128;i++)
+          sum=sum+count[i];
+       for(i=0;i<128;i++) {
+          if(count[i]==0.0) continue; 
+	  entropy=entropy-(count[i]/sum)*log10(count[i]/sum);
+       }
+       if(entropy<1.1 && metric_size==1) //熵低于1.1且含有长度大于350字符word的认为是混淆代码  这里的1.1需要处理为可以由用户配置的值
+	return jsUndefined();  //目前如果发现是可疑的混淆代码，则不对其进行解析执行，直接返回
+    }
+    /*****add by gwg*****/
     JSValue result = exec->interpreter()->execute(program, exec, thisObj);
 
     if (exec->hadException()) {

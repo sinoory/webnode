@@ -1982,6 +1982,12 @@ void WebPageProxy::setAutoDownloadState(bool downloadState)
     m_process->send(Messages::WebPage::SetAutoDownloadState(downloadState), m_pageID);
 }
 
+//add by luyue 2015/6/15
+void WebPageProxy::setObfuscateCodeState(bool obfuscateCodeState)
+{
+    m_process->send(Messages::WebPage::SetObfuscateCodeState(obfuscateCodeState), m_pageID);
+}
+
 //add by luyue 2015/1/16
 void WebPageProxy::setDoubleZoomLevel(double level)
 {

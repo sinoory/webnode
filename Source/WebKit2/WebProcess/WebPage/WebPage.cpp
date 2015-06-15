@@ -206,6 +206,8 @@
 #include "CoordinatedLayerTreeHostMessages.h"
 #endif
 
+#include <JavaScriptCore/Completion.h>
+
 using namespace JSC;
 using namespace WebCore;
 
@@ -1337,7 +1339,13 @@ void WebPage::setDoubleZoomState(bool zoomState)
 //add by luyue 2015/6/14
 void WebPage::setAutoDownloadState(bool downloadState)
 {
-    WebProcess::shared().downloadManager().setAutoDownloadState(downloadState);
+   WebProcess::shared().downloadManager().setAutoDownloadState(downloadState);
+}
+
+//add by luyue 2015/6/15
+void WebPage::setObfuscateCodeState(bool obfuscateCodeState)
+{
+   JSC::setObfuscateCodeSate(obfuscateCodeState);
 }
 
 //add by luyue 2015/1/16

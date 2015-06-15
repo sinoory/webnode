@@ -222,6 +222,7 @@ namespace Midori {
         public bool phish_check {get; set; default = false;} //luyue add, 20150608
         public bool popupwindow_check {get; set; default = false;} //luyue add, 20150612
         public bool autodownload_check {get; set; default = false;} //luyue add, 20150614
+        public bool obfuscatecode_check {get; set; default = false;} //luyue add, 20150615
         public bool night_mode {get; set; default = false;} //luyue add, 20150427
         public string night_level {get; set; default = null;} //luyue add, 20150427
         public bool remember_web_password {get; set; default = false;} //luyue add, 20150326
