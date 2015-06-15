@@ -8,7 +8,7 @@
  2014.12.30 屏蔽书签编辑窗口中创建启动器功能,见midori_browser_edit_bookmark_dialog_new()
 */
 
-#define BOOKMARK_SYNC//书签与服务器同步开关
+//#define BOOKMARK_SYNC//书签与服务器同步开关
 
 #include "midori-browser.h"
 
@@ -3927,7 +3927,7 @@ _action_bookmarks_populate_folder (GtkAction*     action,
         menuitem = gtk_action_create_menu_item (_action_by_name (browser, "BookmarkAdd"));
         gtk_menu_shell_append (menu, menuitem);
         gtk_widget_show (menuitem);
-#if 0
+#ifndef BOOKMARK_SYNC
         menuitem = gtk_action_create_menu_item (_action_by_name (browser, "BookmarksImport"));
         gtk_menu_shell_append (menu, menuitem);
         gtk_widget_show (menuitem);

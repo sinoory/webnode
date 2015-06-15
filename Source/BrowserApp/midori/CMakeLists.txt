@@ -3,7 +3,7 @@
 set(LIBMIDORI_VERSION 0.0.1)
 set(LIBMIDORI_SOVERSION 0)
 set(EXTRALIB_DIR_secret "/usr/include/libsecret-1")
-#set(BOOKMARK_SYNC 1)
+#set(BOOKMARK_SYNC ON)
 
 set(MIDORI_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Source/BrowserApp")
 
@@ -94,7 +94,7 @@ include_directories(
                     #add openssl path by luyue
                     ${CMAKE_SOURCE_DIR}/Source/ThirdParty/openssl-1.0.0d/include
 #if(BOOKMARK_SYNC)
-                    ${CMAKE_SOURCE_DIR}/Source/ThirdParty/account/include
+#                    ${CMAKE_SOURCE_DIR}/Source/ThirdParty/account/include
 #endif()
                     )
 target_link_libraries(${LIBMIDORI}
@@ -121,10 +121,10 @@ target_link_libraries(${LIBMIDORI}
                       X11
                       pthread
 #if(BOOKMARK_SYNC)
-                      ssl
-                      crypto
-														 middlewareAPI
-  													 curl
+#                      ssl
+#                      crypto
+#														 middlewareAPI
+#  													 curl
 #endif
                       )
 set_target_properties(${LIBMIDORI} PROPERTIES
@@ -171,10 +171,10 @@ target_link_libraries(${MIDORI_PROJECT_NAME}
                       X11
                       pthread
 #if(BOOKMARK_SYNC)
-                      ssl
-                      crypto
-														 middlewareAPI
-  													 curl
+#                      ssl
+#                      crypto
+#														 middlewareAPI
+#  													 curl
 #endif()
                       )
 set_target_properties(${MIDORI_PROJECT_NAME} PROPERTIES
