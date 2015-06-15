@@ -323,6 +323,28 @@ static void phishCheckCallback(GtkToggleButton *togglebutton, MidoriWebSettings 
                  NULL);
 }
 //add end
+ 
+//add by luyue 2015/6/12 start
+static void 
+popupwindowCheckCallback(GtkToggleButton *togglebutton, MidoriWebSettings *settings)
+{
+    bool bvalue = gtk_toggle_button_get_active(togglebutton);
+    g_object_set(settings,
+                 "popupwindow-check", !bvalue,
+                 NULL);
+}
+//add end
+
+//add by luyue 2015/6/14 start
+static void 
+autodownloadCheckCallback(GtkToggleButton *togglebutton, MidoriWebSettings *settings)
+{
+    bool bvalue = gtk_toggle_button_get_active(togglebutton);
+    g_object_set(settings,
+                 "autodownload-check", !bvalue,
+                 NULL);
+}
+//add end
 
 //add by luyue 2015/3/26
 static void rememberWebPasswordCallback(GtkToggleButton *togglebutton, MidoriWebSettings *settings)
@@ -1202,9 +1224,9 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
    if(!bvalue)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
    g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(dangerUrlCallback), settings);
-   gtk_grid_attach(grid,button,2,6,2,1);
+   gtk_grid_attach(grid,button,2,5,2,1);
    label = gtk_label_new("警告:该功能会导致部分网页加载速度变慢");
-   gtk_grid_attach(grid,label,2,7,2,1);
+   gtk_grid_attach(grid,label,2,6,2,1);
    //add end
    //add by luyue 2015/6/8 start
    widget = gtk_label_new("钓鱼网站检测：");
@@ -1214,7 +1236,27 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
    if(!bvalue)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
    g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(phishCheckCallback), settings);
-   gtk_grid_attach(grid,button,2,9,2,1);
+   gtk_grid_attach(grid,button,2,8,2,1);
+   //add end
+   //add by luyue 2015/6/12 start
+   widget = gtk_label_new("恶意弹窗拦截：");
+   gtk_grid_attach(grid, widget, 1, 10, 1, 1);
+   button = gtk_check_button_new_with_label("打开恶意弹框拦截功能");
+   g_object_get(settings, "popupwindow-check", &bvalue, NULL);
+   if(!bvalue)
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
+   g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(popupwindowCheckCallback), settings);
+   gtk_grid_attach(grid,button,2,10,2,1);
+   //add end
+   //add by luyue 2015/6/14 start
+   widget = gtk_label_new("恶意自动下载拦截：");
+   gtk_grid_attach(grid, widget, 1, 12, 1, 1);
+   button = gtk_check_button_new_with_label("打开恶意自动下载拦截功能");
+   g_object_get(settings, "autodownload-check", &bvalue, NULL);
+   if(!bvalue)
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
+   g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(autodownloadCheckCallback), settings);
+   gtk_grid_attach(grid,button,2,12,2,1);
    //add end
    gchar *security_pic = midori_paths_get_res_filename("settings-icons/security.png");
    label = xpm_label_box( security_pic, "安 全" );

@@ -65,6 +65,9 @@ public:
     void startDownload(uint64_t downloadID, const WebCore::ResourceRequest&);
     void convertHandleToDownload(uint64_t downloadID, WebCore::ResourceHandle*, const WebCore::ResourceRequest&, const WebCore::ResourceResponse&);
 
+    //add by luyue 2015/6/14
+    void setAutoDownloadState(bool autoDownloadState);
+
     void cancelDownload(uint64_t downloadID);
 
     void downloadFinished(Download*);
@@ -79,6 +82,9 @@ public:
 
 private:
     Client* m_client;
+    //add by luyue 2015/6/14
+    bool m_autoDownloadState;
+
     HashMap<uint64_t, std::unique_ptr<Download>> m_downloads;
 };
 

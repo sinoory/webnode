@@ -573,6 +573,9 @@ public:
     void setDoubleZoomState(bool);
     void setDoubleZoomLevel(double);
 
+    //add by luyue 2015/6/14
+    void setAutoDownloadState(bool);
+
     void setPageAndTextZoomFactors(double pageZoomFactor, double textZoomFactor);
 
     void scalePage(double scale, const WebCore::IntPoint& origin);

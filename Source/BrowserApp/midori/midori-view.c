@@ -119,6 +119,12 @@ midori_view_check_phish_cb (WebKitWebView* web_view,
                             MidoriView*    view);
 //add end
 
+//add by luyue 2015/6/11 start
+static void
+midori_view_check_popupwindow_cb (WebKitWebView* web_view,
+                                  MidoriView*    view);
+//add end
+
 static gboolean
 midori_view_web_view_close_cb (WebKitWebView* web_view,
                                GtkWidget*     view);
@@ -198,6 +204,7 @@ struct _MidoriView
    GtkWidget *web_view1;//危险网址检测，后台使用
    bool danager_uri_flag;//标志位，0开始危险网址检测，否则关闭
    bool phish_check_flag;//标志位，0开始钓鱼网址检测
+   bool popupwindow_check_flag;//标志位，0开始恶意网址检测
    //add end
 
    gboolean media_info_bar_lock;  //ykhu
@@ -4966,6 +4973,10 @@ _midori_view_set_settings (MidoriView*        view,
    midori_view_set_dangerous_url(view,settings);
    //add by luyue 2015/6/8
    midori_view_set_phish_check_flag(view,settings);
+   //add by luyue 2015/6/12
+   midori_view_set_popupwindow_check_flag(view,settings);
+   //add by luyue 2015/6/14
+   midori_view_set_autodownload_check_state(view,settings);
 }
 
 //add by luyue 2015/1/20
@@ -5037,6 +5048,28 @@ midori_view_set_phish_check_flag (MidoriView*        view,
    bool value = false;
    g_object_get(settings, "phish-check", &value, NULL);
    view->phish_check_flag = value;
+}
+//add end
+
+//add by luyue 2015/6/12 start
+void
+midori_view_set_popupwindow_check_flag (MidoriView*        view,
+                                        MidoriWebSettings* settings)
+{
+   bool value = false;
+   g_object_get(settings, "popupwindow-check", &value, NULL);
+   view->popupwindow_check_flag = value;
+}
+//add end
+
+//add by luyue 2015/6/14 start
+void
+midori_view_set_autodownload_check_state (MidoriView*        view,
+                                          MidoriWebSettings* settings)
+{
+   bool value = false;
+   g_object_get(settings, "autodownload-check", &value, NULL);
+   webkit_web_view_set_autodownload_state(WEBKIT_WEB_VIEW (view->web_view), !value);
 }
 //add end
 
@@ -5930,6 +5963,9 @@ midori_view_set_uri (MidoriView*  view,
                if(!view->phish_check_flag)
                   g_signal_connect (view->web_view, "check-phish",
                                     (GCallback)midori_view_check_phish_cb,view);
+               if(!view->popupwindow_check_flag)
+                  g_signal_connect (view->web_view, "check-popupwindow",
+                                    (GCallback)midori_view_check_popupwindow_cb,view);
                webkit_web_view_load_uri (WEBKIT_WEB_VIEW (view->web_view), new_uri);
                return;
             }
@@ -6042,6 +6078,7 @@ static void
 midori_view_check_phish_cb (WebKitWebView* web_view,
                             MidoriView*    view)
 {
+   if(!view->title) return;
    gchar *script=NULL;
    FILE *fp;
    int file_size;
@@ -6064,6 +6101,32 @@ midori_view_check_phish_cb (WebKitWebView* web_view,
 }
 //add end
 
+//add by luyue 2015/6/11 start
+static void
+midori_view_check_popupwindow_cb (WebKitWebView* web_view,
+                                  MidoriView*    view)
+{
+   if(!view->title) return;
+   gchar *script=NULL;
+   FILE *fp;
+   int file_size;
+
+   if((fp = fopen(midori_paths_get_res_filename("popupwindow/filtering.js"),"r")) != NULL)
+   {
+      fseek(fp,0,SEEK_END);
+      file_size = ftell(fp);
+      fseek(fp,0,SEEK_SET);
+      script = (char *)malloc(file_size * sizeof(char)+1);
+      fread(script,file_size,sizeof(char),fp);
+      script[file_size*sizeof(char)] = '\0';
+      fclose(fp);
+      webkit_web_view_run_javascript(web_view,script,NULL,NULL,NULL);
+      g_free(script);
+      script = NULL;
+   }
+}
+//add end
+
 //add by luyue 2015/3/9
 static void
 midori_web_view1_website_check_cb(MidoriView*    view,
@@ -6079,6 +6142,9 @@ midori_web_view1_website_check_cb(MidoriView*    view,
    if(!view->phish_check_flag) 
       g_signal_connect (view->web_view, "check-phish",
                         (GCallback)midori_view_check_phish_cb,view);
+   if(!view->popupwindow_check_flag)
+      g_signal_connect (view->web_view, "check-popupwindow",
+                        (GCallback)midori_view_check_popupwindow_cb,view);
    webkit_web_view_load_uri (WEBKIT_WEB_VIEW (view->web_view), view->load_uri);
 }
 //add end

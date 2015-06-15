@@ -276,6 +276,18 @@ midori_view_set_phish_check_flag       (MidoriView*        view,
                                         MidoriWebSettings* settings);
 //add end
 
+//add by luyue 2015/6/12 start
+void
+midori_view_set_popupwindow_check_flag (MidoriView*        view,
+                                        MidoriWebSettings* settings);
+//add end
+
+//add by luyue 2015/6/14 start
+void
+midori_view_set_autodownload_check_state (MidoriView*        view,
+                                          MidoriWebSettings* settings);
+//add end
+
 G_END_DECLS
 
 #endif /* __MIDORI_VIEW_H__ */

@@ -1976,6 +1976,12 @@ void WebPageProxy::setDoubleZoomState(bool zoomState)
     m_process->send(Messages::WebPage::SetDoubleZoomState(zoomState), m_pageID);
 }
 
+//add by luyue 2015/6/14
+void WebPageProxy::setAutoDownloadState(bool downloadState)
+{
+    m_process->send(Messages::WebPage::SetAutoDownloadState(downloadState), m_pageID);
+}
+
 //add by luyue 2015/1/16
 void WebPageProxy::setDoubleZoomLevel(double level)
 {

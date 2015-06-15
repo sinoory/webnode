@@ -89,6 +89,11 @@ static void didFinishLoadForFrame(WKPageRef, WKFrameRef frame, WKTypeRef /* user
     webkitWebViewLoadChanged(WEBKIT_WEB_VIEW(clientInfo), WEBKIT_LOAD_FINISHED);
 }
 
+static void didFinishProgress(WKPageRef,const void*clientInfo)
+{
+   webkitWebViewCheckPopupWindow(WEBKIT_WEB_VIEW(clientInfo));
+}
+
 static void didFailLoadWithErrorForFrame(WKPageRef, WKFrameRef frame, WKErrorRef error, WKTypeRef, const void* clientInfo)
 {
     if (!WKFrameIsMainFrame(frame))
@@ -151,7 +156,7 @@ void attachLoaderClientToView(WebKitWebView* webView)
         didReceiveAuthenticationChallengeInFrame,
         0, // didStartProgress
         0, // didChangeProgress,
-        0, // didFinishProgress
+        didFinishProgress,
         0, // didBecomeUnresponsive
         0, // didBecomeResponsive
         processDidCrash,

@@ -227,6 +227,15 @@
 #include <replay/InputCursor.h>
 #endif
 
+//add by luyue 2015/6/13 start
+#include <UserGestureIndicator.h>
+//add end
+
+//add by luyue 2015/6/13
+//存储href类型可疑的URL
+String refresh_str;
+//add end
+
 using namespace WTF;
 using namespace Unicode;
 
@@ -2881,6 +2890,9 @@ void Document::processHttpEquiv(const String& equiv, const String& content)
                 completedURL = m_url;
             else
                 completedURL = completeURL(urlString);
+            //add by luyue 2015/6/13
+            refresh_str = completedURL.strippedForUseAsReferrer();
+            //add end
             if (!protocolIsJavaScript(completedURL))
                 frame->navigationScheduler().scheduleRedirect(delay, completedURL);
             else {

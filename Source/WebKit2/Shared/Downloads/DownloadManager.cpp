@@ -29,14 +29,29 @@
 #include "Download.h"
 #include <wtf/StdLibExtras.h>
 
+//add by luyue 2015/6/13 start
+extern String location_str;
+extern String href_str;
+extern String refresh_str;
+//add end
+
 using namespace WebCore;
 
 namespace WebKit {
 
 DownloadManager::DownloadManager(Client* client)
-    : m_client(client)
+    : m_client(client),
+//add by luyue 2015/6/14
+     m_autoDownloadState(false)
 {
 }
+
+//add by luyue 2015/6/14
+void DownloadManager::setAutoDownloadState(bool autoDownloadState)
+{
+    m_autoDownloadState = autoDownloadState;
+}
+//add end
 
 void DownloadManager::startDownload(uint64_t downloadID, const ResourceRequest& request)
 {
@@ -50,7 +65,26 @@ void DownloadManager::startDownload(uint64_t downloadID, const ResourceRequest& 
 void DownloadManager::convertHandleToDownload(uint64_t downloadID, ResourceHandle* handle, const ResourceRequest& request, const ResourceResponse& response)
 {
     auto download = std::make_unique<Download>(*this, downloadID, request);
-
+    //add by luyue 2015/6/13 start
+    //判断该下载的url，是否为自动下载行为
+    URL url = request.url();
+    String str = url.strippedForUseAsReferrer();
+    if(str == location_str)
+    {
+       location_str = "NULL";
+       if(m_autoDownloadState)return;
+    }
+    else if(str == href_str)
+    {
+       href_str = "NULL";
+       if(m_autoDownloadState)return;
+    }
+    else if(str == refresh_str)
+    {
+       refresh_str = "NULL";
+       if(m_autoDownloadState)return;
+    }
+    //add end
     download->startWithHandle(handle, response);
     ASSERT(!m_downloads.contains(downloadID));
     m_downloads.add(downloadID, WTF::move(download));

@@ -1334,6 +1334,12 @@ void WebPage::setDoubleZoomState(bool zoomState)
     frame->setDoubleZoomState(zoomState);
 }
 
+//add by luyue 2015/6/14
+void WebPage::setAutoDownloadState(bool downloadState)
+{
+    WebProcess::shared().downloadManager().setAutoDownloadState(downloadState);
+}
+
 //add by luyue 2015/1/16
 void WebPage::setDoubleZoomLevel(double level)
 {

@@ -124,6 +124,8 @@ enum {
 
     CHECK_PHISH, //add by luyue 2015/6/8
 
+    CHECK_POPUPWINDOW,//add by luyue 2015/6/11
+
     AUTHENTICATE,
 
     CONSOLE_MESSAGE, /*ZRL create for console.log*/
@@ -1678,9 +1680,20 @@ static void webkit_web_view_class_init(WebKitWebViewClass* webViewClass)
         G_SIGNAL_RUN_LAST,
         G_STRUCT_OFFSET(WebKitWebViewClass, check_phish),
         0, 0,
-        g_cclosure_marshal_VOID__STRING,
+        g_cclosure_marshal_VOID__VOID,
         G_TYPE_NONE, 0);
     //add end
+
+     //add by luyue 2015/6/11 start
+     signals[CHECK_POPUPWINDOW] = g_signal_new(
+        "check-popupwindow",
+        G_TYPE_FROM_CLASS(webViewClass),
+        G_SIGNAL_RUN_LAST,
+        G_STRUCT_OFFSET(WebKitWebViewClass, check_popupwindow),
+        0, 0,
+        g_cclosure_marshal_VOID__VOID,
+        G_TYPE_NONE, 0);
+     //add end
 
     /**
      * WebKitWebView::authenticate:
@@ -2841,6 +2854,14 @@ void webkit_web_view_set_doublezoom_state(WebKitWebView* webView,bool value)
    page->setDoubleZoomState(value);
 }
 
+// luyue add by 2015/6/14
+void webkit_web_view_set_autodownload_state(WebKitWebView* webView,bool value)
+{
+   g_return_if_fail(WEBKIT_IS_WEB_VIEW(webView));
+   WebPageProxy* page = getPage(webView);
+   page->setAutoDownloadState(value);
+}
+
 // luyue add by 2015/1/16
 void webkit_web_view_set_doublezoom_level(WebKitWebView* webView,double level)
 {
@@ -3555,6 +3576,14 @@ cairo_surface_t* webkit_web_view_get_snapshot_finish(WebKitWebView* webView, GAs
 void webkitWebViewCheckPhish(WebKitWebView* webView)
 {
    g_signal_emit(webView, signals[CHECK_PHISH], 0);
+}
+//add end
+
+//add by luyue 2015/6/8 start
+//发出恶意弹框检测信号
+void webkitWebViewCheckPopupWindow(WebKitWebView* webView)
+{
+   g_signal_emit(webView, signals[CHECK_POPUPWINDOW], 0);
 }
 //add end
 

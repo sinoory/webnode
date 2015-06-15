@@ -58,6 +58,7 @@ void webkitWebViewSubmitFormRequest(WebKitWebView*, WebKitFormSubmissionRequest*
 void webkitWebViewHandleAuthenticationChallenge(WebKitWebView*, WebKit::AuthenticationChallengeProxy*);
 void webkitWebViewInsecureContentDetected(WebKitWebView*, WebKitInsecureContentEvent);
 void webkitWebViewCheckPhish(WebKitWebView*);//add by luyue 2015/6/8
+void webkitWebViewCheckPopupWindow(WebKitWebView*);//add by luyue 2015/6/11
 void webkitWebViewWebProcessCrashed(WebKitWebView*);
 
 // ZRL create a new function for console.log

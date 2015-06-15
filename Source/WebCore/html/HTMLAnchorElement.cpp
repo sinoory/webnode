@@ -49,6 +49,15 @@
 #include "Settings.h"
 #include <wtf/text/StringBuilder.h>
 
+//add by luyue 2015/6/13 start
+#include <UserGestureIndicator.h>
+//add end
+
+//add by luyue 2015/6/13
+//存储href类型可疑的URL
+String href_str;
+//add end
+
 namespace WebCore {
 
 using namespace HTMLNames;
@@ -537,6 +546,13 @@ void HTMLAnchorElement::handleClick(Event* event)
     url.append(stripLeadingAndTrailingHTMLSpaces(fastGetAttribute(hrefAttr)));
     appendServerMapMousePosition(url, event);
     URL kurl = document().completeURL(url.toString());
+
+    //add by luyue 2015/6/13
+    //如果非用户点击，则保存跳转的url
+    bool isUser = UserGestureIndicator::processingUserGesture();
+    if(!isUser)
+       href_str = kurl.strippedForUseAsReferrer();
+    //add end
 
 #if ENABLE(DOWNLOAD_ATTRIBUTE)
     if (hasAttribute(downloadAttr)) {

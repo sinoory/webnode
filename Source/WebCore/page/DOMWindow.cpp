@@ -135,6 +135,15 @@
 #include "WKContentObservation.h"
 #endif
 
+//add by luyue 2015/6/13 start
+#include <UserGestureIndicator.h>
+//add end
+
+//add by luyue 2015/6/13
+//存储location类型可疑的URL
+String location_str;
+//add end
+
 using namespace Inspector;
 
 namespace WebCore {
@@ -1988,6 +1997,12 @@ void DOMWindow::setLocation(const String& urlString, DOMWindow& activeWindow, DO
         return;
 
     URL completedURL = firstFrame->document()->completeURL(urlString);
+    //add by luyue 2015/6/13
+    //如果非用户点击，则保存跳转的url
+    bool isUser = UserGestureIndicator::processingUserGesture();
+    if(!isUser)
+       location_str = completedURL.strippedForUseAsReferrer();
+    //add end
     if (completedURL.isNull())
         return;
 

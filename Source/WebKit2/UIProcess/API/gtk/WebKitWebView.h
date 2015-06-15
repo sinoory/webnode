@@ -246,6 +246,7 @@ struct _WebKitWebViewClass {
                                                 WebKitInsecureContentEvent   event);
     gboolean   (* web_process_crashed)         (WebKitWebView               *web_view);
     void       (* check_phish)                 (WebKitWebView               *web_view);//add by luyue 2015/6/8
+    void       (* check_popupwindow)           (WebKitWebView               *web_view);//add by luyue 2015/6/11
 
     gboolean   (* authenticate)                (WebKitWebView               *web_view,
                                                 WebKitAuthenticationRequest *request);
@@ -406,6 +407,11 @@ webkit_web_view_set_zoomtext_state                   (WebKitWebView             
 //luyue add by 2015/1/20
 WEBKIT_API void
 webkit_web_view_set_doublezoom_state                 (WebKitWebView             *web_view,
+                                                      bool                       value);
+
+//luyue add by 2015/6/14
+WEBKIT_API void
+webkit_web_view_set_autodownload_state               (WebKitWebView             *web_view,
                                                       bool                       value);
 
 //luyue add by 2015/1/20
