@@ -264,7 +264,7 @@ namespace Transfers {
                         //zgh 工具栏上图标变化
                         var action_group = (Midori.Browser.get_for_widget (this)).get_action_group();
                         var download_action = action_group.get_action("DownloadDialog");
-                        download_action.set("stock-id", "gtk-go-down", null);
+                        download_action.set("stock-id", "download", null);
                     } catch (Error error_open) {
                         GLib.warning (_("Failed to open download: %s"), error_open.message);
                     }
@@ -632,7 +632,7 @@ gtk_tree_view_column_set_sizing (GtkTreeViewColumn       *tree_column,
                 //zgh 工具栏上图标变化
                 var action_group = (Midori.Browser.get_for_widget (this)).get_action_group();
                 var download_action = action_group.get_action("DownloadDialog");
-                download_action.set("stock-id", "gtk-go-down", null);
+                download_action.set("stock-id", "download", null);
         }
 
         void on_render_icon (Gtk.CellLayout column, Gtk.CellRenderer renderer,

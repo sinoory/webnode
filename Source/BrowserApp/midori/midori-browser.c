@@ -7408,7 +7408,7 @@ static const GtkActionEntry entries[] =
         NULL, G_CALLBACK (_action_undo_tab_close_activate) },
 #endif
     //by sunh     
-    { "DownloadDialog", "gtk-go-down",//STOCK_DOWNLOAD,
+    { "DownloadDialog", "download",//STOCK_DOWNLOAD,
         "Download", "<Ctrl>l",
         N_("Transfers"), G_CALLBACK (midori_browser_actiave_transfer_in_window) },
     //by sunh end
