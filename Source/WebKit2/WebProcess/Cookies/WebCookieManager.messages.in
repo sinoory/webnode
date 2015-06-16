@@ -28,7 +28,7 @@
     void DeleteCookiesForHostname(String hostname)
     void DeleteAllCookies()
     void DeleteAllCookiesModifiedAfterDate(double date)
-
+    void GetCookiesWithUrl(String base_url);
     void SetHTTPCookieAcceptPolicy(uint32_t policy)
     void GetHTTPCookieAcceptPolicy(uint64_t callbackID)
     

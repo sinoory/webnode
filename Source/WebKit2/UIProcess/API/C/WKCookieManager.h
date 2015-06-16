@@ -27,7 +27,7 @@
 #define WKCookieManager_h
 
 #include <WebKit/WKBase.h>
-
+#include <wtf/text/WTFString.h>  //add by luyue 2015/6/16
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -42,7 +42,7 @@ typedef uint32_t WKHTTPCookieAcceptPolicy;
 
 // Cookie Manager Client
 typedef void (*WKCookieManagerCookiesDidChangeCallback)(WKCookieManagerRef cookieManager, const void *clientInfo);
-
+typedef void (*WKCookieManagerGetCookiesCallback)(WKCookieManagerRef cookieManager, const void *clientInfo,String cookie);//add by luyue 2015/6/16
 typedef struct WKCookieManagerClientBase {
     int                                                                 version;
     const void *                                                        clientInfo;
@@ -53,6 +53,7 @@ typedef struct WKCookieManagerClientV0 {
 
     // Version 0.
     WKCookieManagerCookiesDidChangeCallback                             cookiesDidChange;
+    WKCookieManagerGetCookiesCallback                                   getCookies;//add by luyue 2015/6/16
 } WKCookieManagerClientV0;
 
 enum { kWKCookieManagerClientCurrentVersion WK_ENUM_DEPRECATED("Use an explicit version number instead") = 0 };
@@ -62,6 +63,7 @@ typedef struct WKCookieManagerClient {
 
     // Version 0.
     WKCookieManagerCookiesDidChangeCallback                             cookiesDidChange;
+    WKCookieManagerGetCookiesCallback                                   getCookies;//add by luyue 2015/6/16
 } WKCookieManagerClient WK_DEPRECATED("Use an explicit versioned struct instead");
 
 WK_EXPORT WKTypeID WKCookieManagerGetTypeID();

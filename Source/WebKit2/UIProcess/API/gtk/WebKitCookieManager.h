@@ -121,6 +121,11 @@ webkit_cookie_manager_get_domains_with_cookies_finish (WebKitCookieManager      
 WEBKIT_API void
 webkit_cookie_manager_delete_cookies_for_domain       (WebKitCookieManager          *cookie_manager,
                                                        const gchar                  *domain);
+//add by luyue 2015/6/16 start
+WEBKIT_API void
+webkit_cookie_manager_get_cookies_with_url             (WebKitCookieManager          *cookie_manager,
+                                                        const gchar                  *base_url);
+//add end
 
 WEBKIT_API void
 webkit_cookie_manager_delete_all_cookies              (WebKitCookieManager          *cookie_manager);

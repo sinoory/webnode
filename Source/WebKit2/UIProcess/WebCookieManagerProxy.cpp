@@ -139,6 +139,13 @@ void WebCookieManagerProxy::startObservingCookieChanges()
     context()->sendToNetworkingProcessRelaunchingIfNecessary(Messages::WebCookieManager::StartObservingCookieChanges());
 }
 
+//add by luyue 2015/6/16 start
+void WebCookieManagerProxy::getCookiesWithUrl(const String& base_url)
+{
+    context()->sendToNetworkingProcessRelaunchingIfNecessary(Messages::WebCookieManager::GetCookiesWithUrl(base_url));
+}
+//add end
+
 void WebCookieManagerProxy::stopObservingCookieChanges()
 {
     context()->sendToNetworkingProcessRelaunchingIfNecessary(Messages::WebCookieManager::StopObservingCookieChanges());
@@ -147,6 +154,12 @@ void WebCookieManagerProxy::stopObservingCookieChanges()
 void WebCookieManagerProxy::cookiesDidChange()
 {
     m_client.cookiesDidChange(this);
+}
+
+//add by luyue 2015/6/16 start
+void WebCookieManagerProxy::getCookies(String cookie)
+{
+    m_client.getCookies(this,cookie);
 }
 
 void WebCookieManagerProxy::setHTTPCookieAcceptPolicy(HTTPCookieAcceptPolicy policy)

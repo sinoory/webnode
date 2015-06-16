@@ -48,6 +48,7 @@ using namespace WebKit;
 
 enum {
     CHANGED,
+    GET_COOKIE,//add by luyue 2015/6/16
 
     LAST_SIGNAL
 };
@@ -125,12 +126,30 @@ static void webkit_cookie_manager_class_init(WebKitCookieManagerClass* findClass
                      0, 0, 0,
                      g_cclosure_marshal_VOID__VOID,
                      G_TYPE_NONE, 0);
+
+    //add by luyue 2015/6/16 start
+    signals[GET_COOKIE] =
+        g_signal_new("get_cookie",
+                     G_TYPE_FROM_CLASS(gObjectClass),
+                     G_SIGNAL_RUN_LAST,
+                     0, 0, 0,
+                     g_cclosure_marshal_VOID__STRING,
+                     G_TYPE_NONE, 1,
+                     G_TYPE_STRING);
+    //add end
 }
 
 static void cookiesDidChange(WKCookieManagerRef, const void* clientInfo)
 {
     g_signal_emit(WEBKIT_COOKIE_MANAGER(clientInfo), signals[CHANGED], 0);
 }
+
+//add by luyue 2015/6/16 start
+static void getCookies(WKCookieManagerRef, const void* clientInfo,String cookie)
+{
+g_signal_emit(WEBKIT_COOKIE_MANAGER(clientInfo), signals[GET_COOKIE], 0,cookie.utf8().data());
+}
+//add end
 
 WebKitCookieManager* webkitCookieManagerCreate(WebCookieManagerProxy* webCookieManager)
 {
@@ -142,7 +161,8 @@ WebKitCookieManager* webkitCookieManagerCreate(WebCookieManagerProxy* webCookieM
             0, // version
             manager, // clientInfo
         },
-        cookiesDidChange
+        cookiesDidChange,
+        getCookies     //add by luyue 2015/6/16
     };
     WKCookieManagerSetClient(toAPI(webCookieManager), &wkCookieManagerClient.base);
     manager->priv->webCookieManager->startObservingCookieChanges();
@@ -320,3 +340,13 @@ void webkit_cookie_manager_delete_all_cookies(WebKitCookieManager* manager)
 
     manager->priv->webCookieManager->deleteAllCookies();
 }
+
+//add by luyue 2015/6/16 start
+void webkit_cookie_manager_get_cookies_with_url(WebKitCookieManager* manager, const gchar* base_url)
+{
+    g_return_if_fail(WEBKIT_IS_COOKIE_MANAGER(manager));
+    g_return_if_fail(base_url);
+
+    return manager->priv->webCookieManager->getCookiesWithUrl(String::fromUTF8(base_url));
+}
+//add end

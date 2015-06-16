@@ -62,7 +62,7 @@ private:
     void deleteCookiesForHostname(const String&);
     void deleteAllCookies();
     void deleteAllCookiesModifiedAfterDate(double date);
-
+    void getCookiesWithUrl(const String&);//add by luyue 2015/6/16
     void platformSetHTTPCookieAcceptPolicy(HTTPCookieAcceptPolicy);
     void getHTTPCookieAcceptPolicy(uint64_t callbackID);
     HTTPCookieAcceptPolicy platformGetHTTPCookieAcceptPolicy();

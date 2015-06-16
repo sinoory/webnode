@@ -63,6 +63,7 @@ public:
     void getHostnamesWithCookies(std::function<void (API::Array*, CallbackBase::Error)>);
     void deleteCookiesForHostname(const String& hostname);
     void deleteAllCookies();
+    void getCookiesWithUrl(const String& base_url);//add by luyue 2015/6/16
     void deleteAllCookiesModifiedAfterDate(double);
 
     void setHTTPCookieAcceptPolicy(HTTPCookieAcceptPolicy);
@@ -86,7 +87,7 @@ private:
     void didGetHTTPCookieAcceptPolicy(uint32_t policy, uint64_t callbackID);
 
     void cookiesDidChange();
-
+    void getCookies(String cookie);//add by luyue 2015/6/16
     // WebContextSupplement
     virtual void contextDestroyed() override;
     virtual void processDidClose(WebProcessProxy*) override;

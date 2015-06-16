@@ -38,4 +38,13 @@ void WebCookieManagerProxyClient::cookiesDidChange(WebCookieManagerProxy* cookie
     m_client.cookiesDidChange(toAPI(cookieManager), m_client.base.clientInfo);
 }
 
+//add by luyue 2015/6/16 start
+void WebCookieManagerProxyClient::getCookies(WebCookieManagerProxy* cookieManager,String cookie)
+{
+    if (!m_client.getCookies)
+        return;
+    m_client.getCookies(toAPI(cookieManager), m_client.base.clientInfo,cookie);
+}
+//add end
+
 } // namespace WebKit

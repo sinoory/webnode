@@ -1,4 +1,4 @@
-<SECTION>
+ <SECTION>
 <FILE>WebKitWebViewBase</FILE>
 <TITLE>WebKitWebViewBase</TITLE>
 WebKitWebViewBase
@@ -908,6 +908,7 @@ webkit_cookie_manager_get_accept_policy
 webkit_cookie_manager_get_accept_policy_finish
 webkit_cookie_manager_get_domains_with_cookies
 webkit_cookie_manager_get_domains_with_cookies_finish
+webkit_cookie_manager_get_cookied_with_url
 webkit_cookie_manager_delete_cookies_for_domain
 webkit_cookie_manager_delete_all_cookies
 

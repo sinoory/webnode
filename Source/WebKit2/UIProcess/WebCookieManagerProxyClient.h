@@ -43,6 +43,7 @@ class WebCookieManagerProxy;
 class WebCookieManagerProxyClient : public API::Client<WKCookieManagerClientBase> {
 public:
     void cookiesDidChange(WebCookieManagerProxy*);
+    void getCookies(WebCookieManagerProxy*,String);//add by luyue 2015/6/16
 };
 
 } // namespace WebKit

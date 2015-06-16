@@ -33,6 +33,14 @@
 #include <WebCore/CookieStorage.h>
 #include <WebCore/NetworkStorageSession.h>
 #include <WebCore/PlatformCookieJar.h>
+//add by luyue 2015/6/16 start
+#include <WebCore/CookieJarSoup.h>
+#include <WebCore/Cookie.h>
+#include <WebCore/GUniquePtrSoup.h>
+#include <WebCore/URL.h>
+#include <WebCore/NetworkingContext.h>
+#include "SoupNetworkSession.h"
+//add end
 #include <wtf/MainThread.h>
 #include <wtf/text/StringHash.h>
 #include <wtf/text/WTFString.h>
@@ -97,6 +105,16 @@ void WebCookieManager::cookiesDidChange()
 {
     sharedCookieManager->dispatchCookiesDidChange();
 }
+
+//add by luyue 2015/6/16 start
+void WebCookieManager::getCookiesWithUrl(const String& base_url)
+{
+   SoupCookieJar* cookieJar = (NetworkStorageSession::defaultStorageSession()).soupNetworkSession().cookieJar();
+   SoupURI *uri = soup_uri_new (base_url.utf8().data());
+   char*cookie = soup_cookie_jar_get_cookies(cookieJar,uri,true);
+   m_process->send(Messages::WebCookieManagerProxy::GetCookies(String::fromUTF8(cookie)),0);
+}
+//add end 
 
 void WebCookieManager::dispatchCookiesDidChange()
 {
