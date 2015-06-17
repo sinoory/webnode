@@ -139,6 +139,7 @@ namespace Midori {
         public bool show_panel { get; set; default = false; }
         public bool is_private { get; set; default = false; }   //zgh 20150327
         public bool show_statusbar { get; set; default = true; }
+		  public bool whether_query { get; set; default = false; } // add by wangyl 2015.6.17
         /* Since: 0.1.2 */
         public bool show_crash_dialog { get; set; default = true; }
 	// ZRL 增加下载图标

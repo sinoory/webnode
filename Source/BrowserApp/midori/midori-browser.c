@@ -157,6 +157,7 @@ enum
     ADD_DOWNLOAD,
     CLEAR_DOWNLOAD,
     SEND_NOTIFICATION,
+	 PAGES_LOADED,
     POPULATE_TOOL_MENU,
     POPULATE_TOOLBAR_MENU,
     QUIT,
@@ -2785,6 +2786,24 @@ midori_browser_class_init (MidoriBrowserClass* class)
         G_TYPE_NONE, 2,
         G_TYPE_STRING,
         G_TYPE_STRING);
+	/** 
+     * MidoriBrowser::send-notification:
+     * @browser: the object on which the signal is emitted
+     * @title: the title for the notification
+     * @message: the message for the pages
+     *
+     * Emitted when  browser The browser is first opened and all pages are loaded
+     *      // add by wangyl 2015.6.17
+     */ 
+	signals[PAGES_LOADED] = g_signal_new (
+        "pages_loaded",
+        G_TYPE_FROM_CLASS (class),
+        (GSignalFlags)(G_SIGNAL_RUN_LAST),
+        0,
+        0,
+        NULL,
+        midori_cclosure_marshal_VOID__STRING_STRING,
+        G_TYPE_NONE, 0);
 
     /**
      * MidoriBrowser::populate-tool-menu:
@@ -7972,6 +7991,108 @@ midori_browser_realize_cb (GtkStyle*      style,
             gtk_window_set_icon_name (GTK_WINDOW (browser), MIDORI_STOCK_WEB_BROWSER);
     }
 }
+// add by wangyl 2015.6.17 start
+static bool isCdosbrowserDefault()
+{
+   gchar result[20] = {0};
+   system("xdg-settings get default-web-browser > /tmp/.default-browser");
+   FILE *fp = fopen("/tmp/.default-browser","r");
+   fgets(result, 20, fp);
+   fclose(fp);	
+   if(0 == strncmp(result, "cdosbrowser.desktop", 19))
+      return 1;
+   return 0;
+}
+static void
+midori_browser_infobar_response_cb(GtkWidget* infobar,
+                                 gint       response,
+                                 gpointer   data_object)
+{
+    void (*response_cb) (GtkWidget*, gint, gpointer);
+    response_cb = g_object_get_data (G_OBJECT (infobar), "midori-infobar-cb1");
+    if (response_cb != NULL)
+        response_cb (infobar, response, data_object); 
+    gtk_widget_destroy (infobar);
+}
+ GtkWidget*
+midori_browser_add_info_bar (MidoriView*    view,
+                          GtkMessageType message_type,
+                          const gchar*   message,
+                          GCallback      response_cb,
+                          gpointer       data_object,
+                          const gchar*   first_button_text,
+                          ...)
+{
+    GtkWidget* infobar;
+    GtkWidget* action_area;
+    GtkWidget* content_area;
+    GtkWidget* label;
+    va_list args;
+    const gchar* button_text;
+    g_return_val_if_fail (MIDORI_IS_VIEW (view), NULL);
+    g_return_val_if_fail (message != NULL, NULL);
+    va_start (args, first_button_text);
+
+    infobar = gtk_info_bar_new ();
+    for (button_text = first_button_text; button_text;
+         button_text = va_arg (args, const gchar*))
+    {
+        gint response_id = va_arg (args, gint);
+        gtk_info_bar_add_button (GTK_INFO_BAR (infobar),
+                                 button_text, response_id);
+    }
+    gtk_info_bar_set_message_type (GTK_INFO_BAR (infobar), message_type);
+    content_area = gtk_info_bar_get_content_area (GTK_INFO_BAR (infobar));
+    action_area = gtk_info_bar_get_action_area (GTK_INFO_BAR (infobar));
+    gtk_orientable_set_orientation (GTK_ORIENTABLE (action_area),
+                                    GTK_ORIENTATION_HORIZONTAL);
+    g_signal_connect (infobar, "response",
+        G_CALLBACK (midori_browser_infobar_response_cb), data_object);
+
+    va_end (args);
+    label = gtk_label_new (message);
+    gtk_label_set_selectable (GTK_LABEL (label), TRUE);
+    gtk_label_set_ellipsize (GTK_LABEL (label), PANGO_ELLIPSIZE_END);
+    gtk_container_add (GTK_CONTAINER (content_area), label);
+    gtk_widget_show_all (infobar);
+    gtk_box_pack_start (GTK_BOX (view), infobar, FALSE, FALSE, 0);
+    gtk_box_reorder_child (GTK_BOX (view), infobar, 0);
+    g_object_set_data (G_OBJECT (infobar), "midori-infobar-cb1", response_cb);
+    if (data_object != NULL)
+       g_object_set_data_full (G_OBJECT (infobar), "midori-infobar-da",
+            g_object_ref (data_object), g_object_unref);
+    return infobar;
+}
+
+void
+midori_browser_install_response_cb (GtkWidget*  infobar,
+                         gint        response_id,
+                         MidoriBrowser* browser)
+{
+	 switch (response_id) {
+	     case GTK_RESPONSE_ACCEPT:
+		 	   system("xdg-settings set default-web-browser cdosbrowser.desktop");
+	         break;
+	    case GTK_RESPONSE_CLOSE:
+			  g_object_set(browser->settings,  "whether-query", 1,NULL);
+		     break;
+	     default:
+	         break;
+	}
+	 
+}
+ void midori_browser_pages_loaded_cb(MidoriBrowser* browser)
+{
+	gboolean value = katze_object_get_boolean(browser->settings, "whether-query");
+	if(isCdosbrowserDefault() || value == TRUE)return;
+	gtk_notebook_set_current_page(MIDORI_NOTEBOOK(browser->notebook)->notebook,0);
+	GtkWidget *first_tab =  midori_browser_get_current_tab (browser);
+	MidoriView*    view= MIDORI_VIEW (first_tab);
+	midori_browser_add_info_bar(view,GTK_MESSAGE_QUESTION,"是否将当前浏览器设为默认浏览器？",
+		G_CALLBACK (midori_browser_install_response_cb), browser,GTK_STOCK_OK,GTK_RESPONSE_ACCEPT,
+		GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,"不再询问",GTK_RESPONSE_CLOSE,NULL);
+}
+// add by wangyl 2015.6.17 end 
 
 static void
 midori_browser_set_history (MidoriBrowser* browser,
@@ -8181,6 +8302,8 @@ midori_browser_init (MidoriBrowser* browser)
     /* Setup the window metrics */
     g_signal_connect (browser, "realize",
                       G_CALLBACK (midori_browser_realize_cb), browser);
+	 g_signal_connect (browser, "pages_loaded",
+                      G_CALLBACK (midori_browser_pages_loaded_cb), browser);//add by wangyl 2015.6.17
     g_signal_connect (browser, "window-state-event",
                       G_CALLBACK (midori_browser_window_state_event_cb), NULL);
     g_signal_connect (browser, "size-allocate",

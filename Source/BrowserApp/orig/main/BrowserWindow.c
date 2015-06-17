@@ -281,12 +281,9 @@ static void webViewURIChanged(WebKitWebView *webView, GParamSpec *pspec, Browser
 
 static void webViewTitleChanged(WebKitWebView *webView, GParamSpec *pspec, BrowserWindow *window)
 {
-    g_print("bbbbbbb\n");
     const char *title = webkit_web_view_get_title(webView);
     gtk_window_set_title(GTK_WINDOW(window), title ? title : defaultWindowTitle);
-    g_print("cccccccccc\n");
 //   HS_history_new(window, webView); //add by zlf
-   g_print("ddddddddddd\n");
 }
 
 static gboolean resetEntryProgress(BrowserWindow *window)

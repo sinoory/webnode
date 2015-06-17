@@ -121,6 +121,7 @@ namespace Midori {
         [HasEmitter]
         public signal void quit ();
         public signal void send_notification (string title, string message);
+		  public signal void pages_loaded ();//add by wangyl 2015.6.17
         public static void update_history (Katze.Item item, string type, string event);
         public signal void show_preferences (Katze.Preferences preferences);
     }

@@ -185,6 +185,7 @@ namespace Tabby {
                             if (u_items == null) {
                                 this.helper_reorder_tabs (new_tabs);
                                 this.state = SessionState.OPEN;
+										  browser.pages_loaded();// add by wangyl 2015.6.17
                                 return false;
                             }
 
