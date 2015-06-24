@@ -226,7 +226,8 @@ namespace Midori {
                     margin = margin % 10;
 
                 markup.append_printf (
-                    "<style> body { overflow:hidden } #content { margin-left: %u%%; }</style>", margin);
+                    //"<style> body { overflow:hidden } #content { margin-left: %u%%; }</style>", margin);//modified by wangyl 2015.6.24
+		    "<style> body { width:60%; height:75%;overflow:hidden } #content { margin-left: %u%%;margin-top: %u%%; }</style>",40,12);
                 if (close_buttons_left)
                     markup.append_printf (
                         "<style>.cross { left: -14px }</style>");
@@ -265,13 +266,17 @@ namespace Midori {
                     }
                     catch (KeyFileError error) { }
                 }
-
-                markup.append_printf ("""
+		if(slot_count<9){
+                   markup.append_printf ("""
                     <div class="shortcut" id="%u"><div class="preview new">
                     <a class="add" href="#"></a>
                     </div><div class="title">%s</div></div>
                     """,
                     next_slot,  _("Click to add a shortcut"));
+		}
+		else {
+		   markup.append_printf (""" <div class="preview new“></div></div>""");
+                }
                 markup.append_printf ("</div>\n</body>\n</html>\n");
                 html = markup.str;
             }

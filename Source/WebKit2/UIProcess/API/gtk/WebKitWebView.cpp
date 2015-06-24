@@ -332,7 +332,8 @@ static GtkWidget* webkitWebViewCreateJavaScriptDialog(WebKitWebView* webView, Gt
     GtkWidget* dialog = gtk_message_dialog_new(widgetIsOnscreenToplevelWindow(parent) ? GTK_WINDOW(parent) : 0,
                                                GTK_DIALOG_DESTROY_WITH_PARENT, type, buttons, "%s", message);
     GUniquePtr<char> title(g_strdup_printf("JavaScript - %s", webkit_web_view_get_uri(webView)));
-    gtk_window_set_title(GTK_WINDOW(dialog), title.get());
+    //gtk_window_set_title(GTK_WINDOW(dialog), title.get());// modified by wangyl 2015.6.24
+    gtk_window_set_title(GTK_WINDOW(dialog), NULL);
     gtk_dialog_set_default_response(GTK_DIALOG(dialog), defaultResponse);
 
     return dialog;

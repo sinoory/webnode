@@ -4160,11 +4160,20 @@ static gboolean
   midori_dialog_action_button_press_cb_ctn (ScriptDialogAction*   action)
 {
     MidoriView* view =action->view;
+    gchar* new_uri;
     gchar *uri = gtk_entry_get_text((GtkEntry*)(action->entry_uri)); 
-    if(strlen(uri) == 0)return ;
+    //if(strlen(uri) == 0)return ;//modified by wangyl 2015.6.24
+    if(strlen(uri) == 0)
+    {
+       gtk_widget_destroy(action->dialog);
+       return TRUE;
+    }
+    uri = katze_skip_whitespace (uri);
+    new_uri = sokoke_magic_uri (uri, TRUE, FALSE);
     MidoriBrowser* browser = midori_browser_get_for_widget (GTK_WIDGET (midori_view_get_web_view(view)));
     MidoriSpeedDial* dial = katze_object_get_object (browser, "speed-dial");
-    midori_speed_dial_add(dial, uri, "dial-title", NULL);
+    midori_speed_dial_add(dial, new_uri, "dial-title", NULL);
+    g_free (new_uri);
     gtk_widget_destroy(action->dialog);
     return TRUE;
 }
@@ -4174,7 +4183,6 @@ static gboolean
   gtk_widget_destroy(action->dialog);
   return TRUE;
 }
-
 static gboolean
 midori_dialog_action_treeview1_button_press_cb (GtkWidget*            treeview,
                                                 GdkEventButton*       event,
