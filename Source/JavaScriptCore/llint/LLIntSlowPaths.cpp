@@ -54,8 +54,20 @@
 #include "ProtoCallFrame.h"
 #include "StructureRareDataInlines.h"
 #include <wtf/StringPrintStream.h>
+/*****add by gwg 定义全局变量统计读写信息*****/
+double readcount=0.0,writecount=0.0;
+unsigned long int writeinbytes=0;
+/*****add by gwg 定义全局变量统计读写信息*****/
+bool m_ShellCodeSate=false;
 
-namespace JSC { namespace LLInt {
+namespace JSC { 
+
+void setShellCodeSate(bool shellCodeSate)
+{
+   m_ShellCodeSate = shellCodeSate;
+}
+
+namespace LLInt {
 
 #define LLINT_BEGIN_NO_SET_PC() \
     VM& vm = exec->vm();      \
@@ -402,7 +414,13 @@ LLINT_SLOW_PATH_DECL(loop_osr)
             *codeBlock, ": Entered loop_osr with executeCounter = ",
             codeBlock->llintExecuteCounter(), "\n");
     }
-    
+    /**add by gwg**/
+    if(m_ShellCodeSate)
+    {
+       codeBlock->dontJITAnytimeSoon();  //直接不进行jit优化
+       LLINT_RETURN_TWO(0, 0);
+    }
+    /**add by gwg**/
     if (!shouldJIT(exec)) {
         codeBlock->dontJITAnytimeSoon();
         LLINT_RETURN_TWO(0, 0);
@@ -752,6 +770,10 @@ inline JSValue getByVal(ExecState* exec, JSValue baseValue, JSValue subscript)
 LLINT_SLOW_PATH_DECL(slow_path_get_by_val)
 {
     LLINT_BEGIN();
+    if(m_ShellCodeSate)
+    {
+       readcount=readcount+1.0;  //读次数加1
+    }
     LLINT_RETURN_PROFILED(op_get_by_val, getByVal(exec, LLINT_OP_C(2).jsValue(), LLINT_OP_C(3).jsValue()));
 }
 
@@ -772,11 +794,33 @@ LLINT_SLOW_PATH_DECL(slow_path_get_argument_by_val)
 LLINT_SLOW_PATH_DECL(slow_path_put_by_val)
 {
     LLINT_BEGIN();
-    
     JSValue baseValue = LLINT_OP_C(1).jsValue();
     JSValue subscript = LLINT_OP_C(2).jsValue();
     JSValue value = LLINT_OP_C(3).jsValue();
-    
+
+/** add by gwg**/
+    if(m_ShellCodeSate)
+    {
+       writecount=writecount+1.0;
+       if(writecount>=2000000.0) { //数组写次数超过2000000
+          printf("\nheap spray\n");
+          exit(1);
+       }
+       if(value.isInt32())
+       {
+          writeinbytes=writeinbytes+sizeof(value.asInt32()); //累计写入的字节数
+       }
+       if(value.isString())
+       {
+          writeinbytes=writeinbytes+value.getString(exec).length(); //累计写入的字节数
+       }
+       if(writeinbytes>=100000000) { //判断写入字节数是否多于100000000B
+          printf("\nheap spray\n");
+          exit(1);
+       }
+    }
+/** add by gwg**/ 
+
     if (LIKELY(subscript.isUInt32())) {
         uint32_t i = subscript.asUInt32();
         if (baseValue.isObject()) {

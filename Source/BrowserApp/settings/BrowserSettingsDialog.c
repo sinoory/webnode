@@ -357,6 +357,17 @@ obfuscatecodeCheckCallback(GtkToggleButton *togglebutton, MidoriWebSettings *set
 }
 //add end
 
+//add by luyue 2015/6/29 start
+static void
+shellcodeCheckCallback(GtkToggleButton *togglebutton, MidoriWebSettings *settings)
+{
+    bool bvalue = gtk_toggle_button_get_active(togglebutton);
+    g_object_set(settings,
+                 "shellcode-check", !bvalue,
+                 NULL);
+}
+//add end
+
 //add by luyue 2015/3/26
 static void rememberWebPasswordCallback(GtkToggleButton *togglebutton, MidoriWebSettings *settings)
 {
@@ -1279,6 +1290,17 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
    g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(obfuscatecodeCheckCallback), settings);
    gtk_grid_attach(grid,button,2,14,2,1);
+   //add end
+
+   //add by luyue 2015/6/29 start
+   widget = gtk_label_new("漏洞恶意注入检测：");
+   gtk_grid_attach(grid, widget, 1, 16, 1, 1);
+   button = gtk_check_button_new_with_label("打开利用漏洞恶意注入检测功能");
+   g_object_get(settings, "shellcode-check", &bvalue, NULL);
+   if(!bvalue)
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
+   g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(shellcodeCheckCallback), settings);
+   gtk_grid_attach(grid,button,2,16,2,1);
    //add end
 
    gchar *security_pic = midori_paths_get_res_filename("settings-icons/security.png");

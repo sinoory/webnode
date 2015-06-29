@@ -1596,6 +1596,8 @@ _llint_op_get_by_val:
     loadi ArrayStorage::m_vector + PayloadOffset[t3, t1, 8], t1
 
 .opGetByValDone:
+    callSlowPath(_llint_slow_path_get_by_val)
+    dispatch(6)
     loadi 4[PC], t0
     bieq t2, EmptyValueTag, .opGetByValOutOfBounds
 .opGetByValNotEmpty:
@@ -1639,6 +1641,8 @@ _llint_op_get_argument_by_val:
 macro contiguousPutByVal(storeCallback)
     biaeq t3, -sizeof IndexingHeader + IndexingHeader::u.lengths.publicLength[t0], .outOfBounds
 .storeResult:
+    callSlowPath(_llint_slow_path_put_by_val)
+    dispatch(5)
     loadi 12[PC], t2
     storeCallback(t2, t1, t0, t3)
     dispatch(5)

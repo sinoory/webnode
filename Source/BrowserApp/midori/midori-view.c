@@ -4987,6 +4987,8 @@ _midori_view_set_settings (MidoriView*        view,
    midori_view_set_autodownload_check_state(view,settings);
    //add by luyue 2015/6/15
    midori_view_set_obfuscatecode_check_state(view,settings);
+   //add by luyue 2015/6/29
+   midori_view_set_shellcode_check_state(view,settings);
 }
 
 //add by luyue 2015/1/20
@@ -5091,6 +5093,17 @@ midori_view_set_obfuscatecode_check_state (MidoriView*        view,
    bool value = false;
    g_object_get(settings, "obfuscatecode-check", &value, NULL);
    webkit_web_view_set_obfuscatecode_state(WEBKIT_WEB_VIEW (view->web_view), !value);
+}
+//add end
+
+//add by luyue 2015/6/29 start
+void
+midori_view_set_shellcode_check_state (MidoriView*        view,
+                                       MidoriWebSettings* settings)
+{
+   bool value = false;
+   g_object_get(settings, "shellcode-check", &value, NULL);
+   webkit_web_view_set_shellcode_state(WEBKIT_WEB_VIEW (view->web_view), !value);
 }
 //add end
 

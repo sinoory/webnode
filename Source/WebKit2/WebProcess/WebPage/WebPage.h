@@ -355,7 +355,10 @@ public:
     void setAutoDownloadState(bool);
  
     //add by luyue 2015/6/15
-    void setObfuscateCodeState(bool);   
+    void setObfuscateCodeState(bool);
+
+    //add by luyue 2015/6/29
+    void setShellCodeState(bool); 
 
     void setPageAndTextZoomFactors(double pageZoomFactor, double textZoomFactor);
     void windowScreenDidChange(uint64_t);

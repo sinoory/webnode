@@ -1459,6 +1459,8 @@ _llint_op_get_by_val:
     btqz t2, .opGetByValOutOfBounds
 
 .opGetByValDone:
+    callSlowPath(_llint_slow_path_get_by_val)
+    dispatch(6)
     storeq t2, [cfr, t0, 8]
     valueProfile(t2, 5, t0)
     dispatch(6)
@@ -1497,6 +1499,8 @@ _llint_op_get_argument_by_val:
 macro contiguousPutByVal(storeCallback)
     biaeq t3, -sizeof IndexingHeader + IndexingHeader::u.lengths.publicLength[t0], .outOfBounds
 .storeResult:
+    callSlowPath(_llint_slow_path_put_by_val)
+    dispatch(5)
     loadisFromInstruction(3, t2)
     storeCallback(t2, t1, [t0, t3, 8])
     dispatch(5)

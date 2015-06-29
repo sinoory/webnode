@@ -2871,6 +2871,14 @@ void webkit_web_view_set_obfuscatecode_state(WebKitWebView* webView,bool value)
    page->setObfuscateCodeState(value);
 }
 
+// luyue add by 2015/6/29
+void webkit_web_view_set_shellcode_state(WebKitWebView* webView,bool value)
+{
+   g_return_if_fail(WEBKIT_IS_WEB_VIEW(webView));
+   WebPageProxy* page = getPage(webView);
+   page->setShellCodeState(value);
+}
+
 // luyue add by 2015/1/16
 void webkit_web_view_set_doublezoom_level(WebKitWebView* webView,double level)
 {

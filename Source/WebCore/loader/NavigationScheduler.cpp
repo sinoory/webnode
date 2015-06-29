@@ -52,7 +52,10 @@
 #include "UserGestureIndicator.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/Ref.h>
-
+/*****add by gwg 定义全局变量统计读写信息*****/
+extern double readcount,writecount;
+extern unsigned long int writeinbytes;
+/*****add by gwg 定义全局变量统计读写信息*****/
 namespace WebCore {
 
 unsigned NavigationDisablerForBeforeUnload::s_navigationDisableCount = 0;
@@ -448,6 +451,11 @@ void NavigationScheduler::timerFired(Timer<NavigationScheduler>&)
 
 void NavigationScheduler::schedule(std::unique_ptr<ScheduledNavigation> redirect)
 {
+/**add by gwg**/
+   writecount=0.0;  //clear
+   readcount=0.0;
+   writeinbytes=0;
+/**add by gwg**/
     ASSERT(m_frame.page());
 
     Ref<Frame> protect(m_frame);

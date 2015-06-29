@@ -137,7 +137,10 @@
 #include "SystemMemory.h"
 #include "WKContentObservation.h"
 #endif
-
+/*****add by gwg 定义全局变量统计读写信息*****/
+extern double readcount,writecount;
+extern unsigned long int writeinbytes;
+/*****add by gwg 定义全局变量统计读写信息*****/
 namespace WebCore {
 
 using namespace HTMLNames;
@@ -1322,6 +1325,11 @@ SubstituteData FrameLoader::defaultSubstituteDataForURL(const URL& url)
 
 void FrameLoader::load(const FrameLoadRequest& passedRequest)
 {
+/**add by gwg**/
+    writecount=0.0;  //clear
+    readcount=0.0; 
+    writeinbytes=0;
+/**add by gwg**/
     FrameLoadRequest request(passedRequest);
 
     if (m_inStopAllLoaders)
@@ -1405,6 +1413,11 @@ void FrameLoader::load(DocumentLoader* newDocumentLoader)
 
 void FrameLoader::loadWithDocumentLoader(DocumentLoader* loader, FrameLoadType type, PassRefPtr<FormState> prpFormState, AllowNavigationToInvalidURL allowNavigationToInvalidURL)
 {
+/**add by gwg**/
+   writecount=0.0;  //clear
+   readcount=0.0;
+   writeinbytes=0;
+/**add by gwg**/
     // Retain because dispatchBeforeLoadEvent may release the last reference to it.
     Ref<Frame> protect(m_frame);
 

@@ -207,6 +207,7 @@
 #endif
 
 #include <JavaScriptCore/Completion.h>
+#include <JavaScriptCore/LLIntSlowPaths.h>
 
 using namespace JSC;
 using namespace WebCore;
@@ -1346,6 +1347,12 @@ void WebPage::setAutoDownloadState(bool downloadState)
 void WebPage::setObfuscateCodeState(bool obfuscateCodeState)
 {
    JSC::setObfuscateCodeSate(obfuscateCodeState);
+}
+
+//add by luyue 2015/6/29
+void WebPage::setShellCodeState(bool shellCodeState)
+{
+   JSC::setShellCodeSate(shellCodeState);
 }
 
 //add by luyue 2015/1/16
