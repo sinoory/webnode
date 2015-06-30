@@ -219,12 +219,7 @@ namespace Midori {
 	public bool do_not_track {get; set; default = true;} //lianxx add, 20150120
 	public bool reset_browser_settings {get; set; default = false;} //lianxx add, 20150120
 	public double smart_zoom_level {get; set; default = 1.0;} //lianxx add, 20150120 
-        public bool danger_url {get; set; default = true;} //luyue add, 20150318
-        public bool phish_check {get; set; default = true;} //luyue add, 20150608
-        public bool popupwindow_check {get; set; default = true;} //luyue add, 20150612
-        public bool autodownload_check {get; set; default = true;} //luyue add, 20150614
-        public bool obfuscatecode_check {get; set; default = true;} //luyue add, 20150615
-        public bool shellcode_check {get; set; default = true;} //luyue add, 20150629
+        public int secure_level {get; set; default = 0;} //luyue add, 20150630
         public bool night_mode {get; set; default = false;} //luyue add, 20150427
         public string night_level {get; set; default = null;} //luyue add, 20150427
         public bool remember_web_password {get; set; default = false;} //luyue add, 20150326

@@ -4977,18 +4977,8 @@ _midori_view_set_settings (MidoriView*        view,
    midori_view_set_doublezoom_state(view,settings);
    midori_view_set_zoomtext_state(view,settings);
    midori_view_set_doublezoom_level(view,settings);
-   //add by luyue 2015/3/18
-   midori_view_set_dangerous_url(view,settings);
-   //add by luyue 2015/6/8
-   midori_view_set_phish_check_flag(view,settings);
-   //add by luyue 2015/6/12
-   midori_view_set_popupwindow_check_flag(view,settings);
-   //add by luyue 2015/6/14
-   midori_view_set_autodownload_check_state(view,settings);
-   //add by luyue 2015/6/15
-   midori_view_set_obfuscatecode_check_state(view,settings);
-   //add by luyue 2015/6/29
-   midori_view_set_shellcode_check_state(view,settings);
+   //add by luyue 2015/6/30
+   midori_view_set_secure_level(view,settings);
 }
 
 //add by luyue 2015/1/20
@@ -5028,82 +5018,63 @@ midori_view_set_doublezoom_level (MidoriView*        view,
       webkit_web_view_set_doublezoom_level(WEBKIT_WEB_VIEW (view->web_view), level);
 }
 
-//add by luyue 2015/3/18
+//add by luyue 2015/6/30 
 void
-midori_view_set_dangerous_url (MidoriView*        view,
-                               MidoriWebSettings* settings)
+midori_view_set_secure_level (MidoriView*        view,
+                              MidoriWebSettings* settings)
 {
-   bool value = false;
-   g_object_get(settings, "danger-url", &value, NULL);
-   view->danager_uri_flag = value;
-   if(view->danager_uri_flag)
-   {
-      if(view->back_uri)
-      {
-         free(view->back_uri);
-         view->back_uri = NULL;
-      }
-      if(view->forward_uri)
-      {
-         free(view->forward_uri);
-         view->forward_uri = NULL;
-      }
+   gint value = 0;
+   g_object_get(settings, "secure-level", &value, NULL);
+   switch(value) {
+      case 0://低,全部关闭
+         webkit_web_view_set_shellcode_state(WEBKIT_WEB_VIEW (view->web_view), false);//利用漏洞注入检测
+         webkit_web_view_set_obfuscatecode_state(WEBKIT_WEB_VIEW (view->web_view), false);//混淆代码检测
+         webkit_web_view_set_autodownload_state(WEBKIT_WEB_VIEW (view->web_view), false);//恶意自动下载检测
+         view->popupwindow_check_flag = true;//恶意弹窗拦截
+         view->popupwindow_check_flag = true;//钓鱼网站检测
+
+         view->danager_uri_flag = true;//高危网址检测
+         if(view->back_uri)
+         {
+            free(view->back_uri);
+            view->back_uri = NULL;
+         }
+         if(view->forward_uri)
+         {
+            free(view->forward_uri);
+            view->forward_uri = NULL;
+         }
+         break;
+      case 1://中，部分开启
+         webkit_web_view_set_shellcode_state(WEBKIT_WEB_VIEW (view->web_view), false);//关闭
+         webkit_web_view_set_obfuscatecode_state(WEBKIT_WEB_VIEW (view->web_view), true);//开启
+         webkit_web_view_set_autodownload_state(WEBKIT_WEB_VIEW (view->web_view), false);//关闭
+         view->popupwindow_check_flag = false;//开启
+         view->popupwindow_check_flag = false;//开启
+
+         view->danager_uri_flag = true;//关闭
+         if(view->back_uri)
+         {
+            free(view->back_uri);
+            view->back_uri = NULL;
+         }
+         if(view->forward_uri)
+         {
+            free(view->forward_uri);
+            view->forward_uri = NULL;
+         }
+         break;
+      case 2://高，全部开启
+         webkit_web_view_set_shellcode_state(WEBKIT_WEB_VIEW (view->web_view), true);
+         webkit_web_view_set_obfuscatecode_state(WEBKIT_WEB_VIEW (view->web_view), true);
+         webkit_web_view_set_autodownload_state(WEBKIT_WEB_VIEW (view->web_view), true);
+         view->popupwindow_check_flag = false;
+         view->popupwindow_check_flag = false;
+         view->danager_uri_flag = false;
+         break;
+      default:
+         break;
    }
-}
-//add end 
-
-//add by luyue 2015/6/8 start
-void
-midori_view_set_phish_check_flag (MidoriView*        view,
-                                  MidoriWebSettings* settings)
-{
-   bool value = false;
-   g_object_get(settings, "phish-check", &value, NULL);
-   view->phish_check_flag = value;
-}
-//add end
-
-//add by luyue 2015/6/12 start
-void
-midori_view_set_popupwindow_check_flag (MidoriView*        view,
-                                        MidoriWebSettings* settings)
-{
-   bool value = false;
-   g_object_get(settings, "popupwindow-check", &value, NULL);
-   view->popupwindow_check_flag = value;
-}
-//add end
-
-//add by luyue 2015/6/14 start
-void
-midori_view_set_autodownload_check_state (MidoriView*        view,
-                                          MidoriWebSettings* settings)
-{
-   bool value = false;
-   g_object_get(settings, "autodownload-check", &value, NULL);
-   webkit_web_view_set_autodownload_state(WEBKIT_WEB_VIEW (view->web_view), !value);
-}
-//add end
-
-//add by luyue 2015/6/15 start
-void
-midori_view_set_obfuscatecode_check_state (MidoriView*        view,
-                                           MidoriWebSettings* settings)
-{
-   bool value = false;
-   g_object_get(settings, "obfuscatecode-check", &value, NULL);
-   webkit_web_view_set_obfuscatecode_state(WEBKIT_WEB_VIEW (view->web_view), !value);
-}
-//add end
-
-//add by luyue 2015/6/29 start
-void
-midori_view_set_shellcode_check_state (MidoriView*        view,
-                                       MidoriWebSettings* settings)
-{
-   bool value = false;
-   g_object_get(settings, "shellcode-check", &value, NULL);
-   webkit_web_view_set_shellcode_state(WEBKIT_WEB_VIEW (view->web_view), !value);
 }
 //add end
 

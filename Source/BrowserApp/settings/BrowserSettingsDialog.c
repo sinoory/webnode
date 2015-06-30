@@ -69,7 +69,6 @@ const gchar* font[]  =    {"sans-serif", "AR PL UKai CN", "AR PL UKai HK", "AR P
            
                           };
 
-
 const  guint32 font_size[] = {9, 12, 16, 20, 24 
                            
                              };
@@ -111,6 +110,14 @@ static void onStartupCallback(GtkComboBox *widget, MidoriWebSettings *settings)
     int CurrentSelect = gtk_combo_box_get_active(widget); 
     g_object_set(settings,
              "load-on-startup", CurrentSelect,
+             NULL);
+}
+
+static void secureLevelCallback(GtkComboBox *widget, MidoriWebSettings *settings)
+{
+    int CurrentSelect = gtk_combo_box_get_active(widget);
+    g_object_set(settings,
+             "secure-level", CurrentSelect,
              NULL);
 }
 
@@ -303,70 +310,6 @@ static void zoomTextOnlyCallback(GtkToggleButton *togglebutton, MidoriWebSetting
              "zoom-text-and-images", !bvalue,
              NULL);
 }
-
-//add by luyue 2015/3/18
-static void dangerUrlCallback(GtkToggleButton *togglebutton, MidoriWebSettings *settings)
-{
-    bool bvalue = gtk_toggle_button_get_active(togglebutton);
-    g_object_set(settings,
-                 "danger-url", !bvalue,
-                 NULL);
-}
-//add end
-
-//add by luyue 2015/6/8 start
-static void phishCheckCallback(GtkToggleButton *togglebutton, MidoriWebSettings *settings)
-{
-    bool bvalue = gtk_toggle_button_get_active(togglebutton);
-    g_object_set(settings,
-                 "phish-check", !bvalue,
-                 NULL);
-}
-//add end
- 
-//add by luyue 2015/6/12 start
-static void 
-popupwindowCheckCallback(GtkToggleButton *togglebutton, MidoriWebSettings *settings)
-{
-    bool bvalue = gtk_toggle_button_get_active(togglebutton);
-    g_object_set(settings,
-                 "popupwindow-check", !bvalue,
-                 NULL);
-}
-//add end
-
-//add by luyue 2015/6/14 start
-static void 
-autodownloadCheckCallback(GtkToggleButton *togglebutton, MidoriWebSettings *settings)
-{
-    bool bvalue = gtk_toggle_button_get_active(togglebutton);
-    g_object_set(settings,
-                 "autodownload-check", !bvalue,
-                 NULL);
-}
-//add end
-
-//add by luyue 2015/6/15 start
-static void
-obfuscatecodeCheckCallback(GtkToggleButton *togglebutton, MidoriWebSettings *settings)
-{
-    bool bvalue = gtk_toggle_button_get_active(togglebutton);
-    g_object_set(settings,
-                 "obfuscatecode-check", !bvalue,
-                 NULL);
-}
-//add end
-
-//add by luyue 2015/6/29 start
-static void
-shellcodeCheckCallback(GtkToggleButton *togglebutton, MidoriWebSettings *settings)
-{
-    bool bvalue = gtk_toggle_button_get_active(togglebutton);
-    g_object_set(settings,
-                 "shellcode-check", !bvalue,
-                 NULL);
-}
-//add end
 
 //add by luyue 2015/3/26
 static void rememberWebPasswordCallback(GtkToggleButton *togglebutton, MidoriWebSettings *settings)
@@ -1238,69 +1181,30 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
    button = gtk_button_new_with_label("管理证书");
    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(certificateManagerCallback), settings);
    gtk_grid_attach(grid, button, 2, 4, 1, 1);
-   //add by luyue 2015/3/18
-   widget = gtk_label_new("高危网址检测：");
-   gtk_grid_attach(grid, widget, 1, 5, 1, 1);
-   button = gtk_check_button_new_with_label("打开高危网址检测功能");
-   g_object_get(settings, "danger-url", &bvalue, NULL);
-   if(!bvalue)
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
-   g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(dangerUrlCallback), settings);
-   gtk_grid_attach(grid,button,2,5,2,1);
-   label = gtk_label_new("警告:该功能会导致部分网页加载速度变慢");
-   gtk_grid_attach(grid,label,2,6,2,1);
-   //add end
-   //add by luyue 2015/6/8 start
-   widget = gtk_label_new("钓鱼网站检测：");
-   gtk_grid_attach(grid, widget, 1, 8, 1, 1);
-   button = gtk_check_button_new_with_label("打开钓鱼网站检测功能");
-   g_object_get(settings, "phish-check", &bvalue, NULL);
-   if(!bvalue)
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
-   g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(phishCheckCallback), settings);
-   gtk_grid_attach(grid,button,2,8,2,1);
-   //add end
-   //add by luyue 2015/6/12 start
-   widget = gtk_label_new("恶意弹窗拦截：");
-   gtk_grid_attach(grid, widget, 1, 10, 1, 1);
-   button = gtk_check_button_new_with_label("打开恶意弹框拦截功能");
-   g_object_get(settings, "popupwindow-check", &bvalue, NULL);
-   if(!bvalue)
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
-   g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(popupwindowCheckCallback), settings);
-   gtk_grid_attach(grid,button,2,10,2,1);
-   //add end
-   //add by luyue 2015/6/14 start
-   widget = gtk_label_new("恶意自动下载拦截：");
-   gtk_grid_attach(grid, widget, 1, 12, 1, 1);
-   button = gtk_check_button_new_with_label("打开恶意自动下载拦截功能");
-   g_object_get(settings, "autodownload-check", &bvalue, NULL);
-   if(!bvalue)
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
-   g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(autodownloadCheckCallback), settings);
-   gtk_grid_attach(grid,button,2,12,2,1);
-   //add end
 
-   //add by luyue 2015/6/15 start
-   widget = gtk_label_new("混淆代码检测：");
-   gtk_grid_attach(grid, widget, 1, 14, 1, 1);
-   button = gtk_check_button_new_with_label("打开混淆代码检测功能");
-   g_object_get(settings, "obfuscatecode-check", &bvalue, NULL);
-   if(!bvalue)
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
-   g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(obfuscatecodeCheckCallback), settings);
-   gtk_grid_attach(grid,button,2,14,2,1);
-   //add end
-
-   //add by luyue 2015/6/29 start
-   widget = gtk_label_new("漏洞恶意注入检测：");
-   gtk_grid_attach(grid, widget, 1, 16, 1, 1);
-   button = gtk_check_button_new_with_label("打开利用漏洞恶意注入检测功能");
-   g_object_get(settings, "shellcode-check", &bvalue, NULL);
-   if(!bvalue)
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
-   g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(shellcodeCheckCallback), settings);
-   gtk_grid_attach(grid,button,2,16,2,1);
+   //add by luyue 2015/6/30 
+   widget = gtk_label_new("设置安全检测级别：");
+   gtk_grid_attach( grid, widget, 1, 7, 1, 1);
+   widget = gtk_combo_box_text_new();
+   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), "低(默认)");
+   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), "中");
+   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), "高");
+   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(secureLevelCallback), settings);
+   ivalue = katze_object_get_int (settings, "secure-level");
+   switch(ivalue) {
+      case 0://低
+         gtk_combo_box_set_active(GTK_COMBO_BOX(widget), 0);
+         break;
+      case 1://中
+         gtk_combo_box_set_active(GTK_COMBO_BOX(widget), 1);
+         break;
+      case 2://高
+         gtk_combo_box_set_active(GTK_COMBO_BOX(widget), 2);
+         break;
+      default:
+         break;
+   }
+   gtk_grid_attach( grid, widget, 2, 7, 1, 1);
    //add end
 
    gchar *security_pic = midori_paths_get_res_filename("settings-icons/security.png");

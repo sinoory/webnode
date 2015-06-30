@@ -9406,57 +9406,12 @@ midori_browser_settings_notify (MidoriWebSettings* web_settings,
            midori_view_set_doublezoom_level (tabs->data, browser->settings);
         g_list_free (tabs);
     }
-    //luyue add by 2015/3/18
-    else if(name == g_intern_string("danger-url"))
+    //add by luyue 2015/6/30
+    else if(name == g_intern_string("secure-level"))
     {
         GList* tabs = midori_browser_get_tabs (browser);
         for (; tabs; tabs = g_list_next (tabs))
-           midori_view_set_dangerous_url (tabs->data, browser->settings);
-        g_list_free (tabs);
-    }
-    //add end
-    //luyue add by 2015/6/8 start
-    else if(name == g_intern_string("phish-check"))
-    {
-        GList* tabs = midori_browser_get_tabs (browser);
-        for (; tabs; tabs = g_list_next (tabs))
-           midori_view_set_phish_check_flag (tabs->data, browser->settings);
-        g_list_free (tabs);
-    }
-    //add end
-    //luyue add by 2015/6/8 start
-    else if(name == g_intern_string("popupwindow-check"))
-    {
-        GList* tabs = midori_browser_get_tabs (browser);
-        for (; tabs; tabs = g_list_next (tabs))
-           midori_view_set_popupwindow_check_flag (tabs->data, browser->settings);
-        g_list_free (tabs);
-    }
-    //add end
-    //luyue add by 2015/6/14 start
-    else if(name == g_intern_string("autodownload-check"))
-    {
-        GList* tabs = midori_browser_get_tabs (browser);
-        for (; tabs; tabs = g_list_next (tabs))
-           midori_view_set_autodownload_check_state (tabs->data, browser->settings);
-        g_list_free (tabs);
-    }
-    //add end
-    //luyue add by 2015/6/15 start
-    else if(name == g_intern_string("obfuscatecode-check"))
-    {
-        GList* tabs = midori_browser_get_tabs (browser);
-        for (; tabs; tabs = g_list_next (tabs))
-           midori_view_set_obfuscatecode_check_state (tabs->data, browser->settings);
-        g_list_free (tabs);
-    }
-    //add end
-    //luyue add by 2015/6/29 start
-    else if(name == g_intern_string("shellcode-check"))
-    {
-        GList* tabs = midori_browser_get_tabs (browser);
-        for (; tabs; tabs = g_list_next (tabs))
-           midori_view_set_shellcode_check_state (tabs->data, browser->settings);
+           midori_view_set_secure_level (tabs->data, browser->settings);
         g_list_free (tabs);
     }
     //add end
