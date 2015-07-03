@@ -193,9 +193,9 @@ namespace Tabby {
 
                             t_item.set_meta_integer ("append", 1);
 
-                            if (delay && should_delay)
-                                t_item.set_meta_integer ("delay", Midori.Delay.DELAYED);
-                            else
+                            //if (delay && should_delay)//modified by wangyl 2015.7.3
+                            //    t_item.set_meta_integer ("delay", Midori.Delay.DELAYED);
+                            //else
                                 delay = true;
 
                             unowned Gtk.Widget tab = browser.add_item (t_item);
