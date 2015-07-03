@@ -2311,10 +2311,9 @@ midori_browser_disconnect_tab (MidoriBrowser* browser,
        which is indicated by the proxy array having been unset. */
     if (katze_array_is_empty (browser->proxy_array))
     {
-	//modified by wangyl 2015.7.3
-        //midori_browser_add_uri (browser, "about:new");
-        //midori_browser_set_current_page (browser, 0);
-	g_idle_add (gtk_widget_destroy, GTK_WIDGET (browser));
+        midori_browser_add_uri (browser, "about:new");
+        midori_browser_set_current_page (browser, 0);
+	g_idle_add (gtk_widget_destroy, GTK_WIDGET (browser));//added by wangyl 2015.7.3
     }
 
     _midori_browser_update_actions (browser);
