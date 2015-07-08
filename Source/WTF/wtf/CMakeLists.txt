@@ -207,6 +207,8 @@ set(WTF_SOURCES
     threads/BinarySemaphore.cpp
 
     unicode/UTF8.cpp
+
+    TimeCounter.cpp
 )
 
 set(WTF_INCLUDE_DIRECTORIES

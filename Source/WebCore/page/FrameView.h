@@ -665,6 +665,11 @@ private:
     bool m_firstLayoutCallbackPending;
 
     bool m_firstLayout;
+
+#ifdef ANDROID_INSTRUMENT
+    bool m_firstLayoutForTimeCounter;
+#endif
+
     bool m_isTransparent;
     Color m_baseBackgroundColor;
     IntSize m_lastViewportSize;

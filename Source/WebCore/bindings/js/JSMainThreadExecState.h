@@ -35,6 +35,11 @@
 #include "WebCoreThread.h"
 #endif
 
+#ifdef ANDROID_INSTRUMENT
+#include <wtf/TimeCounter.h>
+#endif
+
+
 namespace WebCore {
 
 class InspectorInstrumentationCookie;
@@ -52,14 +57,32 @@ public:
     
     static JSC::JSValue call(JSC::ExecState* exec, JSC::JSValue functionObject, JSC::CallType callType, const JSC::CallData& callData, JSC::JSValue thisValue, const JSC::ArgList& args, JSC::JSValue* exception)
     {
+#ifdef ANDROID_INSTRUMENT
+        android::TimeCounter::start(android::TimeCounter::JavaScriptExecuteTimeCounter);
+        JSMainThreadExecState currentState(exec);
+        JSC::JSValue result = JSC::call(exec, functionObject, callType, callData, thisValue, args, exception);
+
+        android::TimeCounter::record(android::TimeCounter::JavaScriptExecuteTimeCounter, __FUNCTION__);
+        return result;
+#else
         JSMainThreadExecState currentState(exec);
         return JSC::call(exec, functionObject, callType, callData, thisValue, args, exception);
+#endif
     };
 
     static JSC::JSValue evaluate(JSC::ExecState* exec, const JSC::SourceCode& source, JSC::JSValue thisValue, JSC::JSValue* exception)
     {
+#ifdef ANDROID_INSTRUMENT
+        android::TimeCounter::start(android::TimeCounter::JavaScriptExecuteTimeCounter);
+        JSMainThreadExecState currentState(exec);
+        JSC::JSValue result = JSC::evaluate(exec, source, thisValue, exception);
+
+        android::TimeCounter::record(android::TimeCounter::JavaScriptExecuteTimeCounter, __FUNCTION__);
+        return result;
+#else
         JSMainThreadExecState currentState(exec);
         return JSC::evaluate(exec, source, thisValue, exception);
+#endif
     };
 
     static void runTask(JSC::ExecState* exec, JSC::Microtask& task)

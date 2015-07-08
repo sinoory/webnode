@@ -45,6 +45,10 @@
 #include "WebSafeIncrementalSweeperIOS.h"
 #endif
 
+#ifdef ANDROID_INSTRUMENT
+#include <wtf/TimeCounter.h>
+#endif
+
 using namespace JSC;
 
 namespace WebCore {
@@ -210,6 +214,9 @@ VM& JSDOMWindowBase::commonVM()
 
     static VM* vm = nullptr;
     if (!vm) {
+#ifdef ANDROID_INSTRUMENT
+    android::TimeCounter::start(android::TimeCounter::JavaScriptInitTimeCounter);
+#endif
         ScriptController::initializeThreading();
         vm = VM::createLeaked(LargeHeap).leakRef();
 #if !PLATFORM(IOS)
@@ -226,6 +233,9 @@ VM& JSDOMWindowBase::commonVM()
         vm->heap.machineThreads().addCurrentThread();
 #endif
         initNormalWorldClientData(vm);
+#ifdef ANDROID_INSTRUMENT
+    android::TimeCounter::record(android::TimeCounter::JavaScriptInitTimeCounter, __FUNCTION__);
+#endif
     }
 
     return *vm;

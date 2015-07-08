@@ -227,6 +227,10 @@
 #include <replay/InputCursor.h>
 #endif
 
+#ifdef ANDROID_INSTRUMENT
+#include <wtf/TimeCounter.h>
+#endif
+
 //add by luyue 2015/6/13 start
 #include <UserGestureIndicator.h>
 //add end
@@ -529,6 +533,13 @@ Document::Document(Frame* frame, const URL& url, unsigned documentClasses, unsig
     , m_hasPreparedForDestruction(false)
     , m_hasStyleWithViewportUnits(false)
 {
+#ifdef ANDROID_INSTRUMENT
+    if (!m_frame->tree().parent()) {
+        android::TimeCounter::start(android::TimeCounter::WebPageFinishParsing);
+        android::TimeCounter::record(android::TimeCounter::OffsetForDOMCreation, __FUNCTION__);
+    }
+#endif
+
     allDocuments().add(this);
 
     // We depend on the url getting immediately set in subframes, but we
@@ -1773,6 +1784,10 @@ void Document::recalcStyle(Style::Change change)
     if (m_inStyleRecalc)
         return; // Guard against re-entrancy. -dwh
 
+#ifdef ANDROID_INSTRUMENT
+    android::TimeCounter::start(android::TimeCounter::CalculateStyleTimeCounter);
+#endif
+
     RenderView::RepaintRegionAccumulator repaintRegionAccumulator(renderView());
     AnimationUpdateBlock animationUpdateBlock(&m_frame->animation());
 
@@ -1804,6 +1819,10 @@ void Document::recalcStyle(Style::Change change)
         }
 
         Style::resolveTree(*this, change);
+
+#ifdef ANDROID_INSTRUMENT
+    android::TimeCounter::record(android::TimeCounter::CalculateStyleTimeCounter, __FUNCTION__);
+#endif
 
         frameView.updateCompositingLayersAfterStyleChange();
 
@@ -2545,6 +2564,11 @@ void Document::setParsing(bool b)
 #ifdef INSTRUMENT_LAYOUT_SCHEDULING
     if (!ownerElement() && !m_bParsing)
         printf("Parsing finished at %lld\n", elapsedTime().count());
+#endif
+#ifdef ANDROID_INSTRUMENT
+    if (!m_frame->tree().parent() && !ownerElement() && !m_bParsing) {
+        android::TimeCounter::record(android::TimeCounter::WebPageFinishParsing, __FUNCTION__);
+    }
 #endif
 }
 

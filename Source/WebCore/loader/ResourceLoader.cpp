@@ -51,6 +51,10 @@
 #include "SharedBuffer.h"
 #include <wtf/Ref.h>
 
+#ifdef ANDROID_INSTRUMENT
+#include <wtf/TimeCounter.h>
+#endif
+
 namespace WebCore {
 
 ResourceLoader::ResourceLoader(Frame* frame, ResourceLoaderOptions options)
@@ -303,6 +307,12 @@ void ResourceLoader::didSendData(unsigned long long, unsigned long long)
 void ResourceLoader::didReceiveResponse(const ResourceResponse& r)
 {
     ASSERT(!m_reachedTerminalState);
+
+#ifdef ANDROID_INSTRUMENT
+    if (!frameLoader()->frame().tree().parent() && this == documentLoader()->mainResourceLoader()) {
+        android::TimeCounter::record(android::TimeCounter::WebPageGetResponseCounter, __FUNCTION__);
+    }
+#endif
 
     // Protect this in this delegate method since the additional processing can do
     // anything including possibly derefing this; one example of this is Radar 3266216.

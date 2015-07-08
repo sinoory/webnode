@@ -141,6 +141,11 @@
 extern double readcount,writecount;
 extern unsigned long int writeinbytes;
 /*****add by gwg 定义全局变量统计读写信息*****/
+
+#ifdef ANDROID_INSTRUMENT
+#include <wtf/TimeCounter.h>
+#endif
+
 namespace WebCore {
 
 using namespace HTMLNames;
@@ -1044,6 +1049,10 @@ void FrameLoader::handleFallbackContent()
 
 void FrameLoader::provisionalLoadStarted()
 {
+#ifdef ANDROID_INSTRUMENT
+    if (!m_frame.tree().parent())
+        android::TimeCounter::reset();
+#endif
     if (m_stateMachine.firstLayoutDone())
         m_stateMachine.advanceTo(FrameLoaderStateMachine::CommittedFirstRealLoad);
     m_frame.navigationScheduler().cancel(true);
@@ -2276,6 +2285,10 @@ void FrameLoader::checkLoadCompleteForThisFrame()
             if (AXObjectCache* cache = m_frame.document()->existingAXObjectCache())
                 cache->frameLoadingEventNotification(&m_frame, loadingEvent);
 
+#ifdef ANDROID_INSTRUMENT
+            if (!m_frame.tree().parent())// && m_frame->document()->renderArena())
+                android::TimeCounter::report(m_frame.document()->url().string(), memoryCache()->getLiveSize(), memoryCache()->getDeadSize());
+#endif
             return;
         }
         

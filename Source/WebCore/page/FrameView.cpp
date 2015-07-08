@@ -110,6 +110,11 @@
 #include "SystemMemory.h"
 #endif
 
+#ifdef ANDROID_INSTRUMENT
+#include "FrameTree.h"
+#include <wtf/TimeCounter.h>
+#endif
+
 namespace WebCore {
 
 using namespace HTMLNames;
@@ -284,6 +289,9 @@ void FrameView::reset()
     m_isVisuallyNonEmpty = false;
     m_firstVisuallyNonEmptyLayoutCallbackPending = true;
     m_maintainScrollPositionAnchor = 0;
+#ifdef ANDROID_INSTRUMENT
+    m_firstLayoutForTimeCounter = true;
+#endif
 }
 
 void FrameView::removeFromAXObjectCache()
@@ -302,6 +310,9 @@ void FrameView::resetScrollbars()
     else
         setScrollbarModes(ScrollbarAlwaysOff, ScrollbarAlwaysOff);
     setScrollbarsSuppressed(false);
+#ifdef ANDROID_INSTRUMENT
+    m_firstLayoutForTimeCounter = true;
+#endif
 }
 
 void FrameView::resetScrollbarsAndClearContentsSize()
@@ -1208,6 +1219,11 @@ void FrameView::layout(bool allowSubtree)
     FontCachePurgePreventer fontCachePurgePreventer;
     RenderLayer* layer;
 
+#ifdef ANDROID_INSTRUMENT
+    if (!frame().tree().parent())
+        android::TimeCounter::start(android::TimeCounter::LayoutTimeCounter);
+#endif
+
     ++m_nestedLayoutCount;
 
     {
@@ -1357,6 +1373,16 @@ void FrameView::layout(bool allowSubtree)
 
 #if ENABLE(IOS_TOUCH_EVENTS)
     document.dirtyTouchEventRects();
+#endif
+
+#ifdef ANDROID_INSTRUMENT
+    if (!frame().tree().parent()){
+        android::TimeCounter::record(android::TimeCounter::LayoutTimeCounter, __FUNCTION__);
+        if(m_firstLayoutForTimeCounter) {
+            m_firstLayoutForTimeCounter = false;
+            android::TimeCounter::record(android::TimeCounter::FirstContentAtLayoutOnceTimeCounter, __FUNCTION__);
+        }
+    }
 #endif
 
     ASSERT(!root->needsLayout());

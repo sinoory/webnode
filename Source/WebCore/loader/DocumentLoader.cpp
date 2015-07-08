@@ -77,6 +77,10 @@
 #include "ContentFilter.h"
 #endif
 
+#ifdef ANDROID_INSTRUMENT
+#include <wtf/TimeCounter.h>
+#endif
+
 namespace WebCore {
 
 static void cancelAll(const ResourceLoaderMap& loaders)
@@ -427,6 +431,10 @@ void DocumentLoader::finishedLoading(double finishTime)
     timing()->setResponseEnd(responseEndTime);
 
     commitIfReady();
+#ifdef ANDROID_INSTRUMENT
+    if (!frameLoader()->frame().tree().parent())
+        android::TimeCounter::record(android::TimeCounter::MainResourceLoadFinish, __FUNCTION__);
+#endif
     if (!frameLoader())
         return;
 
@@ -1401,6 +1409,15 @@ void DocumentLoader::startLoadingMainResource()
 
     if (maybeLoadEmpty())
         return;
+
+#ifdef ANDROID_INSTRUMENT
+   if (!frameLoader()->frame().tree().parent()) {
+            android::TimeCounter::start(android::TimeCounter::MainResourceLoadFinish);
+            android::TimeCounter::start(android::TimeCounter::OffsetForDOMCreation);
+            android::TimeCounter::start(android::TimeCounter::FirstContentAtLayoutOnceTimeCounter);
+            android::TimeCounter::start(android::TimeCounter::WebPageGetResponseCounter);
+   }
+#endif
 
     // FIXME: Is there any way the extra fields could have not been added by now?
     // If not, it would be great to remove this line of code.

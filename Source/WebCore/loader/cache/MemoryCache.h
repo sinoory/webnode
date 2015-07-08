@@ -183,6 +183,11 @@ public:
     WEBCORE_EXPORT void pruneDeadResources(); // Automatically decide how much to prune.
     WEBCORE_EXPORT void pruneLiveResources(bool shouldDestroyDecodedDataForAllLiveResources = false);
 
+#ifdef ANDROID_INSTRUMENT
+    unsigned getLiveSize() { return m_liveSize; }
+    unsigned getDeadSize() { return m_deadSize; }
+#endif
+
 private:
     void pruneDeadResourcesToPercentage(float prunePercentage); // Prune to % current size
     void pruneLiveResourcesToPercentage(float prunePercentage);

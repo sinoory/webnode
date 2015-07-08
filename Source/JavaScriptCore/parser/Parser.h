@@ -39,6 +39,10 @@
 #include <wtf/Noncopyable.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/RefPtr.h>
+
+#ifdef ANDROID_INSTRUMENT
+#include <wtf/TimeCounter.h>
+#endif
 namespace JSC {
 struct Scope;
 }
@@ -862,6 +866,10 @@ PassRefPtr<ParsedNode> Parser<LexerType>::parse(ParserError& error, bool needRep
     int errLine;
     String errMsg;
 
+#ifdef ANDROID_INSTRUMENT
+    android::TimeCounter::start(android::TimeCounter::JavaScriptParseTimeCounter);
+#endif
+
     if (ParsedNode::scopeIsFunction && needReparsingAdjustment)
         m_lexer->setIsReparsing();
 
@@ -933,6 +941,9 @@ PassRefPtr<ParsedNode> Parser<LexerType>::parse(ParserError& error, bool needRep
 
     m_arena->reset();
 
+#ifdef ANDROID_INSTRUMENT
+    android::TimeCounter::record(android::TimeCounter::JavaScriptParseTimeCounter, __FUNCTION__);
+#endif
     return result.release();
 }
 

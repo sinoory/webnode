@@ -70,6 +70,10 @@
 #include "CredentialBackingStore.h"
 #endif
 
+#ifdef ANDROID_INSTRUMENT
+#include <wtf/TimeCounter.h>
+#endif
+
 namespace WebCore {
 
 static bool loadingSynchronousRequest = false;
@@ -651,6 +655,10 @@ static void nextMultipartResponsePartCallback(GObject* /*source*/, GAsyncResult*
 static void sendRequestCallback(GObject*, GAsyncResult* result, gpointer data)
 {
     RefPtr<ResourceHandle> handle = static_cast<ResourceHandle*>(data);
+
+#ifdef ANDROID_INSTRUMENT
+    android::TimeCounterAuto counter(android::TimeCounter::ResourceTimeCounter);
+#endif
 
     if (handle->cancelledOrClientless()) {
         cleanupSoupRequestOperation(handle.get());
@@ -1267,6 +1275,9 @@ static void readCallback(GObject*, GAsyncResult* asyncResult, gpointer data)
 {
     RefPtr<ResourceHandle> handle = static_cast<ResourceHandle*>(data);
 
+#ifdef ANDROID_INSTRUMENT
+    android::TimeCounterAuto counter(android::TimeCounter::ResourceTimeCounter);
+#endif
     if (handle->cancelledOrClientless()) {
         cleanupSoupRequestOperation(handle.get());
         return;
