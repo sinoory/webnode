@@ -7449,8 +7449,8 @@ static const GtkActionEntry entries[] =
 //        NULL, G_CALLBACK (_action_undo_tab_close_activate) },
 //#endif
     //by sunh     
-    { "DownloadDialog", "download",//STOCK_DOWNLOAD,
-        "Download", "<Ctrl>l",
+    { "DownloadDialog", STOCK_DOWNLOAD,
+        NULL, "<Ctrl>l",
         N_("Transfers"), G_CALLBACK (midori_browser_actiave_transfer_in_window) },
     //by sunh end
 	
@@ -7980,6 +7980,7 @@ static const gchar* ui_markup =
 #endif
             "<menuitem action='ClearPrivateData'/>"
             "<menuitem action='TabPrevious'/>"
+            "<menuitem action='DownloadDialog'/>"
             "<menuitem action='TabNext'/>"
             "<menuitem action='TabCurrent'/>"
             "<menuitem action='NextView'/>"
