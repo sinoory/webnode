@@ -1,0 +1,8 @@
+QPushButton#pushButton_filelists{image:url(:/home/appex/image/filelist_pressed.jpg);background:white;border:1px solid white;border-radius:0px;padding:1px;}
+QPushButton:pressed#pushButton_filelists{image:url(:/home/appex/image/filelist_pressed.jpg);background:white;border:1px solid white;border-radius:0px;padding:1px;}
+QPushButton#pushButton_download{image:url(:/home/appex/image/btn_download.jpg);background:white;border:1px solid white;border-radius:0px;padding:1px;}
+QPushButton:pressed#pushButton_download{image:url(:/home/appex/image/btn_download.jpg);background:white;border:1px solid white;border-radius:0px;padding:1px;}
+QPushButton#pushButton_upload{image:url(:/home/appex/image/uploading.jpg);background:white;border:1px solid white;border-radius:0px;padding:1px;}
+QPushButton:pressed#pushButton_upload{image:url(:/home/appex/image/uploading.jpg);background:white;border:1px solid white;border-radius:0px;padding:1px;}
+QPushButton#pushButton_cloud_check{image:url(:/home/appex/image/btn_cloud_network.jpg);background:white;border:1px solid white;border-radius:0px;padding:1px;}
+QPushButton:pressed#pushButton_cloud_check{image:url(:/home/appex/image/btn_cloud_network.jpg);background:white;border:1px solid white;border-radius:0px;padding:1px;}

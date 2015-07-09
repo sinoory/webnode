@@ -92,10 +92,10 @@ static void
 midori_view_download_started_cb (WebKitWebContext* context,
                                    WebKitDownload*   download,
                                    MidoriView * view);
-static gboolean
+/*static gboolean
 midori_view_download_query_action (MidoriView*     view,
                                    WebKitDownload*   download,
-                                   const gchar * suggested_filename );
+                                   const gchar * suggested_filename );*/
 #endif
 
 static gboolean
@@ -205,6 +205,10 @@ struct _MidoriView
    bool danager_uri_flag;//标志位，0开始危险网址检测，否则关闭
    bool phish_check_flag;//标志位，0开始钓鱼网址检测
    bool popupwindow_check_flag;//标志位，0开始恶意网址检测
+   bool save_menu_flag;//标志位，1不走下载流程，走页面另存为流程
+   char *download_filename;
+   char *download_uri;
+
    //add end
 
    gboolean media_info_bar_lock;  //ykhu
@@ -239,7 +243,7 @@ enum {
 #endif	 
     START_LOAD, //lxx, 20150204
 		 START_LOAD_HIDE_BLOCK_JAVASCRIPT_WINDOW_ICON,
-    DOWNLOAD_REQUESTED,
+//    DOWNLOAD_REQUESTED,
     ADD_BOOKMARK,
     ABOUT_CONTENT,
     WEBSITE_DATA,
@@ -456,7 +460,7 @@ midori_view_class_init (MidoriViewClass* class)
      *
      * Since: 0.1.5
      */
-    signals[DOWNLOAD_REQUESTED] = g_signal_new (
+/*    signals[DOWNLOAD_REQUESTED] = g_signal_new (
         "download-requested",
         G_TYPE_FROM_CLASS (class),
         (GSignalFlags)(G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
@@ -466,7 +470,7 @@ midori_view_class_init (MidoriViewClass* class)
         midori_cclosure_marshal_BOOLEAN__OBJECT,
         G_TYPE_BOOLEAN, 1,
         G_TYPE_OBJECT);
-
+*/
     signals[WEBSITE_DATA] = g_signal_new (
         "website-data",
         G_TYPE_FROM_CLASS (class),
@@ -666,7 +670,7 @@ midori_view_apply_icon (MidoriView*  view,
     }
 }
 
-static void
+/*static void
 midori_view_unset_icon (MidoriView* view)
 {
     GdkScreen* screen;
@@ -691,7 +695,7 @@ midori_view_unset_icon (MidoriView* view)
 
     midori_view_apply_icon (view, pixbuf, NULL);
     g_object_unref (icon);
-}
+}*/
 
 static void
 _midori_web_view_load_icon (MidoriView* view)
@@ -796,7 +800,7 @@ permission_response (GtkWidget*  infobar,
                      WebKitPermissionRequest *request)
 
 {
-		  MidoriView* view = g_object_get_data (request, "location-track");
+	     MidoriView* view = g_object_get_data ((GObject *)request, "location-track");
 	     gboolean bTrackLocation = false;
 	     switch (response_id) {
 	     case GTK_RESPONSE_ACCEPT:
@@ -824,7 +828,7 @@ permission_request(WebKitWebView *web_view,
                    WebKitPermissionRequest *request,
                    MidoriView *view)
 {
-	gchar *uri = webkit_web_view_get_uri(web_view);
+	const gchar *uri = webkit_web_view_get_uri(web_view);
 	char* hostStr = NULL;
 	if(NULL != uri)
 	{
@@ -878,7 +882,7 @@ webkit_web_view_permission_request_cb (WebKitWebView *web_view,
 		}
       break;
 	case 2:
-		g_object_set_data (request, "location-track", view);
+		g_object_set_data ((GObject *)request, "location-track", view);
 		permission_request(web_view, request, view);
 		break;
     default:
@@ -1394,9 +1398,8 @@ static gboolean
 midori_view_website_query_idle(gpointer data)
 {
     MidoriView *view = MIDORI_VIEW (data);
-//    gdk_threads_enter();
     GtkWidget* current_web_view = midori_view_get_web_view (view);
-    gchar *uri = webkit_web_view_get_uri (current_web_view);
+    const gchar *uri = webkit_web_view_get_uri (current_web_view);
     WebKitURIRequest *request = webkit_uri_request_new(uri);
     gchar *base_domain = webkit_uri_request_get_uri_host (request);
     gchar *web_tab_uri = NULL;
@@ -1459,7 +1462,7 @@ midori_view_web_view_navigation_decision_cb (WebKitWebView*             web_view
               free(view->forward_uri);
               view->forward_uri = NULL;
            }
-           char *tmp_uri = webkit_web_view_get_uri(web_view);
+           const char *tmp_uri = webkit_web_view_get_uri(web_view);
            view->forward_uri = (char *) malloc(strlen(tmp_uri)+1);
            strcpy(view->forward_uri,tmp_uri);
            if(view->anquanjibie)
@@ -1812,7 +1815,7 @@ webkit_web_view_progress_changed_cb (WebKitWebView* web_view,
     //add by luyue 2015/3/9
     //增加一个url时，不需要设置progress,即不需滚动spinner
     GtkWidget* current_web_view = midori_view_get_web_view (view);
-    gchar *uri = webkit_web_view_get_uri (current_web_view);
+    const gchar *uri = webkit_web_view_get_uri (current_web_view);
     if(uri && strcmp(uri,"about:dial")!=0)
     {
        //add end
@@ -2297,7 +2300,7 @@ midori_view_display_error (MidoriView*     view,
         g_type_class_unref (g_type_class_ref (GTK_TYPE_BUTTON));
         #endif
 
-        GtkSettings* gtk_settings = gtk_widget_get_settings (view->web_view);
+//        GtkSettings* gtk_settings = gtk_widget_get_settings (view->web_view);
 // ZRL force to show refresh image.
 #if 0
         gboolean show_button_images = gtk_settings != NULL
@@ -3179,22 +3182,22 @@ midori_web_view_menu_link_copy_activate_cb (GtkAction* widget,
 
 static void
 midori_view_download_uri (MidoriView*        view,
-                          MidoriDownloadType type,
+//                          MidoriDownloadType type,
                           const gchar*       uri)
 {
-#ifdef HAVE_WEBKIT2
+//#ifdef HAVE_WEBKIT2
     WebKitDownload* download = webkit_web_view_download_uri (WEBKIT_WEB_VIEW (view->web_view), uri);
     WebKitWebContext * web_context = webkit_web_view_get_context (WEBKIT_WEB_VIEW (view->web_view));
-    midori_download_set_type (download, type);
+//    midori_download_set_type (download, type);
     g_signal_emit_by_name (web_context, "download-started", download, view);
-#else
-    WebKitNetworkRequest* request = webkit_network_request_new (uri);
-    WebKitDownload* download = webkit_download_new (request);
-    g_object_unref (request);
-    midori_download_set_type (download, type);
-    gboolean handled;
-    g_signal_emit (view, signals[DOWNLOAD_REQUESTED], 0, download, &handled);
-    #endif
+//#else
+//    WebKitNetworkRequest* request = webkit_network_request_new (uri);
+//    WebKitDownload* download = webkit_download_new (request);
+//    g_object_unref (request);
+//    midori_download_set_type (download, type);
+//    gboolean handled;
+//    g_signal_emit (view, signals[DOWNLOAD_REQUESTED], 0, download, &handled);
+//    #endif
 }
 
 static void
@@ -3205,12 +3208,14 @@ midori_web_view_menu_save_activate_cb (GtkAction* action,
     //add by luyue 2015/6/9
     //保存页面，不走下载流程，走页面另存为流程
     //midori_view_download_uri (view, MIDORI_DOWNLOAD_SAVE_AS, view->link_uri);
+    view->save_menu_flag = true;
     MidoriBrowser* browser = midori_browser_get_for_widget (GTK_WIDGET (view));
+
     KatzeItem* item = katze_item_new ();
     item->uri = g_strdup (view->link_uri);
     MidoriView* new_view = (MidoriView*)midori_view_new_from_view (view,item,NULL);
     webkit_web_view_load_uri (WEBKIT_WEB_VIEW (new_view->web_view),view->link_uri);
-    midori_browser_save_uri (browser,new_view,view->link_uri,"s");
+       midori_browser_save_uri (browser,new_view,view->link_uri,"s");
 }
 
 static void
@@ -3333,7 +3338,7 @@ midori_web_view_menu_image_save_activate_cb (GtkAction* action,
 {
     MidoriView* view = user_data;
     gchar* uri = katze_object_get_string (view->hit_test, "image-uri");
-    midori_view_download_uri (view, MIDORI_DOWNLOAD_SAVE_AS, uri);
+    midori_view_download_uri (view, uri);
     g_free (uri);
 }
 
@@ -3353,7 +3358,7 @@ midori_web_view_menu_video_save_activate_cb (GtkAction* action,
 {
     MidoriView* view = user_data;
     gchar* uri = katze_object_get_string (view->hit_test, "media-uri");
-    midori_view_download_uri (view, MIDORI_DOWNLOAD_SAVE_AS, uri);
+    midori_view_download_uri (view, uri);
     g_free (uri);
 }
 
@@ -3698,14 +3703,14 @@ midori_view_get_page_context_action (MidoriView*          view,
 
         midori_context_action_add (menu, NULL);
         midori_context_action_add_by_name (menu, "BookmarkAdd");
-#if ENABLE_ADDSPEEDDIAL
-        midori_context_action_add_by_name (menu, "AddSpeedDial");
-#endif
+//#if ENABLE_ADDSPEEDDIAL
+//        midori_context_action_add_by_name (menu, "AddSpeedDial");
+//#endif
         midori_context_action_add_by_name (menu, "SaveAs");
         midori_context_action_add_by_name (menu, "SourceView");
-#if ENABLE_SourceViewDom
-        midori_context_action_add_by_name (menu, "SourceViewDom");
-#endif
+//#if ENABLE_SourceViewDom
+//        midori_context_action_add_by_name (menu, "SourceViewDom");
+//#endif
         if (!g_object_get_data (G_OBJECT (browser), "midori-toolbars-visible"))
             midori_context_action_add_by_name (menu, "Navigationbar");
         if (state & GDK_WINDOW_STATE_FULLSCREEN)
@@ -3906,7 +3911,7 @@ webkit_web_view_create_web_view_cb (GtkWidget*      web_view,
 {
     MidoriView* new_view;
     WebKitURIRequest *naviationRequest = webkit_navigation_action_get_request(navigationAction);
-    gchar *destUri = webkit_uri_request_get_uri(naviationRequest);
+    const gchar *destUri = webkit_uri_request_get_uri(naviationRequest);
 
 #ifdef HAVE_WEBKIT2
     const gchar* uri = webkit_web_view_get_uri (WEBKIT_WEB_VIEW (web_view));
@@ -3929,7 +3934,7 @@ webkit_web_view_create_web_view_cb (GtkWidget*      web_view,
                           G_CALLBACK (webkit_web_view_web_view_ready_cb), view);
 #endif
     }
-    g_object_set_data_full (G_OBJECT (new_view), "opener-uri", g_strdup (uri), g_free);
+//    object_set_data_full (G_OBJECT (new_view), "opener-uri", g_strdup (uri), g_free);
     g_object_set_data_full (G_OBJECT (new_view), "destination-uri", g_strdup (destUri), g_free);
     return new_view->web_view;
 }
@@ -3969,7 +3974,7 @@ webkit_web_view_mime_type_decision_cb (GtkWidget*               web_view,
 }
 #endif
 
-gint
+/*gint
 midori_save_dialog (const gchar* title,
                     const gchar * hostname,
                     const GString* details,
@@ -4015,33 +4020,86 @@ midori_save_dialog (const gchar* title,
     if (response == GTK_RESPONSE_DELETE_EVENT)
         response = MIDORI_DOWNLOAD_CANCEL;
     return response;
-}
+}*/
 
-#ifdef HAVE_WEBKIT2
+//add by luyue 2015/7/8 start
+static void download_exec_cb(char* download_exec)
+{
+   system(download_exec);
+   pthread_exit(0);
+}
+//add end
+
+//add by luyue 2015/7/8 start
+static void
+midori_view_get_cookie_cb(WebKitCookieManager* cookiemanager,
+                          const gchar*         cookie,
+                          MidoriView*          view)
+{
+   char download_exec[2048];
+   if (cookie && strlen(cookie))
+      sprintf(download_exec,"/usr/local/libexec/cdosbrowser/cdosbrowser_download %s%s%s %s%s%s %s%s%s","\"",view->download_uri,"\"","\"",view->download_filename,"\"", "\"",cookie,"\"","&");
+   else
+      sprintf(download_exec,"/usr/local/libexec/cdosbrowser/cdosbrowser_download %s%s%s %s%s%s","\"",view->download_uri,"\"","\"",view->download_filename,"\"","&");
+   free(view->download_uri);
+   view->download_uri = NULL;
+   free(view->download_filename);
+   view->download_filename = NULL;
+   pthread_t ntid;
+   int ret;
+   ret = pthread_create(&ntid, NULL, download_exec_cb, download_exec);
+   g_signal_handlers_disconnect_by_func (cookiemanager,
+                                         midori_view_get_cookie_cb, view);
+}
+//add end
+
+//#ifdef HAVE_WEBKIT2
 static gboolean
 midori_view_download_decide_destination_cb (WebKitDownload*   download,
-                                    const gchar * suggested_filename,
-                                    MidoriView*      view)
+                                            const gchar *     suggested_filename,
+                                            MidoriView*       view)
 {
-    MidoriApp *app = midori_app_get_default();	
+/*    MidoriApp *app = midori_app_get_default();	
     MidoriBrowser* browser = midori_app_get_browser (MIDORI_APP (app));
     MidoriView * r_view = MIDORI_VIEW(midori_browser_get_nth_tab(browser, 0));
     if(!midori_view_download_query_action (r_view, download, suggested_filename)) {
         webkit_download_cancel (download);
+    }*/
+    //add by luyue 2015/7/8 start
+    if(view->save_menu_flag)
+    {
+       webkit_download_cancel (download);
+       view->save_menu_flag = false;
+       return TRUE;
     }
+    view->download_filename = (char *) malloc (strlen(suggested_filename)+1);
+    strcpy(view->download_filename,suggested_filename);
+    WebKitURIRequest *request = webkit_download_get_request(download);
+    const gchar* opener_uri = webkit_uri_request_get_uri(request);
+    view->download_uri = (char *)malloc (strlen(opener_uri)+1);
+    strcpy(view->download_uri,opener_uri);
+    WebKitCookieManager* cookiemanager = webkit_web_context_get_cookie_manager(webkit_web_context_get_default());
+    if(cookiemanager)
+    {
+       g_signal_connect (cookiemanager, "get-cookie",
+                         G_CALLBACK (midori_view_get_cookie_cb), view);         
+       webkit_cookie_manager_get_cookies_with_url(cookiemanager,opener_uri);
+    }
+    webkit_download_cancel (download);
+    //add end
     return TRUE;    //we must return TRUE because we handled the signal
 }
                 
 static void
 midori_view_download_started_cb (WebKitWebContext* context,
-                                   WebKitDownload*   download,
-                                   MidoriView          *view)
+                                   WebKitDownload* download,
+                                   MidoriView      *view)
 {
     g_signal_connect (download, "decide-destination",
                       G_CALLBACK (midori_view_download_decide_destination_cb), view);
 }
 
-static gboolean
+/*static gboolean
 midori_view_download_query_action (MidoriView* view,
                                    WebKitDownload*   download,
                                    const gchar * suggested_filename)
@@ -4059,11 +4117,11 @@ midori_view_download_requested_cb (GtkWidget*      web_view,
     gchar* description;
     gchar* title;
     gint response;
-    GString* details;
+    GString* details;*/
     /* Opener may differ from displaying view:
        http://lcamtuf.coredump.cx/fldl/ http://lcamtuf.coredump.cx/switch/ */
     //by sunh 修复下载不正确显示网页来源 'from where'
-    WebKitURIRequest* request = webkit_download_get_request(download);  //add
+/*    WebKitURIRequest* request = webkit_download_get_request(download);  //add
     const gchar* opener_uri = g_object_get_data (G_OBJECT (view), "opener-uri");
     hostname = midori_uri_parse_hostname (
         opener_uri ? opener_uri : webkit_uri_request_get_uri(request), NULL);
@@ -4099,10 +4157,10 @@ midori_view_download_requested_cb (GtkWidget*      web_view,
         g_string_append_printf (details, _("File Type: %s ('%s')"), description, content_type);
     g_string_append_c (details, '\n');
 
-    #ifndef HAVE_WEBKIT2
+    #ifndef HAVE_WEBKIT2*/
     /* Link Fingerprint */
     /* We look at the original URI because redirection would lose the fragment */
-    WebKitWebFrame* web_frame = webkit_web_view_get_main_frame (WEBKIT_WEB_VIEW (web_view));
+ /*   WebKitWebFrame* web_frame = webkit_web_view_get_main_frame (WEBKIT_WEB_VIEW (web_view));
     WebKitWebDataSource* datasource = webkit_web_frame_get_provisional_data_source (web_frame);
     if (datasource)
     {
@@ -4119,9 +4177,9 @@ midori_view_download_requested_cb (GtkWidget*      web_view,
             g_string_append_c (details, ' ');
             g_string_append (details, fingerprint);
             g_string_append_c (details, '\n');
-
+*/
             /* Propagate original URI to make it available when the download finishes */
-            g_object_set_data_full (G_OBJECT (request), "midori-original-uri",
+/*            g_object_set_data_full (G_OBJECT (request), "midori-original-uri",
                                     g_strdup (original_uri), g_free);
         }
         g_free (fplabel);
@@ -4138,9 +4196,9 @@ midori_view_download_requested_cb (GtkWidget*      web_view,
     }
     #endif
 
-    #ifdef HAVE_WEBKIT2
+    #ifdef HAVE_WEBKIT2*/
     /* i18n: A file open dialog title, ie. "Open http://fila.com/manual.tgz" */
-    title = g_strdup_printf (_("Open %s"), webkit_uri_request_get_uri (webkit_download_get_request (download)));
+/*    title = g_strdup_printf (_("Open %s"), webkit_uri_request_get_uri (webkit_download_get_request (download)));
     #else
     title = g_strdup_printf (_("Open %s"), webkit_download_get_uri (download));
     #endif
@@ -4155,7 +4213,7 @@ midori_view_download_requested_cb (GtkWidget*      web_view,
     g_signal_emit (view, signals[DOWNLOAD_REQUESTED], 0, download, &handled);
     return handled;
 }
-
+*/
 static gboolean
   midori_dialog_action_button_press_cb_ctn (ScriptDialogAction*   action)
 {
@@ -4739,6 +4797,7 @@ form_auth_data_save_confirmation_response (GtkInfoBar *info_bar,
   g_slice_free (FormAuthRequestData, data);
 }
 
+static void
 form_auth_data_save_requested (EphyWebExtensionProxy *web_extension,
                                guint request_id,
                                guint64 page_id,
@@ -4812,6 +4871,7 @@ midori_view_init (MidoriView* view)
     view->website_record_array = NULL;  //zgh 20150108
 
     view->media_info_bar_lock = FALSE;  //ykhu
+    view->save_menu_flag = false;
 
     #ifndef HAVE_WEBKIT2
     /* Adjustments are not created initially, but overwritten later */
@@ -5491,9 +5551,9 @@ midori_view_constructor (GType                  type,
                       webkit_web_view_console_message_cb, view,
 //lxx, 20150127	
                       "signal::permission-request",
-							 webkit_web_view_permission_request_cb, view,
-                      "signal::download-requested",
-                      midori_view_download_requested_cb, view,
+			webkit_web_view_permission_request_cb, view,
+//                      "signal::download-requested",
+//                      midori_view_download_requested_cb, view,
                       #endif
 
                       //ykhu
@@ -5736,7 +5796,6 @@ midori_view_web_view1_load_changed_cb (WebKitWebView*  web_view,
                                        WebKitLoadEvent load_event,
                                        MidoriView*     view)
 {
-    gchar *uri = webkit_web_view_get_uri (web_view);
     if (load_event == WEBKIT_LOAD_FINISHED)
     {
        pthread_t ntid;
@@ -5776,7 +5835,6 @@ midori_view_display_message (MidoriView*     view,
     if (g_file_get_contents (path, &template, NULL, NULL))
     {
         gchar* title_escaped;
-        const gchar* icon;
         gchar* result;
 
         title_escaped = g_markup_escape_text (title ? title : view->title, -1);
@@ -5834,7 +5892,7 @@ webkit_web_view1_console_message_cb (GtkWidget*   web_view,
        else if(strcmp(wqi_array[1],"高危"))
        {
            WebKitURIRequest *request = webkit_uri_request_new(view->load_uri);
-           gchar *base_domain = webkit_uri_request_get_uri_host (request);
+           const gchar *base_domain = webkit_uri_request_get_uri_host (request);
            gchar* home = getenv("HOME");
            gchar user_dir[2048];
            g_sprintf(user_dir, "%s/.config/cdosbrowser", home);
@@ -6597,8 +6655,9 @@ midori_web_resource_get_data_cb (WebKitWebResource *resource,
 
     data = webkit_web_resource_get_data_finish (resource, result, &data_length, &error);
     if (!data) {
-        g_printerr ("Failed to save page: %s", error->message);
-        g_error_free (error);
+        //g_printerr ("Failed to save page: %s", error->message);
+        if (error)
+           g_error_free (error);
         g_object_unref (output_stream);
 
         return;
@@ -6662,7 +6721,7 @@ midori_view_save_source (MidoriView*  view,
     if (g_str_has_prefix (uri, "file:///"))
         return g_filename_from_uri (uri, NULL, NULL);
 
-#ifndef HAVE_WEBKIT2
+/*#ifndef HAVE_WEBKIT2
     WebKitWebFrame *frame;
     WebKitWebDataSource *data_source;
     const GString *data;
@@ -6724,7 +6783,7 @@ midori_view_save_source (MidoriView*  view,
         close (fd);
     }
     return unique_filename;
-#else
+#else*/
     GFile *file;
     char *converted = NULL;
     WebKitWebView * web_view = WEBKIT_WEB_VIEW (view->web_view);
@@ -6751,7 +6810,7 @@ midori_view_save_source (MidoriView*  view,
     g_free (converted);
     g_object_unref (file);
     return converted;
-#endif
+//#endif
 }
 
 /**
@@ -6803,7 +6862,7 @@ midori_view_can_go_back (MidoriView* view)
     {
         //add by luyue 2015/3/11
         GtkWidget* current_web_view = midori_view_get_web_view (view);
-        gchar *uri = webkit_web_view_get_uri (current_web_view);
+        const gchar *uri = webkit_web_view_get_uri (current_web_view);
         //http://www.baidu.com和https://www.baidu.com认为是同一网址
         if(!view->back_uri)
            return webkit_web_view_can_go_back (WEBKIT_WEB_VIEW (view->web_view));

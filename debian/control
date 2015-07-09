@@ -97,6 +97,9 @@ Build-Depends: debhelper (>= 8.0.0),
 	librsvg2-bin,
 	libgcr-3-dev,
 	libnotify-dev,
+	libuchardet0,
+	qtcreator, 
+	qt-sdk,
 	libsoup-gnome2.4-dev (>=2.27.90)
 Standards-Version: 0.2.3
 Homepage: <insert the upstream URL, if relevant>
@@ -116,8 +119,7 @@ Depends:libgtk-3-0(>=3.6.4),
 	glib-networking(>=2.33.2),
 	libffi6,
 	libatk1.0-0,
-	libgdk-pixbuf2.0-0(>=2.26.5),
-	libuchardet0
+	libgdk-pixbuf2.0-0(>=2.26.5)
 Maintainer:cdosrepobuild <cdosrepobuild@iscas.ac.cn>
 Description: Security Browser
   This package contains the Security Browser based on WebKit

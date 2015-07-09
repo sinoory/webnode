@@ -98,6 +98,7 @@ list(REMOVE_ITEM EXTENSIONS "about.vala" "builtin-extensions-init.vala"
 list(REMOVE_ITEM EXTENSIONS "colorful-tabs.c" "copy-tabs.c" "devpet.vala" "devpet.c" "devpet.h" "devpet_valac.stamp"
                             "domain-keys.vala" "domain-keys.c" "domain-keys.h" "domain-keys_valac.stamp" "cookie-manager"
                             "status-clock.c" "history-list.vala" "history-list.c" "history-list.h" "history-list_valac.stamp"
+                            "transfers.vala" "transfers.c" "transfers.h"
                             "mouse-gestures.c" "notes.vala" "notes.c" "notes.h" "notes_valac.stamp" "shortcuts.c"
                             "statusbar-features.c" "tab-panel.c" "tab-panel.h" "tabs-minimized.c" "toolbar-editor.c"
                             "webmedia-now-playing.vala" "webmedia-now-playing.c" "webmedia-now-playing.h" "webmedia-now-playing_valac.stamp")

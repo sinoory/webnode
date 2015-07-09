@@ -1,0 +1,85 @@
+QMainWindow{
+     background:qlineargradient(x1:0,y1:0,x2:0,y2:1
+                                                      stop:0 #0585d5
+                                                      stop:0.2 #0585d5
+                                                      stop:0.25 white)
+}
+QMessageBox{
+     background-color:white
+}
+QDialog{
+     background:qlineargradient(x1:0,y1:0,x2:0,y2:1
+                                                      stop:0 #0585d5
+                                                      stop:0.2 white)
+}
+QMainWindow::separator{
+     background:yellow;
+     width:10dp;
+     height:10dp;
+}
+QProgressBar{
+     border:2px solid grey;
+     border-radius:5px;
+     text-align:center;
+}
+QProgressBar::chunk{
+    background-color:#CD96CD;
+}
+ QPushButton{
+      background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #0585d5,stop:0.5 skyblue,stop:1.0 #0585d5);
+      border-style:outset;border-width:1px;border-radius:5px;border-color:skyblue;padding:1px;}
+
+QPushButton::pressed{background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 skyblue,stop:0.5 #0585d5 ,stop:1.0 skyblue);
+     border-color:skyblue;}
+
+ QLineEdit,QTextEdit{
+       border:1px solid gray;
+       border-radius:3px;
+       background:qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 skyblue
+                                                                                        stop:1.0 lightblue);
+        selection-background-color:#0A246A;
+}
+QLineEdit::hover{
+       border:2px solid gray;
+}
+
+QTabBar::tab{
+       width:162px;
+       height:30px;
+       border-radius:0px;
+       background-color:rgb(255,255,255,60);
+}
+QTabBar::tab:selected{
+       background-color:white;
+}
+
+QFormLayout{
+        border-width:1px;
+        border-radius:3px;
+}
+QVBoxLayout{
+        border-color:blue;
+        border-width:1px;
+        border-radius:3px;
+}
+QTabWidget{
+        background:qlineargradient(x1:0,y1:0,x2:0,y2:1
+                                                 stop:0 #0585d5
+                                                 stop:0.2 white)
+}
+QTabWidget:tab_5{
+        background:qlineargradient(x1:0,y1:0,x2:0,y2:1
+                                          stop:0 #0585d5
+                                          stop:0.8 white)
+}
+QTableWidget{
+         color:black;
+         gridline-color:skyblue;
+         background:white;
+         selection-background-color:skyblue;
+
+}
+QTableWidget::item:selected{
+        background-color:skyblue;
+}
+

@@ -515,8 +515,8 @@ static void showPasswordManagerCallback(GtkButton* savedPasswordButton)
 //clear data callback 
 static void clearDataCallback(GtkButton *button, MidoriWebSettings *settings) 
 {
-	 MidoriApp *app = midori_app_get_default();
-    MidoriBrowser *browser = midori_app_get_browser(app);
+   MidoriApp *app = midori_app_get_default();
+   MidoriBrowser *browser = midori_app_get_browser(app);
 
     //clear open tabs
     if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(settings->checkbutton9_privacy))) {
@@ -533,9 +533,14 @@ static void clearDataCallback(GtkButton *button, MidoriWebSettings *settings)
 
     //clear download record.
     if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(settings->checkbutton5_privacy))) {
-		//TODO clear download record.
-		//zgh 清除下载数据
-		midori_browser_clear_download_data (browser, GTK_WIDGET(button));
+       //TODO clear download record.
+       //zgh 清除下载数据
+       //midori_browser_clear_download_data (browser, GTK_WIDGET(button));
+       gchar* home = getenv("HOME");
+       gchar download_record_dir[2048];
+       g_sprintf(download_record_dir, "/bin/rm -rf %s/.config/cdosbrowser/appex_config/", home);
+       system("/usr/local/libexec/cdosbrowser/cdosbrowser_download quit &");
+       system(download_record_dir);
     }
 
     //clear cookie and others
@@ -628,6 +633,16 @@ static void do_reset_browser(MidoriWebSettings *settings)
 
 //clear cached images and files
    webkit_web_context_clear_cache(webkit_web_context_get_default());
+
+//删除下载记录
+   gchar* home = getenv("HOME");
+   gchar download_record_dir[2048];
+   g_sprintf(download_record_dir, "/bin/rm -rf %s/.config/cdosbrowser/appex_config/", home);
+   system("/usr/local/libexec/cdosbrowser/cdosbrowser_download quit &");
+   system(download_record_dir);
+
+   //TODO clear password
+   clear_password_all();
 }
 
 static void resetNetworkSettingCallback(GtkButton *button, MidoriWebSettings *settings)
@@ -646,16 +661,16 @@ static void resetNetworkSettingCallback(GtkButton *button, MidoriWebSettings *se
    }
 }
 
-static void alterDownloadSaveCatalogCallback(GtkButton *button, MidoriWebSettings *settings)
+/*static void alterDownloadSaveCatalogCallback(GtkButton *button, MidoriWebSettings *settings)
 {
    GtkWidget *dialog;  
    GtkWidget *entry;
    //创建文件选择对话框
    dialog = gtk_file_chooser_dialog_new ("保存目录",
-				         NULL,/*gtk_widget_get_toplevel(GTK_WINDOW(button)),*/
-					 GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,//GTK_FILE_CHOOSER_ACTION_SAVE, 
-					 GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,/**/
-					 GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+				         NULL,*//*gtk_widget_get_toplevel(GTK_WINDOW(button)),*/
+//					 GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,//GTK_FILE_CHOOSER_ACTION_SAVE, 
+//					 GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,/**/
+/*					 GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
 					 NULL);
    entry = GTK_ENTRY(settings->entry1_advanced);
    //文件选择类型过滤
@@ -677,13 +692,13 @@ static void alterDownloadSaveCatalogCallback(GtkButton *button, MidoriWebSetting
       gtk_entry_set_text(GTK_ENTRY(entry),filename);
    }
    gtk_widget_destroy(dialog);
-}
+}*/
 
-static void downloadPathCallback(GtkEntry *entry, MidoriWebSettings *settings) 
+/*static void downloadPathCallback(GtkEntry *entry, MidoriWebSettings *settings) 
 {
    const gchar *entry_content =  gtk_entry_get_text(GTK_ENTRY(entry));
    g_object_set(settings, "download-folder", entry_content, NULL);
-}
+}*/
 
 /*static void askEverytimeBeforeDownloadCallback(GtkToggleButton *button, MidoriWebSettings *settings)
 {
@@ -1183,7 +1198,7 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
    gtk_grid_attach(grid, button, 2, 4, 1, 1);
 
    //add by luyue 2015/6/30 
-   widget = gtk_label_new("设置安全检测级别：");
+   widget = gtk_label_new("安全检测级别：");
    gtk_grid_attach( grid, widget, 1, 7, 1, 1);
    widget = gtk_combo_box_text_new();
    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), "低(默认)");
@@ -1252,7 +1267,7 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(resetNetworkSettingCallback), settings);
    gtk_grid_attach(grid, button, 2, 8, 2, 1);
 
-   widget = gtk_label_new("下载：");
+/*   widget = gtk_label_new("下载：");
    gtk_grid_attach(grid, widget, 1, 9, 1, 1);
 
    widget = gtk_label_new("下载内容保存位置：");
@@ -1268,7 +1283,7 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
    gtk_grid_attach(grid, widget, 3, 10, 2, 1);
    button = gtk_button_new_with_label("更改...");
    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(alterDownloadSaveCatalogCallback), settings);
-   gtk_grid_attach(grid, button, 5, 10, 1, 1);
+   gtk_grid_attach(grid, button, 5, 10, 1, 1);*/
 /*   button = gtk_check_button_new_with_label("每次下载时询问下载位置");
    bvalue = katze_object_get_boolean(settings, "ask_every_time_before_download_file");
    if(TRUE == bvalue) 

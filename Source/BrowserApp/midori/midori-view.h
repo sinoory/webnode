@@ -22,14 +22,14 @@ typedef enum
 #define MIDORI_TYPE_VIEW \
     (midori_view_get_type ())
 
-typedef enum
+/*typedef enum
 {
     MIDORI_DOWNLOAD_CANCEL,
     MIDORI_DOWNLOAD_OPEN,
     MIDORI_DOWNLOAD_SAVE,
     MIDORI_DOWNLOAD_SAVE_AS,
     MIDORI_DOWNLOAD_OPEN_IN_VIEWER,
-} MidoriDownloadType;
+} MidoriDownloadType;*/
 
 #define MIDORI_VIEW(obj) \
     (G_TYPE_CHECK_INSTANCE_CAST ((obj), MIDORI_TYPE_VIEW, MidoriView))
@@ -174,8 +174,8 @@ midori_view_get_next_page              (MidoriView*        view);
 void
 midori_view_print                      (MidoriView*        view);
 
-gboolean
-midori_view_can_view_source            (MidoriView*        view);
+//gboolean
+//midori_view_can_view_source            (MidoriView*        view);
 
 gchar*
 midori_view_save_source                (MidoriView*        view,

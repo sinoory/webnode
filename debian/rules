@@ -19,6 +19,9 @@ BINARY_PACKAGE_COMPRESSION ?= xz
 INSTALL_DIR = $(CURDIR)/debian/tmp/usr/local
 tmp_INSTALL_DIR=/usr/local
 ThirdParty_DIR=$(SRC_DIR)/Source/ThirdParty/
+Download_DIR=$(SRC_DIR)/Source/Download
+INSTALL_DIR1 = $(CURDIR)/debian/tmp/usr/local/libexec/$(DEBIAN_NAME)
+tmp_INSTALL_DIR1=/usr/local/libexec/$(DEBIAN_NAME)
 
 #mainIn
 build: build-stamp
@@ -27,7 +30,7 @@ build_thirdparty:
 ifeq ($(DEB_BUILD_ARCH_BITS),32)
 	echo "------------Build $(DEB_BUILD_ARCH_BITS) bits" && mkdir -p $(SRC_DIR)/lib && cd $(ThirdParty_DIR) && tar -zxvf openssl-1.0.0d.tar.gz && cd $(ThirdParty_DIR)/openssl-1.0.0d && ./config && make && cd $(SRC_DIR) && cp -rf $(ThirdParty_DIR)/openssl-1.0.0d/lib*.a $(SRC_DIR)/lib && cd $(ThirdParty_DIR) && tar -zxvf uchardet.tar.gz && cd $(ThirdParty_DIR)/uchardet && cmake . && make && cd $(SRC_DIR) && cp -rf $(ThirdParty_DIR)/uchardet/src/lib*.a $(SRC_DIR)/lib
 else
-	echo "------------Build $(DEB_BUILD_ARCH_BITS) bits" && mkdir -p $(SRC_DIR)/lib && cd $(ThirdParty_DIR) && tar -zxvf openssl-1.0.0d.tar.gz && cd $(ThirdParty_DIR)/openssl-1.0.0d && ./config shared && make && cd $(SRC_DIR) && cp $(ThirdParty_DIR)/openssl-1.0.0d/libcrypto.so.1.0.0 $(SRC_DIR)/lib && cp $(ThirdParty_DIR)/openssl-1.0.0d/libssl.so.1.0.0 $(SRC_DIR)/lib && cd $(ThirdParty_DIR) && tar -zxvf uchardet.tar.gz && cd $(ThirdParty_DIR)/uchardet && cmake . && make && cd $(SRC_DIR) && cp -rf $(ThirdParty_DIR)/uchardet/src/lib*.so* $(SRC_DIR)/lib
+	echo "------------Build $(DEB_BUILD_ARCH_BITS) bits" && mkdir -p $(SRC_DIR)/lib && cd $(ThirdParty_DIR) && tar -zxvf openssl-1.0.0d.tar.gz && cd $(ThirdParty_DIR)/openssl-1.0.0d && ./config shared && make && cd $(SRC_DIR) && cp $(ThirdParty_DIR)/openssl-1.0.0d/libcrypto.so.1.0.0 $(SRC_DIR)/lib && cp $(ThirdParty_DIR)/openssl-1.0.0d/libssl.so.1.0.0 $(SRC_DIR)/lib && cd $(ThirdParty_DIR) && tar -zxvf uchardet.tar.gz && cd $(ThirdParty_DIR)/uchardet && cmake . && make && cd $(SRC_DIR) && cp -rf $(ThirdParty_DIR)/uchardet/src/lib*.so* $(SRC_DIR)/lib && cd $(ThirdParty_DIR) && tar -zxvf uci.tar.gz && cd $(ThirdParty_DIR)/uci && make && cd $(SRC_DIR) && cp -rf $(ThirdParty_DIR)/uci/libuci.so* $(SRC_DIR)/lib && cd $(ThirdParty_DIR) && tar -zxvf aria2-1.18.9.tar.gz && cd $(ThirdParty_DIR)/aria2-1.18.9 && chmod +x configure && ./configure --enable-libaria2 && make && cd $(SRC_DIR) && cp -rf $(ThirdParty_DIR)/aria2-1.18.9/src/.libs/libaria2.so* $(SRC_DIR)/lib && cd $(Download_DIR)/client/wjson && make && cd $(SRC_DIR) && cd $(Download_DIR)/client/ && make && cd $(SRC_DIR) && cp -rf $(Download_DIR)/client/*.a $(SRC_DIR)/lib && cd $(Download_DIR)/release/ && make && make clean && cd $(SRC_DIR) && mkdir -p $(SRC_DIR)/bin && cp -rf $(Download_DIR)/release/cdosbrowser_download $(SRC_DIR)/bin
 endif
 
 # cmake config for webkit project
@@ -62,6 +65,10 @@ ifeq ($(DEB_BUILD_ARCH_BITS),64)
 	cp -f $(SRC_DIR)/lib/libssl.so.1.0.0 $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
 	cp -f $(SRC_DIR)/lib/libcrypto.so.1.0.0 $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
 	cp -f $(SRC_DIR)/lib/libuchardet.so.0.0.0 $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
+	cp -f $(SRC_DIR)/lib/libuci.so.0.8 $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
+	cp -f $(SRC_DIR)/lib/libaria2.so.0.0.0 $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
+	cp -f $(SRC_DIR)/lib/libaria2.so.0 $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
+	cp -f $(SRC_DIR)/bin/cdosbrowser_download $(INSTALL_DIR1)/
 endif
 
 #	cp -rf $(CURDIR)/bin/resources $(CURDIR)/debian/tmp/usr/local/cuprumtest/bin/

@@ -104,7 +104,10 @@ namespace Apps {
         internal static async void create (string prefix, GLib.File folder, string uri, string title, Gtk.Widget proxy) {
             /* Strip LRE leading character and / */
             string name = title.delimit ("‪/", ' ').strip();
-            string filename = Midori.Download.clean_filename (name);
+//add by luyue 2015/7/7 start
+//            string filename = Midori.Download.clean_filename (name);
+           string filename = name.delimit ("/ ", '_');
+//add end
             string icon_name = Midori.Stock.WEB_BROWSER;
             bool testing = false;
             if (proxy == null)
@@ -255,7 +258,10 @@ namespace Apps {
                                 launcher.file.trash (null);
                                 store.remove (iter);
 
-                                string filename = Midori.Download.clean_filename (launcher.name);
+//add by luyue 2015/7/7 start
+//                                string filename = Midori.Download.clean_filename (launcher.name);
+                                string filename =launcher.name.delimit ("/ ", '_');
+//add end
                                 var data_dir = File.new_for_path (Midori.Paths.get_user_data_dir ());
                                 data_dir.get_child ("applications").get_child (filename + ".desktop").trash ();
                             }

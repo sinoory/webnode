@@ -117,6 +117,9 @@ midori_app_get_browser            (MidoriApp*         app);
 GList*
 midori_app_get_browsers           (MidoriApp*         app);
 
+int
+midori_app_get_browsers_num       (MidoriApp*         app);
+
 void
 midori_app_quit                   (MidoriApp*         app);
 

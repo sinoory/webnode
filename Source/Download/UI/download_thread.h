@@ -1,0 +1,4 @@
+#ifndef DOWNLOAD_THREAD_H
+#define DOWNLOAD_THREAD_H
+
+#endif // DOWNLOAD_THREAD_H

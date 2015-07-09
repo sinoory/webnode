@@ -1264,7 +1264,7 @@ msgstr "复制链接目的地(_S)"
 #. GTK_STOCK_SAVE_AS is lacking the underline
 #: ../midori/midori-view.c:2342
 msgid "Save _As…"
-msgstr "另存为(_A)…"
+msgstr "链接另存为(_A)…"
 
 #: ../midori/midori-view.c:2354
 msgid "Open _Image in New Window"
@@ -1430,76 +1430,6 @@ msgstr "是否打印页面的背景图片"
 #: ../midori/midori-view.c:4781
 msgid "Features"
 msgstr "功能"
-
-#. i18n: Download tooltip (size): 4KB of 43MB
-#: ../midori/midori-download.vala:59
-#, c-format
-msgid "%s of %s"
-msgstr "%s/%s"
-
-#: ../midori/midori-download.vala:75
-#, c-format
-msgid "%d hour"
-msgid_plural "%d hours"
-msgstr[0] "%d 小时"
-
-#: ../midori/midori-download.vala:76
-#, c-format
-msgid "%d minute"
-msgid_plural "%d minutes"
-msgstr[0] "%d 分钟"
-
-#: ../midori/midori-download.vala:77
-#, c-format
-msgid "%d second"
-msgid_plural "%d seconds"
-msgstr[0] "%d 秒"
-
-#. i18n: Download tooltip (estimated time) : - 1 hour, 5 minutes remaning
-#: ../midori/midori-download.vala:92
-#, c-format
-msgid " - %s remaining"
-msgstr " -%s 剩余"
-
-#. i18n: Unknown number of bytes, used for transfer rate like ?B/s
-#: ../midori/midori-download.vala:103
-msgid "?B"
-msgstr "?B"
-
-#. i18n: Download tooltip (transfer rate): (130KB/s)
-#: ../midori/midori-download.vala:105
-#, c-format
-msgid " (%s/s)"
-msgstr " (%s/s)"
-
-#: ../midori/midori-download.vala:220
-msgid "The downloaded file is erroneous."
-msgstr "已下载的文件不正确。"
-
-#: ../midori/midori-download.vala:221
-msgid ""
-"The checksum provided with the link did not match. This means the file is "
-"probably incomplete or was modified afterwards."
-msgstr "与链接提供的校验值不匹配。这意味着此文件可能未完整下载或后来被修改过。"
-
-#: ../midori/midori-download.vala:366
-#, c-format
-msgid "The file \"%s\" can't be saved in this folder."
-msgstr "未能在此文件夹中保存 “%s“ 文件。"
-
-#: ../midori/midori-download.vala:368
-msgid "You don't have permission to write in this location."
-msgstr "您没有权限在此位置写入。"
-
-#: ../midori/midori-download.vala:371
-#, c-format
-msgid "There is not enough free space to download \"%s\"."
-msgstr "没有足够的空闲空间用来下载 “%s”。"
-
-#: ../midori/midori-download.vala:373
-#, c-format
-msgid "The file needs %s but only %s are left."
-msgstr "此文件需要 %s 但只剩余 %s。"
 
 #: ../midori/midori-speeddial.vala:188
 msgid "Speed Dial"

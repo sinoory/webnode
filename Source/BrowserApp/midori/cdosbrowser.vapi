@@ -47,8 +47,8 @@ namespace Midori {
         public Katze.Array search_engines { get; set; }
         [NoAccessorMethod]
         public Katze.Array history { get; set; }
-        [NoAccessorMethod]
-        public Katze.Array download { get; set; }   //zgh 20150206
+//        [NoAccessorMethod]
+//        public Katze.Array download { get; set; }   //zgh 20150206
         [NoAccessorMethod]
         public Katze.Array extensions { owned get; set; }
         [NoAccessorMethod]
@@ -115,8 +115,8 @@ namespace Midori {
         public signal void switch_tab (View? old_view, View? new_view);
         [HasEmitter]
         public signal void activate_action (string name);
-        public signal void add_download (WebKit.Download download);
-        public signal void clear_download (Gtk.Widget widget);
+//        public signal void add_download (WebKit.Download download);
+//        public signal void clear_download (Gtk.Widget widget);
         public signal void populate_tool_menu (Gtk.Menu menu);
         [HasEmitter]
         public signal void quit ();
@@ -218,7 +218,7 @@ namespace Midori {
         public GLib.Object net { get; }
 
         [HasEmitter]
-        public signal bool download_requested (WebKit.Download download);
+//        public signal bool download_requested (WebKit.Download download);
         public signal bool about_content (string uri);
         public signal void new_view (Midori.View new_view, Midori.NewView where, bool user_initiated);
     }

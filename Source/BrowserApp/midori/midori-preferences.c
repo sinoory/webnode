@@ -403,8 +403,8 @@ midori_preferences_set_settings (MidoriPreferences* preferences,
     label = gtk_label_new (_("Save downloaded files to:"));
     gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
     INDENTED_ADD (label);
-    button = katze_property_proxy (settings, "download-folder", "folder");
-    SPANNED_ADD (button);
+//    button = katze_property_proxy (settings, "download-folder", "folder");
+//    SPANNED_ADD (button);
 
     /* Page "Interface" */
     PAGE_NEW (GTK_STOCK_CONVERT, _("Browsing"));

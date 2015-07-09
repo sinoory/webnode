@@ -77,7 +77,7 @@ enum
     PROP_TRASH,
     PROP_SEARCH_ENGINES,
     PROP_HISTORY,
-    PROP_DOWNLOAD,  //zgh download
+//    PROP_DOWNLOAD,  //zgh download
     PROP_SPEED_DIAL,
     PROP_EXTENSIONS,
     PROP_BROWSERS,
@@ -395,7 +395,7 @@ midori_app_class_init (MidoriAppClass* class)
                                      KATZE_TYPE_ARRAY,
                                      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
     //zgh download
-    g_object_class_install_property (gobject_class,
+/*    g_object_class_install_property (gobject_class,
                                      PROP_DOWNLOAD,
                                      g_param_spec_object (
                                      "download",
@@ -403,7 +403,7 @@ midori_app_class_init (MidoriAppClass* class)
                                      "The list of download items",
                                      KATZE_TYPE_ARRAY,
                                      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
-
+*/
     g_object_class_install_property (gobject_class,
                                      PROP_EXTENSIONS,
                                      g_param_spec_object (
@@ -934,9 +934,9 @@ midori_app_set_property (GObject*      object,
         katze_object_assign (app->extensions, g_value_dup_object (value));
         break;
         //zgh 20150209 download
-    case PROP_DOWNLOAD:
+/*    case PROP_DOWNLOAD:
         katze_object_assign (app->download, g_value_dup_object (value));
-        break;
+        break;*/
     default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
         break;
@@ -977,9 +977,9 @@ midori_app_get_property (GObject*    object,
     case PROP_EXTENSIONS:
         g_value_set_object (value, app->extensions);
         break;
-    case PROP_DOWNLOAD:
+/*    case PROP_DOWNLOAD:
         g_value_set_object (value, app->download);
-        break;
+        break;*/
     case PROP_BROWSERS:
         g_value_set_object (value, app->browsers);
         break;
@@ -1260,6 +1260,13 @@ midori_app_get_browsers (MidoriApp* app)
     return katze_array_get_items (app->browsers);
 }
 
+int
+midori_app_get_browsers_num (MidoriApp* app)
+{
+   g_return_val_if_fail (MIDORI_IS_APP (app), NULL);
+   GList* browsers = midori_app_get_browsers (app);
+   return g_list_length(browsers);
+}
 /**
  * midori_app_get_browser:
  * @app: a #MidoriApp

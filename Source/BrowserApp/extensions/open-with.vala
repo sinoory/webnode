@@ -291,7 +291,16 @@ namespace ExternalApplications {
         public ChooserDialog (string uri, string content_type, Gtk.Widget widget) {
             string filename;
             if (uri.has_prefix ("file://"))
-                filename = Midori.Download.get_basename_for_display (uri);
+//add by luyue 2015/7/7 start
+         //       filename = Midori.Download.get_basename_for_display (uri);
+            {
+               string filename1 = Filename.from_uri (uri);
+               if(filename1 != null && filename1 != "")
+                  filename = Path.get_basename (filename1);
+               else
+                  filename = uri;
+            }
+//add end
             else
                 filename = uri;
 

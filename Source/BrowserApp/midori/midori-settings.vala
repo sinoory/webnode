@@ -167,11 +167,11 @@ namespace Midori {
 
         public string homepage { get; set; default = "about:new"; } // ZRL 修改默认主页为新标签页
         public string tabhome { get; set; default = "about:dial"; }
-        static string default_download_folder () {
-            return Environment.get_user_special_dir (UserDirectory.DOWNLOAD)
-                ?? Environment.get_home_dir ();
-        }
-        public string download_folder { get; set; default = default_download_folder (); }
+//        static string default_download_folder () {
+//            return Environment.get_user_special_dir (UserDirectory.DOWNLOAD)
+//                ?? Environment.get_home_dir ();
+//        }
+//        public string download_folder { get; set; default = default_download_folder (); }
         public string? text_editor { get; set; default = null; }
         /* Since: 0.1.6 */
         public string? news_aggregator { get; set; default = null; }

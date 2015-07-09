@@ -206,11 +206,11 @@ struct  _MidoriWebSettings
     GtkWidget *checkbutton8_privacy;
     GtkWidget *checkbutton9_privacy;//luyue add,2015/4/11
 
-	GtkWidget *radiobutton1_security;
-	GtkWidget *radiobutton2_security;
+    GtkWidget *radiobutton1_security;
+    GtkWidget *radiobutton2_security;
 
-	GtkWidget *entry1_advanced;
-	 GtkWidget *label1_advanced;
+//  GtkWidget *entry1_advanced;
+    GtkWidget *label1_advanced;
 //lxx add-,20141210
 	
     MidoriSettings parent_instance;
