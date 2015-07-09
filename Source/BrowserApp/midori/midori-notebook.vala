@@ -22,7 +22,7 @@ namespace Midori {
 //add end
         public Gtk.Label label;
         Gtk.HBox box;
-        public Gtk.Image icon;
+        public Gtk.Image icon{get;set;}
         public Gtk.Image loc_simbo_icon;
         Gtk.Alignment align;
 

@@ -623,7 +623,7 @@ static void do_reset_browser(MidoriWebSettings *settings)
    MidoriBrowser *browser = midori_app_get_browser(app);
    midori_browser_clear_history(browser);
 //删除书签的
-//TODO
+   midori_browser_clear_bookmarks(browser);
 
 //删除各种临时数据和缓存数据
 //clear Cookie　and others

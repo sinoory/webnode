@@ -275,7 +275,7 @@ namespace Midori {
                     next_slot,  _("Click to add a shortcut"));
 		}
 		else {
-		   markup.append_printf (""" <div class="preview new“></div></div>""");
+		   markup.append_printf (""" <div class="preview new"></div></div>""");
                 }
                 markup.append_printf ("</div>\n</body>\n</html>\n");
                 html = markup.str;

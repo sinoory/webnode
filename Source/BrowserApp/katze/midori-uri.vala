@@ -134,7 +134,7 @@ namespace Midori {
         public static bool is_resource (string? uri) {
             return uri != null
               && (is_http (uri)
-               || (uri.has_prefix ("data:") && uri.chr (-1, ';') != null));
+               || (uri.has_prefix ("data:") && uri.chr (-1, ';') != null)||uri.has_prefix ("about:"));
         }
         public static bool is_location (string? uri) {
             /* file:// is not considered a location for security reasons */

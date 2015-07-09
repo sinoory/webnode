@@ -1387,6 +1387,10 @@ midori_browser_edit_bookmark_dialog_new (MidoriBrowser* browser,
         entry_uri = katze_uri_entry_new (
             gtk_dialog_get_widget_for_response (GTK_DIALOG (dialog), GTK_RESPONSE_ACCEPT));
         gtk_entry_set_activates_default (GTK_ENTRY (entry_uri), TRUE);
+	gchar *uri = katze_item_get_uri (bookmark);
+	//added by wangyl 2015.7.9
+	if(strlen(uri) == 0)gtk_entry_set_text (GTK_ENTRY (entry_uri), "about:blank");
+	else
         gtk_entry_set_text (GTK_ENTRY (entry_uri), katze_item_get_uri (bookmark));
         gtk_box_pack_start (GTK_BOX (vbox), entry_uri, FALSE, FALSE, 0);
     }
@@ -10432,6 +10436,11 @@ static void midori_browser_actiave_transfer_in_window(GtkAction*     action,
 void midori_browser_clear_history(MidoriBrowser* browser)
 {
         katze_array_clear (browser->history);
+}
+//added by wangyl 2015.7.9
+void midori_browser_clear_bookmarks(MidoriBrowser* browser)
+{
+       g_signal_emit_by_name(browser->bookmarks,"clear");
 }
 
 void midori_browser_change_history_seting(MidoriBrowser* browser, gint *settings)

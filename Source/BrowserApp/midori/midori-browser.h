@@ -211,6 +211,8 @@ _action_pageinfo_activate ( GtkAction*     action,
 
 void midori_browser_clear_history(MidoriBrowser*     browser);
 
+void midori_browser_clear_bookmarks(MidoriBrowser* browser);
+
 void midori_browser_change_history_seting(MidoriBrowser* browser, gint *settings);
 //add by luyue 2014/12/30
 gboolean

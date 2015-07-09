@@ -5968,11 +5968,20 @@ midori_view_set_uri (MidoriView*  view,
 
         if (handled)
         {
+	    GtkNotebook *notebook;
             midori_tab_set_uri (MIDORI_TAB (view), uri);
             midori_tab_set_special (MIDORI_TAB (view), TRUE);
             katze_item_set_meta_integer (view->item, "delay", MIDORI_DELAY_UNDELAYED);
             katze_item_set_uri (view->item, midori_tab_get_uri (MIDORI_TAB (view)));
-            return;
+	    // added by wangyl 2015.7.9  start 为了改变tab的图片
+	    MidoriBrowser* browser =  midori_browser_get_for_widget((GtkWidget*)view);
+	    GtkWidget* tab = midori_browser_get_current_tab ( browser);
+            g_object_get(browser,"notebook",&notebook,NULL);
+            GtkWidget*label =  gtk_notebook_get_tab_label(notebook,tab);
+            GtkImage*image =  midori_tally_get_icon((MidoriTally*)label);
+            gtk_image_set_from_gicon(image,g_themed_icon_new_with_default_fallbacks ("text-html-symbolic"),GTK_ICON_SIZE_MENU);
+	    // added by wangyl 2015.7.9 end 
+	    return;
         }
 
         if (katze_item_get_meta_integer (view->item, "delay") == MIDORI_DELAY_DELAYED)

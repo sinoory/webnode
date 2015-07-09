@@ -343,10 +343,19 @@ static void
 _midori_bookmarks_db_clear (KatzeArray* array)
 {
     g_return_if_fail (IS_MIDORI_BOOKMARKS_DB (array));
-
-    g_critical ("_midori_bookmarks_db_clear: not implemented\n");
+    //added by wangyl 2015.7.9 start
+     KatzeItem* item;
+     int n=0,i=0;
+     KatzeArray* array1 = midori_bookmarks_db_query_recursive (MIDORI_BOOKMARKS_DB(array),
+      "id, parentid, title, uri, desc, app, toolbar, pos_panel, pos_bar", "toolbar = 1", NULL, FALSE);
+     KATZE_ARRAY_FOREACH_ITEM (item, array1)n++;
+     for(;i<n;i++){
+       gpointer   item1 = katze_array_get_nth_item(array1,0);
+       midori_bookmarks_db_remove_item (MIDORI_BOOKMARKS_DB(array), KATZE_ITEM( item1));
+     }
+     //added by wangyl 2015.7.9 end
+   // g_critical ("_midori_bookmarks_db_clear: not implemented\n");
 }
-
 /**
  * midori_bookmarks_db_signal_update_item:
  * @array: a #KatzeArray
