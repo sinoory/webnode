@@ -659,6 +659,7 @@ static void resetNetworkSettingCallback(GtkButton *button, MidoriWebSettings *se
       do_reset_browser(settings);
       gtk_widget_destroy(dialog);
    }
+   else gtk_widget_destroy(dialog);  //add by lyb 20150706
 }
 
 /*static void alterDownloadSaveCatalogCallback(GtkButton *button, MidoriWebSettings *settings)
