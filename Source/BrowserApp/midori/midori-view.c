@@ -208,6 +208,7 @@ struct _MidoriView
    bool save_menu_flag;//标志位，1不走下载流程，走页面另存为流程
    char *download_filename;
    char *download_uri;
+   char *download_exec;
 
    //add end
 
@@ -4023,9 +4024,11 @@ midori_save_dialog (const gchar* title,
 }*/
 
 //add by luyue 2015/7/8 start
-static void download_exec_cb(char* download_exec)
+static void download_exec_cb(MidoriView* view)
 {
-   system(download_exec);
+   system(view->download_exec);
+   free(view->download_exec);
+   view->download_exec = NULL;
    pthread_exit(0);
 }
 //add end
@@ -4036,18 +4039,23 @@ midori_view_get_cookie_cb(WebKitCookieManager* cookiemanager,
                           const gchar*         cookie,
                           MidoriView*          view)
 {
-   char download_exec[2048];
    if (cookie && strlen(cookie))
-      sprintf(download_exec,"/usr/local/libexec/cdosbrowser/cdosbrowser_download %s%s%s %s%s%s %s%s%s","\"",view->download_uri,"\"","\"",view->download_filename,"\"", "\"",cookie,"\"","&");
+   {
+      view->download_exec = (char *)malloc(strlen(view->download_uri)+strlen(view->download_filename)+strlen(cookie)+64);
+      sprintf(view->download_exec,"/usr/local/libexec/cdosbrowser/cdosbrowser_download %s%s%s %s%s%s %s%s%s","\"",view->download_uri,"\"","\"",view->download_filename,"\"", "\"",cookie,"\"","&");  
+   }
    else
-      sprintf(download_exec,"/usr/local/libexec/cdosbrowser/cdosbrowser_download %s%s%s %s%s%s","\"",view->download_uri,"\"","\"",view->download_filename,"\"","&");
+   {
+      view->download_exec = (char *)malloc(strlen(view->download_uri)+strlen(view->download_filename)+64);
+      sprintf(view->download_exec,"/usr/local/libexec/cdosbrowser/cdosbrowser_download %s%s%s %s%s%s","\"",view->download_uri,"\"","\"",view->download_filename,"\"","&");
+   }
    free(view->download_uri);
    view->download_uri = NULL;
    free(view->download_filename);
    view->download_filename = NULL;
    pthread_t ntid;
    int ret;
-   ret = pthread_create(&ntid, NULL, download_exec_cb, download_exec);
+   ret = pthread_create(&ntid, NULL, download_exec_cb, view);
    g_signal_handlers_disconnect_by_func (cookiemanager,
                                          midori_view_get_cookie_cb, view);
 }
