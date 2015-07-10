@@ -119,7 +119,8 @@ Depends:libgtk-3-0(>=3.6.4),
 	glib-networking(>=2.33.2),
 	libffi6,
 	libatk1.0-0,
-	libgdk-pixbuf2.0-0(>=2.26.5)
+	libgdk-pixbuf2.0-0(>=2.26.5),
+	libuchardet0
 Maintainer:cdosrepobuild <cdosrepobuild@iscas.ac.cn>
 Description: Security Browser
   This package contains the Security Browser based on WebKit
