@@ -107,7 +107,7 @@ Homepage: <insert the upstream URL, if relevant>
 #Vcs-Browser: http://git.debian.org/?p=collab-maint/zrltest.git;a=summary
 
 Package:cdosbrowser
-Version:0.2.3
+Version:0.2.4
 Section:web
 Architecture:any
 Pre-Depends: dpkg (>= 1.16.10)

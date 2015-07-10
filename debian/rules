@@ -62,8 +62,8 @@ install: build
 	dh_clean -k 
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp
 ifeq ($(DEB_BUILD_ARCH_BITS),64)
-	cp -f $(SRC_DIR)/lib/libssl.so.1.0.0 $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
-	cp -f $(SRC_DIR)/lib/libcrypto.so.1.0.0 $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
+#	cp -f $(SRC_DIR)/lib/libssl.so.1.0.0 $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
+#	cp -f $(SRC_DIR)/lib/libcrypto.so.1.0.0 $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
 	cp -f $(SRC_DIR)/lib/libuchardet.so.0.0.0 $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
 	cp -f $(SRC_DIR)/lib/libuci.so.0.8 $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
 	cp -f $(SRC_DIR)/lib/libaria2.so.0.0.0 $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/

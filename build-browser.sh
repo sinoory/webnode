@@ -116,6 +116,7 @@ else
 	cp -rf ./src/.libs/libaria2.so* ../../../lib
 	make clean && cd ../../../
 
+	cd ./Source && tar -zxvf Download.tar.gz && cd ../
 	cd $Download_DIR
 	cd ./client/wjson && make
 	cd ../ && make
