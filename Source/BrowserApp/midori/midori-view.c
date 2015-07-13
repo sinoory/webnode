@@ -4024,16 +4024,6 @@ midori_save_dialog (const gchar* title,
 }*/
 
 //add by luyue 2015/7/8 start
-static void download_exec_cb(MidoriView* view)
-{
-   system(view->download_exec);
-   free(view->download_exec);
-   view->download_exec = NULL;
-   pthread_exit(0);
-}
-//add end
-
-//add by luyue 2015/7/8 start
 static void
 midori_view_get_cookie_cb(WebKitCookieManager* cookiemanager,
                           const gchar*         cookie,
@@ -4053,9 +4043,15 @@ midori_view_get_cookie_cb(WebKitCookieManager* cookiemanager,
    view->download_uri = NULL;
    free(view->download_filename);
    view->download_filename = NULL;
-   pthread_t ntid;
-   int ret;
-   ret = pthread_create(&ntid, NULL, download_exec_cb, view);
+   pid_t pid;
+   int status;
+   pid = fork();
+   if(pid == 0)
+   {
+      execl("/bin/bash", "bash", "-c", view->download_exec, (char *)0);
+      _exit(127); //子进程正常执行则不会执行此语句    
+   }
+
    g_signal_handlers_disconnect_by_func (cookiemanager,
                                          midori_view_get_cookie_cb, view);
 }
