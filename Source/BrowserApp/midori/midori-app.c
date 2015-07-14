@@ -180,6 +180,9 @@ static void
 _midori_app_add_browser (MidoriApp*     app,
                          MidoriBrowser* browser)
 {
+#ifdef APP_LEVEL_TIME
+printf("create browser end time = %lld\n",g_get_real_time());
+#endif
     g_return_if_fail (MIDORI_IS_APP (app));
     g_return_if_fail (MIDORI_IS_BROWSER (browser));
 

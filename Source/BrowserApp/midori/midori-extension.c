@@ -573,8 +573,13 @@ midori_extension_load_from_folder (MidoriApp* app,
 //        g_assert (midori_extension_activate_gracefully (app, extension_path, "libtabby." G_MODULE_SUFFIX, activate));
 //        g_assert (midori_extension_activate_gracefully (app, extension_path, "libopen-with." G_MODULE_SUFFIX, activate));
 //        g_assert (midori_extension_activate_gracefully (app, extension_path, "libflummi." G_MODULE_SUFFIX, activate));
+#ifdef APP_LEVEL_TIME
+printf("语句(g_assert (midori_extension_activate_gracefully (adblock))) start time = %lld\n",g_get_real_time());
+#endif
         g_assert (midori_extension_activate_gracefully (app, extension_path, "libadblock." G_MODULE_SUFFIX, activate));
-
+#ifdef APP_LEVEL_TIME
+printf("语句(g_assert (midori_extension_activate_gracefully (adblock))) end time = %lld\n",g_get_real_time());
+#endif
         g_assert (midori_extension_activate_gracefully (app, extension_path, "libbuiltinextension." G_MODULE_SUFFIX, activate));
 
         gint i = 0;

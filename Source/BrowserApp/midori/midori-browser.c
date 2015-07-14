@@ -2644,6 +2644,9 @@ midori_browser_key_press_event (GtkWidget*   widget,
 static void
 midori_browser_class_init (MidoriBrowserClass* class)
 {
+#ifdef APP_LEVEL_TIME
+printf("create browser start time = %lld\n",g_get_real_time());
+#endif
     GtkWidgetClass* gtkwidget_class;
     GObjectClass* gobject_class;
     GParamFlags flags;
@@ -9646,8 +9649,13 @@ midori_browser_set_property (GObject*      object,
         katze_object_assign (browser->settings, g_value_dup_object (value));
         if (!browser->settings)
             browser->settings = midori_web_settings_new ();
-
+#ifdef APP_LEVEL_TIME
+printf("函数(_midori_browser_update_settings) start time = %lld\n",g_get_real_time());
+#endif
         _midori_browser_update_settings (browser);
+#ifdef APP_LEVEL_TIME
+printf("函数(_midori_browser_update_settings) end time = %lld\n",g_get_real_time());
+#endif
         g_signal_connect (browser->settings, "notify",
             G_CALLBACK (midori_browser_settings_notify), browser);
         GList* tabs = midori_browser_get_tabs (browser);
@@ -9931,7 +9939,13 @@ midori_browser_add_item (MidoriBrowser* browser,
     g_return_val_if_fail (KATZE_IS_ITEM (item), NULL);
 
     uri = katze_item_get_uri (item);
+#ifdef APP_LEVEL_TIME
+printf("view start create time = %lld\n",g_get_real_time());
+#endif
     view = midori_view_new_with_item (item, browser->settings);
+#ifdef APP_LEVEL_TIME
+printf("view end create time = %lld\n",g_get_real_time());
+#endif
     midori_browser_add_tab (browser, view);
     midori_view_set_uri (MIDORI_VIEW (view), uri);
     return view;

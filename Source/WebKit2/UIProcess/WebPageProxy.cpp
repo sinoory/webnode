@@ -2785,6 +2785,9 @@ void WebPageProxy::didReceiveTitleForFrame(uint64_t frameID, const String& title
     frame->didChangeTitle(title);
     
     m_pageLoadState.commitChanges();
+#ifdef APP_LEVEL_TIME
+printf("receive title for frame time = %lld\n",g_get_real_time());
+#endif
     m_loaderClient->didReceiveTitleForFrame(this, title, frame, userData.get());
 }
 
@@ -2797,7 +2800,9 @@ void WebPageProxy::didFirstLayoutForFrame(uint64_t frameID, IPC::MessageDecoder&
 
     WebFrameProxy* frame = m_process->webFrame(frameID);
     MESSAGE_CHECK(frame);
-
+#ifdef APP_LEVEL_TIME
+printf("emit first layout time = %lld\n",g_get_real_time());
+#endif
     m_loaderClient->didFirstLayoutForFrame(this, frame, userData.get());
 }
 

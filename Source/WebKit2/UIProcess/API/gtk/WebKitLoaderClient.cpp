@@ -76,7 +76,9 @@ static void didFinishDocumentLoadForFrame(WKPageRef, WKFrameRef frame, WKTypeRef
 {
     if (!WKFrameIsMainFrame(frame))
         return;
-
+#ifdef APP_LEVEL_TIME
+printf("emit finish document load time = %lld\n",g_get_real_time());
+#endif
     webkitWebViewCheckPhish(WEBKIT_WEB_VIEW(clientInfo));
 }
 //add end
@@ -91,6 +93,9 @@ static void didFinishLoadForFrame(WKPageRef, WKFrameRef frame, WKTypeRef /* user
 
 static void didFinishProgress(WKPageRef,const void*clientInfo)
 {
+#ifdef APP_LEVEL_TIME
+printf("emit finish progress time = %lld\n",g_get_real_time());
+#endif
    webkitWebViewCheckPopupWindow(WEBKIT_WEB_VIEW(clientInfo));
 }
 

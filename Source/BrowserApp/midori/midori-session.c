@@ -344,6 +344,9 @@ extensions_update_cb (KatzeArray* extensions,
 gboolean
 midori_load_extensions (gpointer data)
 {
+#ifdef APP_LEVEL_TIME
+printf("函数(midori_load_extensions) start time = %lld\n",g_get_real_time());
+#endif
     MidoriApp* app = MIDORI_APP (data);
     gchar** keys = g_object_get_data (G_OBJECT (app), "extensions");
     KatzeArray* extensions;
@@ -358,7 +361,9 @@ midori_load_extensions (gpointer data)
 
     if (startup_timer)
         g_debug ("Extensions:\t%f", g_timer_elapsed (timer, NULL));
-
+#ifdef APP_LEVEL_TIME
+printf("函数(midori_load_extensions) end time = %lld\n",g_get_real_time());
+#endif
     return FALSE;
 }
 

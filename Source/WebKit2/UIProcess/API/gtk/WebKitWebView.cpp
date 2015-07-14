@@ -1781,6 +1781,9 @@ void webkitWebViewLoadChanged(WebKitWebView* webView, WebKitLoadEvent loadEvent)
 {
     WebKitWebViewPrivate* priv = webView->priv;
     if (loadEvent == WEBKIT_LOAD_STARTED) {
+#ifdef APP_LEVEL_TIME
+printf("load start time = %lld\n",g_get_real_time());
+#endif
         // Finish a possible previous load waiting for main resource.
         webkitWebViewEmitDelayedLoadEvents(webView);
 
@@ -1789,6 +1792,9 @@ void webkitWebViewLoadChanged(WebKitWebView* webView, WebKitLoadEvent loadEvent)
         priv->mainResource = 0;
         priv->waitingForMainResource = false;
     } else if (loadEvent == WEBKIT_LOAD_COMMITTED) {
+#ifdef APP_LEVEL_TIME
+printf("load commited time = %lld\n",g_get_real_time());
+#endif
         WebKitFaviconDatabase* database = webkit_web_context_get_favicon_database(priv->context);
         if(!priv->activeURI.data()) return;  //add by luyue 2015/3/9
         GUniquePtr<char> faviconURI(webkit_favicon_database_get_favicon_uri(database, priv->activeURI.data()));

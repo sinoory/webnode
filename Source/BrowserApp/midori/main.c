@@ -69,6 +69,9 @@ int
 main (int    argc,
       char** argv)
 {
+#ifdef APP_LEVEL_TIME
+printf("main start time = %lld\n",g_get_real_time());
+#endif
     gchar* webapp;
     gchar* config;
     gboolean private;
@@ -410,10 +413,16 @@ main (int    argc,
         gtk_main ();
         return 0;
     }
-
+#ifdef APP_LEVEL_TIME
+printf("app create start time = %lld\n",g_get_real_time());
+#endif
     MidoriApp* app = midori_normal_app_new (config,
         portable ? "portable" : "normal", diagnostic_dialog,
         uris, execute, inactivity_reset, block_uris);
+#ifdef APP_LEVEL_TIME
+printf("app create end time = %lld\n",g_get_real_time());
+#endif
+
     if (app == NULL)
         return 0;
     if (app == (void*)0xdeadbeef)

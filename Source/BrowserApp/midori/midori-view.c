@@ -730,6 +730,9 @@ midori_view_update_load_status (MidoriView*      view,
 {
     if (midori_tab_get_load_status (MIDORI_TAB (view)) != load_status)
         midori_tab_set_load_status (MIDORI_TAB (view), load_status);
+#ifdef APP_LEVEL_TIME
+printf("load end time = %lld\n",g_get_real_time());
+#endif
 }
 
 #if defined (HAVE_LIBSOUP_2_29_91)
@@ -1449,6 +1452,9 @@ midori_view_web_view_navigation_decision_cb (WebKitWebView*             web_view
                                              #endif
                                              MidoriView*                view)
 {
+#ifdef APP_LEVEL_TIME
+printf("signal(navigation-decision) callback start time = %lld\n",g_get_real_time());
+#endif
     #ifdef HAVE_WEBKIT2
     if (decision_type == WEBKIT_POLICY_DECISION_TYPE_RESPONSE)
     {
@@ -1498,6 +1504,9 @@ midori_view_web_view_navigation_decision_cb (WebKitWebView*             web_view
             //}
 
             webkit_policy_decision_download (decision);
+#ifdef APP_LEVEL_TIME
+printf("signal(navigation-decision) callback end time = %lld\n",g_get_real_time());
+#endif
             return TRUE;
         }
         
@@ -1527,9 +1536,15 @@ midori_view_web_view_navigation_decision_cb (WebKitWebView*             web_view
 #endif
         if(webkit_web_view_isattachment(web_view, decision, WEBKIT_POLICY_DECISION_TYPE_RESPONSE))
         {
+#ifdef APP_LEVEL_TIME
+printf("signal(navigation-decision) callback end time = %lld\n",g_get_real_time());
+#endif
             return TRUE;
         }
         webkit_policy_decision_use (decision);
+#ifdef APP_LEVEL_TIME
+printf("signal(navigation-decision) callback end time = %lld\n",g_get_real_time());
+#endif
         return TRUE;
     }
     else if (decision_type == WEBKIT_POLICY_DECISION_TYPE_NEW_WINDOW_ACTION)
@@ -1541,6 +1556,9 @@ midori_view_web_view_navigation_decision_cb (WebKitWebView*             web_view
     else
     {
         g_debug ("Unhandled policy decision type %d", decision_type);
+#ifdef APP_LEVEL_TIME
+printf("signal(navigation-decision) callback end time = %lld\n",g_get_real_time());
+#endif
         return FALSE;
     }
     void* request = NULL;
@@ -1554,6 +1572,9 @@ midori_view_web_view_navigation_decision_cb (WebKitWebView*             web_view
         gchar* new_uri = sokoke_magic_uri (uri, TRUE, FALSE);
         midori_view_set_uri (view, new_uri);
         g_free (new_uri);
+#ifdef APP_LEVEL_TIME
+printf("signal(navigation-decision) callback end time = %lld\n",g_get_real_time());
+#endif
         return TRUE;
     }
     else if (g_str_has_prefix (uri, "data:image/"))
@@ -1565,6 +1586,9 @@ midori_view_web_view_navigation_decision_cb (WebKitWebView*             web_view
         #else
         webkit_web_policy_decision_ignore (decision);
         #endif
+#ifdef APP_LEVEL_TIME
+printf("signal(navigation-decision) callback end time = %lld\n",g_get_real_time());
+#endif
         return TRUE;
     }
     #if defined (HAVE_GCR)
@@ -1681,6 +1705,9 @@ midori_view_web_view_navigation_decision_cb (WebKitWebView*             web_view
         #else
         webkit_web_policy_decision_ignore (decision);
         #endif
+#ifdef APP_LEVEL_TIME
+printf("signal(navigation-decision) callback end time = %lld\n",g_get_real_time());
+#endif
         return TRUE;
     }
 
@@ -1693,6 +1720,9 @@ midori_view_web_view_navigation_decision_cb (WebKitWebView*             web_view
         #else
         webkit_web_policy_decision_ignore (decision);
         #endif
+#ifdef APP_LEVEL_TIME
+printf("signal(navigation-decision) callback end time = %lld\n",g_get_real_time());
+#endif
         return TRUE;
     }
     //add by luyue 2015/5/4 start
@@ -1700,12 +1730,18 @@ midori_view_web_view_navigation_decision_cb (WebKitWebView*             web_view
     if(strcmp(uri,"about:dial#")==0)
        midori_view_reload(view,FALSE);
     //add end
+#ifdef APP_LEVEL_TIME
+printf("signal(navigation-decision) callback end time = %lld\n",g_get_real_time());
+#endif
     return FALSE;
 }
 
 static void
 midori_view_load_started (MidoriView* view)
 {
+#ifdef APP_LEVEL_TIME
+printf("load start callback start time = %lld\n",g_get_real_time());
+#endif
     midori_view_update_load_status (view, MIDORI_LOAD_PROVISIONAL);
     midori_tab_set_progress (MIDORI_TAB (view), 0.0);
     midori_tab_set_load_error (MIDORI_TAB (view), MIDORI_LOAD_ERROR_NONE);
@@ -1717,6 +1753,9 @@ midori_view_load_started (MidoriView* view)
 	if(true == view->show_block_javascript_popup_window_icon)
 		g_signal_emit (view, signals[START_LOAD_HIDE_BLOCK_JAVASCRIPT_WINDOW_ICON], 0);
 #endif
+#ifdef APP_LEVEL_TIME
+printf("load start callback end time = %lld\n",g_get_real_time());
+#endif
 }
 
 #ifdef HAVE_GCR
@@ -1727,6 +1766,9 @@ midori_location_action_tls_flags_to_string (GTlsCertificateFlags flags);
 static void
 midori_view_load_committed (MidoriView* view)
 {
+#ifdef APP_LEVEL_TIME
+printf("commit load callback start time = %lld\n",g_get_real_time());
+#endif
     katze_assign (view->icon_uri, NULL);
 
     GList* children = gtk_container_get_children (GTK_CONTAINER (view));
@@ -1804,7 +1846,9 @@ midori_view_load_committed (MidoriView* view)
     view->media_info_bar_lock = FALSE;  //ykhu
 
     midori_view_update_load_status (view, MIDORI_LOAD_COMMITTED);
-
+#ifdef APP_LEVEL_TIME
+printf("commit load callback end time = %lld\n",g_get_real_time());
+#endif
 }
 
 static void
@@ -1812,6 +1856,9 @@ webkit_web_view_progress_changed_cb (WebKitWebView* web_view,
                                      GParamSpec*    pspec,
                                      MidoriView*    view)
 {
+#ifdef APP_LEVEL_TIME
+printf("signal(progress-change) callback start time = %lld\n",g_get_real_time());
+#endif
     gdouble progress = 1.0;
     //add by luyue 2015/3/9
     //增加一个url时，不需要设置progress,即不需滚动spinner
@@ -1823,6 +1870,9 @@ webkit_web_view_progress_changed_cb (WebKitWebView* web_view,
        g_object_get (web_view, pspec->name, &progress, NULL);
        midori_tab_set_progress (MIDORI_TAB (view), progress);
     }
+#ifdef APP_LEVEL_TIME
+printf("signal(progress-change) callback end time = %lld\n",g_get_real_time());
+#endif
 }
 
 static void _midori_view_uri_loadres_scheme_data(WebKitURISchemeRequest* request, const gchar *uri) {
@@ -2619,6 +2669,9 @@ midori_web_view_notify_icon_uri_cb (WebKitWebView* web_view,
                                     GParamSpec*    pspec,
                                     MidoriView*    view)
 {
+#ifdef APP_LEVEL_TIME
+printf("signal(notify-icon) callback start time = %lld\n",g_get_real_time());
+#endif
 #ifdef HAVE_WEBKIT2
     const gchar* uri = webkit_web_view_get_uri (web_view);
     //ZRL 修复当uri为空时crash问题。
@@ -2632,6 +2685,9 @@ midori_web_view_notify_icon_uri_cb (WebKitWebView* web_view,
 #endif
     katze_assign (view->icon_uri, icon_uri);
     _midori_web_view_load_icon (view);
+#ifdef APP_LEVEL_TIME
+printf("signal(notify-icon) callback end time = %lld\n",g_get_real_time());
+#endif
 }
 
 static void
@@ -4557,6 +4613,9 @@ webkit_web_view_console_message_cb (GtkWidget*   web_view,
                                     const gchar* source_id,
                                     MidoriView*  view)
 {
+#ifdef APP_LEVEL_TIME
+printf("signal(console-message) callback start time = %lld\n",g_get_real_time());
+#endif
     if (!strncmp (message, "speed_dial-save", 13))
     {  
         MidoriBrowser* browser = midori_browser_get_for_widget (GTK_WIDGET (view));
@@ -4577,6 +4636,9 @@ webkit_web_view_console_message_cb (GtkWidget*   web_view,
     else {
         g_signal_emit_by_name (view, "console-message", message, line, source_id);
     }
+#ifdef APP_LEVEL_TIME
+printf("signal(console-message) callback end time = %lld\n",g_get_real_time());
+#endif
     return TRUE;
 }
 #endif
@@ -5950,6 +6012,9 @@ void
 midori_view_set_uri (MidoriView*  view,
                      const gchar* uri)
 {
+#ifdef APP_LEVEL_TIME
+printf("set_uri start time = %lld\n",g_get_real_time());
+#endif
     g_return_if_fail (MIDORI_IS_VIEW (view));
     g_return_if_fail (uri != NULL);
 
