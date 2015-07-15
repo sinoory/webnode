@@ -100,6 +100,8 @@ Build-Depends: debhelper (>= 8.0.0),
 	libuchardet0,
 	qtcreator, 
 	qt-sdk,
+	libssl-dev,
+	libcurl3,
 	libsoup-gnome2.4-dev (>=2.27.90)
 Standards-Version: 0.2.3
 Homepage: <insert the upstream URL, if relevant>
