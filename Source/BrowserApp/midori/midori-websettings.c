@@ -1488,13 +1488,15 @@ midori_settings_new_full (gchar*** extensions)
 
     if (!bFileExit)
     {
-       g_key_file_set_boolean (key_file, "extensions", "libread_mode.so", TRUE);
+   //    g_key_file_set_boolean (key_file, "extensions", "libread_mode.so", TRUE);
        g_key_file_set_boolean (key_file, "extensions", "libonline_bank.so", TRUE);
-       g_key_file_set_boolean (key_file, "extensions", "libweather_inquiry.so", TRUE);
-       g_key_file_set_boolean (key_file, "extensions", "libcar_illegal_query.so", TRUE);
+   //    g_key_file_set_boolean (key_file, "extensions", "libweather_inquiry.so", TRUE);
+   //    g_key_file_set_boolean (key_file, "extensions", "libcar_illegal_query.so", TRUE);
        g_key_file_set_boolean (key_file, "extensions", "libexpress_query.so", TRUE);
        g_key_file_set_boolean (key_file, "extensions", "libyoudao_translation.so", TRUE);
-       g_key_file_set_boolean (key_file, "extensions", "libnight_mode.so", TRUE);     
+       g_key_file_set_boolean (key_file, "extensions", "libweibo.so", TRUE);
+       g_key_file_set_boolean (key_file, "extensions", "libgupiao.so", TRUE);
+   //    g_key_file_set_boolean (key_file, "extensions", "libnight_mode.so", TRUE);     
     }
     if (extensions != NULL)
         *extensions = g_key_file_get_keys (key_file, "extensions", NULL, NULL);
