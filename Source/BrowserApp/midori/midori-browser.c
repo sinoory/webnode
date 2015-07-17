@@ -329,7 +329,6 @@ midori_browser_update_secondary_icon (MidoriBrowser* browser,
             MIDORI_LOCATION_ACTION (action), NULL);
         return;
     }
-
     if (midori_bookmarks_db_exist_by_uri(browser->bookmarks, midori_tab_get_uri(MIDORI_TAB (view))))
     {
         midori_location_action_set_secondary_icon_tooltip (
@@ -405,7 +404,7 @@ _midori_browser_update_interface (MidoriBrowser* browser,
 //#if ENABLE_ADDSPEEDDIAL
 //    _action_set_sensitive (browser, "AddSpeedDial", !midori_view_is_blank (view));
 //#endif
-    _action_set_sensitive (browser, "BookmarkAdd", !midori_view_is_blank (view));
+    //_action_set_sensitive (browser, "BookmarkAdd", !midori_view_is_blank (view));
 //#if ENABLE_MAILTO
 //    _action_set_sensitive (browser, "MailTo", !midori_view_is_blank (view));
 //#endif
@@ -1389,7 +1388,7 @@ midori_browser_edit_bookmark_dialog_new (MidoriBrowser* browser,
         gtk_entry_set_activates_default (GTK_ENTRY (entry_uri), TRUE);
 	gchar *uri = katze_item_get_uri (bookmark);
 	//added by wangyl 2015.7.9
-	if(strlen(uri) == 0)gtk_entry_set_text (GTK_ENTRY (entry_uri), "about:blank");
+	if(strlen(uri) == 0)gtk_entry_set_text (GTK_ENTRY (entry_uri), "about:dial");
 	else
         gtk_entry_set_text (GTK_ENTRY (entry_uri), katze_item_get_uri (bookmark));
         gtk_box_pack_start (GTK_BOX (vbox), entry_uri, FALSE, FALSE, 0);
@@ -4841,6 +4840,9 @@ _action_location_secondary_icon_released (GtkAction*     action,
     KatzeItem* bookmark = (KatzeItem*)katze_array_new (KATZE_TYPE_ARRAY);
     katze_item_set_name (bookmark,
         midori_view_get_display_title (MIDORI_VIEW (view)));
+	if(strlen(midori_view_get_display_uri (MIDORI_VIEW (view))) == 0)
+		katze_item_set_uri (bookmark,"about:dial");
+	else
     katze_item_set_uri (bookmark, 
         midori_view_get_display_uri (MIDORI_VIEW (view)));
     katze_item_set_meta_integer (bookmark, "toolbar", TRUE);
