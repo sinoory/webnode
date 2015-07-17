@@ -5269,9 +5269,13 @@ _action_bookmark_add_activate (GtkAction*     action,
         midori_browser_edit_bookmark_dialog_new (browser, NULL, TRUE, TRUE, proxy);
     else
     {
-        midori_browser_edit_bookmark_dialog_new (browser, NULL, TRUE, FALSE, proxy);
+	//modified by wangyl 2015.7.17 to solve a bug
+        gboolean result = midori_browser_edit_bookmark_dialog_new (browser, NULL, TRUE, FALSE, proxy);
+	if (result == true){
+	GtkAction* action1 = _action_by_name (browser, "Location");
         midori_location_action_set_secondary_icon_tooltip (
-                MIDORI_LOCATION_ACTION (action), STOCK_BOOKMARKED, _("Bookmark already exist"));  //add by zgh 1224
+                MIDORI_LOCATION_ACTION (action1), STOCK_BOOKMARKED, _("Bookmark already exist"));
+	}
     }
 }
 
