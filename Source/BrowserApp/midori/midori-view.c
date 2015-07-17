@@ -1227,18 +1227,26 @@ static void _get_website_record_info(MidoriView*        view)
                 if(strncmp(tmp1,"<div>",5) ==0)
                 {
                    tmp1 = tmp1+5;
-                   tmp = strstr(tmp1,"<em>");
-                   char * tmp2 = (char *)malloc(strlen(tmp1)-strlen(tmp)+1);
-                   strncpy(tmp2,tmp1,strlen(tmp1)-strlen(tmp));
-                   tmp2[strlen(tmp1)-strlen(tmp)]= '\0';
-                   tmp1 = tmp + 4;
-                   tmp = strstr(tmp1,"</em>");
-                   view->website_record_array[4] = (char *)malloc(strlen(tmp1)-strlen(tmp)+1+strlen(tmp2));
-                   strcpy(view->website_record_array[4],tmp2);
-                   strncat(view->website_record_array[4],tmp1,strlen(tmp1)-strlen(tmp));
-                   view->website_record_array[4][strlen(tmp1)-strlen(tmp)+strlen(tmp2)]= '\0';
-                   free(tmp2);
-                   tmp1 = tmp+82;
+                   if(strncmp(tmp1,"www.<em>",8)==0)
+                   {
+                      //12306.cn
+                      tmp1 = tmp1 + 8;
+                      tmp = strstr(tmp1,"</em>");
+                      view->website_record_array[4] = (char *)malloc(strlen(tmp1)-strlen(tmp)+1+4);
+                      strcpy(view->website_record_array[4],"www.");
+                      strncat(view->website_record_array[4],tmp1,strlen(tmp1)-strlen(tmp));
+                      view->website_record_array[4][strlen(tmp1)-strlen(tmp)+4]= '\0';
+                      tmp1 = tmp+82;
+                   }
+                   else if (strstr(tmp1,"</div>"))
+                   {
+                      //alipay.com
+                      tmp = strstr(tmp1,"</div>");
+                      view->website_record_array[4] = (char *)malloc(strlen(tmp1)-strlen(tmp)+1);
+                      strncpy(view->website_record_array[4],tmp1,strlen(tmp1)-strlen(tmp));
+                      view->website_record_array[4][strlen(tmp1)-strlen(tmp)]= '\0';
+                      tmp1 = tmp+77;
+                   }
                 }
                 //add by luyue 2015/5/5 start
                 //解决linuxidc.com的问题
@@ -4394,44 +4402,9 @@ midori_dialog_entry_render_title_cb (GtkCellLayout*   layout,
     g_free (title);
 }
 
-static void midori_dialog_entry_render_uri_cb(GtkCellLayout*   layout,
-                                              GtkCellRenderer* renderer,
-                                              GtkTreeModel*    model,
-                                              GtkTreeIter*     iter,
-                                              gpointer         data)
-{
-    MidoriLocationAction* action = data;
-    gchar* title;
-    gchar* uri_escaped;
-    gchar* desc;
-
-    gtk_tree_model_get (model, iter,
-        MIDORI_AUTOCOMPLETER_COLUMNS_MARKUP, &title,
-        MIDORI_AUTOCOMPLETER_COLUMNS_URI, &uri_escaped,
-        -1);
-   
-   if (strchr (title, '\n')) /* A search engine or action suggestion */
-   {
-         gchar** parts = g_strsplit (title, "\n", 2);
-         desc = g_strdup (parts[1]);
-         g_strfreev (parts);
-   }
-   else
-   {
-         gchar** keys = g_strsplit_set (key, " %", -1);
-         desc = midori_location_action_render_uri (keys, uri_escaped);
-         g_strfreev (keys);
-         g_free (uri_escaped);
-   }
-   g_object_set (renderer, "markup", desc,
-        "ellipsize-set", TRUE, "ellipsize", PANGO_ELLIPSIZE_END, NULL);
-   g_free (desc);
-   g_free (title);
-}
-
 static gboolean 
-midori_view_script_dialog_popup_cb_destroyed(GtkWidget      *widget,
-		      ScriptDialogAction      *action)
+midori_view_script_dialog_popup_cb_destroyed(GtkWidget          *widget,
+		                             ScriptDialogAction *action)
 {
    
    g_free(action);
