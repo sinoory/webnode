@@ -48,7 +48,7 @@ car_illegal_query_function_realization (GtkWidget* botton,MidoriBrowser* browser
    gtk_window_set_title(popup_window, _("Car illegal query"));
    //add by luyue 2015/3/16 start
 //   gtk_window_set_default_size(popup_window, 500, 350);
-   gtk_widget_set_size_request (popup_window, 850, 700);
+   gtk_widget_set_size_request (popup_window, 950, 700);
    gtk_window_set_resizable(GTK_WINDOW(popup_window), FALSE);
    //add end
    gtk_window_set_type_hint(popup_window,GDK_WINDOW_TYPE_HINT_DIALOG);

@@ -57,8 +57,8 @@ void webkitWebViewPopulateContextMenu(WebKitWebView*, API::Array* proposedMenu, 
 void webkitWebViewSubmitFormRequest(WebKitWebView*, WebKitFormSubmissionRequest*);
 void webkitWebViewHandleAuthenticationChallenge(WebKitWebView*, WebKit::AuthenticationChallengeProxy*);
 void webkitWebViewInsecureContentDetected(WebKitWebView*, WebKitInsecureContentEvent);
-void webkitWebViewCheckPhish(WebKitWebView*);//add by luyue 2015/6/8
-void webkitWebViewCheckPopupWindow(WebKitWebView*);//add by luyue 2015/6/11
+void webkitWebViewDocumentLoadFinish(WebKitWebView*);//add by luyue 2015/7/20
+void webkitWebViewFinishProgress(WebKitWebView*);//add by luyue 2015/6/11
 void webkitWebViewWebProcessCrashed(WebKitWebView*);
 
 // ZRL create a new function for console.log

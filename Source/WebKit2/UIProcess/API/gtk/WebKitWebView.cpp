@@ -122,9 +122,9 @@ enum {
 
     WEB_PROCESS_CRASHED,
 
-    CHECK_PHISH, //add by luyue 2015/6/8
+    DOCUMENT_LOAD_FINISH, //add by luyue 2015/6/8
 
-    CHECK_POPUPWINDOW,//add by luyue 2015/6/11
+    FINISH_PROGRESS,//add by luyue 2015/6/11
 
     AUTHENTICATE,
 
@@ -1675,8 +1675,8 @@ static void webkit_web_view_class_init(WebKitWebViewClass* webViewClass)
         G_TYPE_BOOLEAN, 0);
 
      //add by luyue 2015/6/8 start
-     signals[CHECK_PHISH] = g_signal_new(
-        "check-phish",
+     signals[DOCUMENT_LOAD_FINISH] = g_signal_new(
+        "document-load-finish",
         G_TYPE_FROM_CLASS(webViewClass),
         G_SIGNAL_RUN_LAST,
         G_STRUCT_OFFSET(WebKitWebViewClass, check_phish),
@@ -1686,8 +1686,8 @@ static void webkit_web_view_class_init(WebKitWebViewClass* webViewClass)
     //add end
 
      //add by luyue 2015/6/11 start
-     signals[CHECK_POPUPWINDOW] = g_signal_new(
-        "check-popupwindow",
+     signals[FINISH_PROGRESS] = g_signal_new(
+        "finish-progress",
         G_TYPE_FROM_CLASS(webViewClass),
         G_SIGNAL_RUN_LAST,
         G_STRUCT_OFFSET(WebKitWebViewClass, check_popupwindow),
@@ -3595,18 +3595,18 @@ cairo_surface_t* webkit_web_view_get_snapshot_finish(WebKitWebView* webView, GAs
 }
 
 //add by luyue 2015/6/8 start
-//发出钓鱼网站检测信号
-void webkitWebViewCheckPhish(WebKitWebView* webView)
+//dom树创建完了后，发出信号
+void webkitWebViewDocumentLoadFinish(WebKitWebView* webView)
 {
-   g_signal_emit(webView, signals[CHECK_PHISH], 0);
+   g_signal_emit(webView, signals[DOCUMENT_LOAD_FINISH], 0);
 }
 //add end
 
 //add by luyue 2015/6/8 start
-//发出恶意弹框检测信号
-void webkitWebViewCheckPopupWindow(WebKitWebView* webView)
+//程序加载完后，发出信号
+void webkitWebViewFinishProgress(WebKitWebView* webView)
 {
-   g_signal_emit(webView, signals[CHECK_POPUPWINDOW], 0);
+   g_signal_emit(webView, signals[FINISH_PROGRESS], 0);
 }
 //add end
 

@@ -5129,7 +5129,7 @@ midori_view_set_secure_level (MidoriView*        view,
          webkit_web_view_set_shellcode_state(WEBKIT_WEB_VIEW (view->web_view), false);//利用漏洞注入检测
          webkit_web_view_set_obfuscatecode_state(WEBKIT_WEB_VIEW (view->web_view), false);//混淆代码检测
          webkit_web_view_set_autodownload_state(WEBKIT_WEB_VIEW (view->web_view), false);//恶意自动下载检测
-         view->popupwindow_check_flag = true;//恶意弹窗拦截
+         view->phish_check_flag = true;//恶意弹窗拦截
          view->popupwindow_check_flag = true;//钓鱼网站检测
 
          view->danager_uri_flag = true;//高危网址检测
@@ -5148,7 +5148,7 @@ midori_view_set_secure_level (MidoriView*        view,
          webkit_web_view_set_shellcode_state(WEBKIT_WEB_VIEW (view->web_view), false);//关闭
          webkit_web_view_set_obfuscatecode_state(WEBKIT_WEB_VIEW (view->web_view), true);//开启
          webkit_web_view_set_autodownload_state(WEBKIT_WEB_VIEW (view->web_view), false);//关闭
-         view->popupwindow_check_flag = false;//开启
+         view->phish_check_flag = false;//开启
          view->popupwindow_check_flag = false;//开启
 
          view->danager_uri_flag = true;//关闭
@@ -5167,7 +5167,7 @@ midori_view_set_secure_level (MidoriView*        view,
          webkit_web_view_set_shellcode_state(WEBKIT_WEB_VIEW (view->web_view), true);
          webkit_web_view_set_obfuscatecode_state(WEBKIT_WEB_VIEW (view->web_view), true);
          webkit_web_view_set_autodownload_state(WEBKIT_WEB_VIEW (view->web_view), true);
-         view->popupwindow_check_flag = false;
+         view->phish_check_flag = false;
          view->popupwindow_check_flag = false;
          view->danager_uri_flag = false;
          break;
@@ -6075,10 +6075,10 @@ printf("set_uri start time = %lld\n",g_get_real_time());
             if(view->danager_uri_flag)
             {
                if(!view->phish_check_flag)
-                  g_signal_connect (view->web_view, "check-phish",
+                  g_signal_connect (view->web_view, "document-load-finish",
                                     (GCallback)midori_view_check_phish_cb,view);
                if(!view->popupwindow_check_flag)
-                  g_signal_connect (view->web_view, "check-popupwindow",
+                  g_signal_connect (view->web_view, "finish-progress",
                                     (GCallback)midori_view_check_popupwindow_cb,view);
                webkit_web_view_load_uri (WEBKIT_WEB_VIEW (view->web_view), new_uri);
                return;
@@ -6254,10 +6254,10 @@ midori_web_view1_website_check_cb(MidoriView*    view,
    if(!view->danager_uri_flag)
       g_signal_emit (view, signals[FORWARD_URL], 0,view->forward_uri);
    if(!view->phish_check_flag) 
-      g_signal_connect (view->web_view, "check-phish",
+      g_signal_connect (view->web_view, "document-load-finish",
                         (GCallback)midori_view_check_phish_cb,view);
    if(!view->popupwindow_check_flag)
-      g_signal_connect (view->web_view, "check-popupwindow",
+      g_signal_connect (view->web_view, "finish-progress",
                         (GCallback)midori_view_check_popupwindow_cb,view);
    webkit_web_view_load_uri (WEBKIT_WEB_VIEW (view->web_view), view->load_uri);
 }
