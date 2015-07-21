@@ -1589,11 +1589,14 @@ printf("signal(navigation-decision) callback end time = %lld\n",g_get_real_time(
     {
         /* For security reasons, main content served as data: is limited to images
            http://lcamtuf.coredump.cx/switch/ */
-        #ifdef HAVE_WEBKIT2
-        webkit_policy_decision_ignore (decision);
-        #else
-        webkit_web_policy_decision_ignore (decision);
-        #endif
+        //midify by luyue 2015/7/21 start
+        //解决网页中内置的图片打不开的问题
+        //#ifdef HAVE_WEBKIT2
+        //webkit_policy_decision_ignore (decision);
+        //#else
+        //webkit_web_policy_decision_ignore (decision);
+        //#endif
+       //modify end
 #ifdef APP_LEVEL_TIME
 printf("signal(navigation-decision) callback end time = %lld\n",g_get_real_time());
 #endif
