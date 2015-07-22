@@ -3300,6 +3300,7 @@ midori_browser_subscribe_to_news_feed (MidoriBrowser* browser,
     }
 }
 
+#if 0 //add by lyb
 static void
 _action_add_news_feed_activate (GtkAction*     action,
                                 MidoriBrowser* browser)
@@ -3314,6 +3315,7 @@ _action_add_news_feed_activate (GtkAction*     action,
 
     midori_browser_subscribe_to_news_feed (browser, uri);
 }
+#endif
 
 static void
 _action_compact_add_activate (GtkAction*     action,
@@ -3374,6 +3376,7 @@ _action_window_close_activate (GtkAction*     action,
         gtk_widget_destroy (GTK_WIDGET (browser));
 }
 
+#if 0 //add by lyb
 static void
 _action_mail_to_activate (GtkAction*     action,
                           MidoriBrowser* browser)
@@ -3388,6 +3391,7 @@ _action_mail_to_activate (GtkAction*     action,
     g_free (title);
     g_free (uri);
 }
+#endif
 
 static void
 _action_print_activate (GtkAction*     action,
@@ -3450,6 +3454,7 @@ _action_edit_activate (GtkAction*     action,
     _action_set_sensitive (browser, "SelectAll", can_select_all);
 }
 
+#if 0 //add by lyb
 static void
 _action_undo_activate (GtkAction*     action,
                        MidoriBrowser* browser)
@@ -3475,6 +3480,7 @@ _action_redo_activate (GtkAction*     action,
         webkit_web_view_redo (WEBKIT_WEB_VIEW (widget));
 #endif
 }
+#endif
 
 static void
 _action_cut_activate (GtkAction*     action,
@@ -3576,6 +3582,7 @@ _action_find_activate (GtkAction*     action,
         midori_view_get_selected_text (MIDORI_VIEW (view)));
 }
 
+#if 0 //add by lyb
 static void
 _action_find_next_activate (GtkAction*     action,
                             MidoriBrowser* browser)
@@ -3589,6 +3596,7 @@ _action_find_previous_activate (GtkAction*     action,
 {
     midori_findbar_continue (MIDORI_FINDBAR (browser->find), FALSE);
 }
+#endif
 
 static void
 midori_browser_navigationbar_notify_style_cb (GObject*       object,
@@ -3615,6 +3623,8 @@ midori_browser_toolbar_item_button_press_event_cb (GtkWidget*      toolitem,
  *
  * Since: 0.1.8
  **/
+ 
+#if 0 //add by lyb
 const gchar**
 midori_browser_get_toolbar_actions (MidoriBrowser* browser)
 {
@@ -3637,6 +3647,7 @@ midori_browser_get_toolbar_actions (MidoriBrowser* browser)
 
     return actions;
 }
+#endif
 
 /**
  * midori_browser_get_settings:
@@ -4459,6 +4470,7 @@ _action_fullscreen_activate (GtkAction*     action,
     }
 }
 
+#if 0 //add by lyb
 static void
 _action_scroll_somewhere_activate (GtkAction*     action,
                                    MidoriBrowser* browser)
@@ -4478,6 +4490,7 @@ _action_scroll_somewhere_activate (GtkAction*     action,
         webkit_web_view_move_cursor (web_view, GTK_MOVEMENT_VISUAL_POSITIONS, 1);
 #endif
 }
+#endif
 
 static void
 _action_readable_activate (GtkAction*     action,
@@ -6760,6 +6773,7 @@ _action_tab_move_activate (GtkAction*     action,
 
     midori_notebook_move (MIDORI_NOTEBOOK (browser->notebook), MIDORI_TAB (widget), new_pos);
     g_signal_emit (browser, signals[MOVE_TAB], 0, browser->notebook, cur_pos, new_pos);
+    midori_notebook_set_index(MIDORI_NOTEBOOK (browser->notebook),new_pos);       //add by lyb
 }
 
 static void
@@ -6781,6 +6795,7 @@ _action_tab_next_activate (GtkAction*     action,
     midori_browser_set_current_page (browser, n + 1);
 }
 
+#if 0 //add by lyb
 static void
 _action_tab_current_activate (GtkAction*     action,
                               MidoriBrowser* browser)
@@ -6795,6 +6810,7 @@ _action_next_view_activate (GtkAction*     action,
 {
     gtk_widget_grab_focus (midori_browser_get_current_tab (browser));
 }
+#endif
 
 static void
 _action_tab_minimize_activate (GtkAction*     action,
@@ -6989,6 +7005,7 @@ _action_managehistorys_activate (GtkAction* action,
     sokoke_widget_set_visible (browser->panel, TRUE);
 }*/
 
+#if 0 //add by lyb
 static void
 _action_panel_activate (GtkToggleAction* action,
                         MidoriBrowser*   browser)
@@ -6997,6 +7014,7 @@ _action_panel_activate (GtkToggleAction* action,
     g_object_set (browser->settings, "show-panel", active, NULL);
     sokoke_widget_set_visible (browser->panel, active);
 }
+#endif
 
 static gboolean
 midori_browser_panel_timeout (GtkWidget* hpaned)
@@ -7315,9 +7333,11 @@ static const GtkActionEntry entries[] =
 //        N_("Add to Speed _dial"), "<Ctrl>h",
 //        NULL, G_CALLBACK (_action_add_speed_dial_activate) },
 //#endif
+#if 0 //add by lyb
     { "AddNewsFeed", NULL,
         N_("Subscribe to News _feed"), NULL,
         NULL, G_CALLBACK (_action_add_news_feed_activate) },
+#endif
     { "CompactAdd", GTK_STOCK_ADD,
         NULL, NULL,
         NULL, G_CALLBACK (_action_compact_add_activate) },
@@ -7332,20 +7352,24 @@ static const GtkActionEntry entries[] =
     { "Print", GTK_STOCK_PRINT,
         NULL, "<Ctrl>p",
         N_("Print the current page"), G_CALLBACK (_action_print_activate) },
+#if 0 //add by lyb        
     { "MailTo", NULL,
         N_("Send Page Link Via Email"), "<Ctrl>m",
         NULL, G_CALLBACK (_action_mail_to_activate) },
+#endif        
     { "Quit", GTK_STOCK_QUIT,
         N_("Close a_ll Windows"), "<Ctrl><Shift>q",
         NULL, G_CALLBACK (_action_quit_activate) },
 
     { "Edit", NULL, N_("_Edit"), NULL, NULL, G_CALLBACK (_action_edit_activate) },
+#if 0 //add by lyb    
     { "Undo", GTK_STOCK_UNDO,
         NULL, "<Ctrl>z",
         NULL, G_CALLBACK (_action_undo_activate) },
     { "Redo", GTK_STOCK_REDO,
         NULL, "<Ctrl><Shift>z",
         NULL, G_CALLBACK (_action_redo_activate) },
+#endif        
     { "Cut", GTK_STOCK_CUT,
         NULL, "<Ctrl>x",
         NULL, G_CALLBACK (_action_cut_activate) },
@@ -7360,16 +7384,18 @@ static const GtkActionEntry entries[] =
         NULL, G_CALLBACK (_action_delete_activate) },
     { "SelectAll", GTK_STOCK_SELECT_ALL,
         NULL, "<Ctrl>a",
-        NULL, G_CALLBACK (_action_select_all_activate) },
+        NULL, G_CALLBACK (_action_select_all_activate) },        
     { "Find", GTK_STOCK_FIND,
         N_("_Find…"), "<Ctrl>f",
         N_("Find a word or phrase in the page"), G_CALLBACK (_action_find_activate) },
+#if 0 //add by lyb
     { "FindNext", GTK_STOCK_GO_FORWARD,
         N_("Find _Next"), "<Ctrl>g",
         NULL, G_CALLBACK (_action_find_next_activate) },
     { "FindPrevious", GTK_STOCK_GO_BACK,
         N_("Find _Previous"), "<Ctrl><Shift>g",
         NULL, G_CALLBACK (_action_find_previous_activate) },
+#endif        
     { "Preferences", GTK_STOCK_PREFERENCES,
         NULL, "<Ctrl><Shift>n",
         N_("Configure the application preferences"), G_CALLBACK (_action_preferences_activate) },
@@ -7410,6 +7436,7 @@ static const GtkActionEntry entries[] =
     { "Fullscreen", GTK_STOCK_FULLSCREEN,
         NULL, "F11",
         N_("Toggle fullscreen view"), G_CALLBACK (_action_fullscreen_activate) },
+#if 0 //add by lyb        
     { "ScrollLeft", NULL,
         N_("Scroll _Left"), "h",
         NULL, G_CALLBACK (_action_scroll_somewhere_activate) },
@@ -7422,6 +7449,7 @@ static const GtkActionEntry entries[] =
     { "ScrollRight", NULL,
         N_("Scroll _Right"), "l",
         NULL, G_CALLBACK (_action_scroll_somewhere_activate) },
+#endif        
     { "Readable", NULL,
        N_("_Readable"), "<Ctrl><Alt>R",
         NULL, G_CALLBACK (_action_readable_activate) },
@@ -7517,7 +7545,7 @@ static const GtkActionEntry entries[] =
         N_("_Inspect Page"), "<Ctrl><Shift>i",
         NULL, G_CALLBACK (_action_inspect_page_activate) },
     { "PageInfo", NULL, //add by zgh 20141225
-        N_("Page _Info"), "<Shift>p",
+        N_("Page _Info"), "<Ctrl>i",       //<Shift>p change into  <Ctrl>i  by lyb
         NULL, G_CALLBACK (_action_pageinfo_activate) },
 #ifdef BOOKMARK_SYNC
     { "Bookmarks_Sync", NULL, 
@@ -7538,12 +7566,14 @@ static const GtkActionEntry entries[] =
        NULL, G_CALLBACK (_action_tab_move_activate) },
     { "TabMoveLast", NULL, N_("Move Tab to _last position"), NULL,
        NULL, G_CALLBACK (_action_tab_move_activate) },
+#if 0 //add by lyb       
     { "TabCurrent", NULL,
         N_("Focus _Current Tab"), "<Ctrl><Alt>Home",
         NULL, G_CALLBACK (_action_tab_current_activate) },
     { "NextView", NULL,
         N_("Focus _Next view"), "F6",
         NULL, G_CALLBACK (_action_next_view_activate) },
+#endif        
     { "TabMinimize", NULL,
         N_("Only show the Icon of the _Current Tab"), "",
         NULL, G_CALLBACK (_action_tab_minimize_activate) },
@@ -7583,10 +7613,12 @@ static const GtkToggleActionEntry toggle_entries[] =
         N_("_Navigationbar"), "",
         NULL, G_CALLBACK (_action_navigationbar_activate),
         FALSE },
+#if 0 //add by lyb        
     { "Panel", GTK_STOCK_INDENT,
         N_("Side_panel"), "F9",
         N_("Sidepanel"), G_CALLBACK (_action_panel_activate),
         FALSE },
+#endif        
     { "Bookmarkbar", NULL,
         N_("_Bookmarkbar"), "",
         NULL, G_CALLBACK (_action_bookmarkbar_activate),
@@ -7976,23 +8008,32 @@ static const gchar* ui_markup =
             "<menuitem action='TabMoveBackward'/>"
             "<menuitem action='TabMoveForward'/>"
             "<menuitem action='TabMoveLast'/>"
-            "<menuitem action='ScrollLeft'/>"
-            "<menuitem action='ScrollDown'/>"
-            "<menuitem action='ScrollUp'/>"
-            "<menuitem action='ScrollRight'/>"
-            "<menuitem action='FindPrevious'/>"
+            //"<menuitem action='ScrollLeft'/>"         //add by lyb
+            //"<menuitem action='ScrollDown'/>"
+            //"<menuitem action='ScrollUp'/>"
+            //"<menuitem action='ScrollRight'/>"
+            //"<menuitem action='FindPrevious'/>"       //end
             "<menuitem action='BookmarkAdd'/>"
             "<menuitem action='BookmarkFolderAdd'/>"
 // ZRL 暂时屏蔽搜索框功能
 #if ENABLE_SEARCH_ACTION 
             "<menuitem action='ManageSearchEngines'/>"
 #endif
+            //add by lyb start
+            "<menuitem action='TabClose'/>"
+            "<menuitem action='WindowClose'/>"
+            "<menuitem action='Stop'/>"
+            "<menuitem action='Back'/>"
+            "<menuitem action='Forward'/>"
+            "<menuitem action='Reload'/>"
+            "<menuitem action='Homepage'/>"
+            //end
             "<menuitem action='ClearPrivateData'/>"
             "<menuitem action='TabPrevious'/>"
             "<menuitem action='DownloadDialog'/>"
             "<menuitem action='TabNext'/>"
-            "<menuitem action='TabCurrent'/>"
-            "<menuitem action='NextView'/>"
+            //"<menuitem action='TabCurrent'/>"     //lyb
+            //"<menuitem action='NextView'/>"       //lyb
             "<menuitem action='TabMinimize'/>"
             "<menuitem action='TabDuplicate'/>"
             "<menuitem action='TabCloseOther'/>"
