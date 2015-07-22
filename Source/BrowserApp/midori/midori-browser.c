@@ -9569,7 +9569,7 @@ midori_bookmarkbar_populate_idle (MidoriBrowser* browser)
                         gtk_separator_tool_item_new (), -1);
 
     array = midori_bookmarks_db_query_recursive (browser->bookmarks,
-        "id, parentid, title, uri, desc, app, toolbar, pos_panel, pos_bar", "toolbar = 1", NULL, FALSE);
+        "id, parentid, title, uri, desc, app, toolbar, pos_panel, pos_bar", "1 = 1", NULL, FALSE);
     if (!array)
     {
         _action_set_sensitive (browser, "BookmarkAdd", FALSE);

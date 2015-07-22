@@ -347,7 +347,7 @@ _midori_bookmarks_db_clear (KatzeArray* array)
      KatzeItem* item;
      int n=0,i=0;
      KatzeArray* array1 = midori_bookmarks_db_query_recursive (MIDORI_BOOKMARKS_DB(array),
-      "id, parentid, title, uri, desc, app, toolbar, pos_panel, pos_bar", "toolbar = 1", NULL, FALSE);
+      "id, parentid, title, uri, desc, app, toolbar, pos_panel, pos_bar", "1 = 1", NULL, FALSE);
      KATZE_ARRAY_FOREACH_ITEM (item, array1)n++;
      for(;i<n;i++){
        gpointer   item1 = katze_array_get_nth_item(array1,0);
