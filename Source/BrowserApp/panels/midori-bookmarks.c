@@ -37,6 +37,7 @@ struct _MidoriBookmarks
     GtkWidget* toolbar;
     GtkWidget* edit;
     GtkWidget* delete;
+    GtkWidget* clear;
     GtkWidget* treeview;
     MidoriApp* app;
     MidoriBookmarksDb* bookmarks_db;
@@ -745,6 +746,17 @@ midori_bookmarks_delete_clicked_cb (GtkWidget*       toolitem,
     }
 }
 
+//add by lyb 
+static void
+midori_bookmarks_clear_clicked_cb (GtkWidget*       toolitem,
+                                    MidoriBookmarks* bookmarks)
+{
+    MidoriBrowser* browser;
+    
+    browser = midori_browser_get_for_widget (GTK_WIDGET (bookmarks));
+    midori_browser_clear_bookmarks(browser);
+}
+
 static GtkWidget*
 midori_bookmarks_get_toolbar (MidoriViewable* viewable)
 {
@@ -757,7 +769,7 @@ midori_bookmarks_get_toolbar (MidoriViewable* viewable)
 
         toolbar = gtk_toolbar_new ();
         bookmarks->toolbar = toolbar;
-        toolitem = gtk_tool_button_new_from_stock (STOCK_BOOKMARK_ADD);
+        /*toolitem = gtk_tool_button_new_from_stock (STOCK_BOOKMARK_ADD);           //hide the add button add by lyb 
         gtk_widget_set_name (GTK_WIDGET (toolitem), "BookmarkAdd");
         gtk_widget_set_tooltip_text (GTK_WIDGET (toolitem),
                                      _("Add a new bookmark"));
@@ -765,7 +777,7 @@ midori_bookmarks_get_toolbar (MidoriViewable* viewable)
         g_signal_connect (toolitem, "clicked",
             G_CALLBACK (midori_bookmarks_add_clicked_cb), bookmarks);
         gtk_toolbar_insert (GTK_TOOLBAR (toolbar), toolitem, -1);
-        gtk_widget_show (GTK_WIDGET (toolitem));
+        gtk_widget_show (GTK_WIDGET (toolitem));*/
         toolitem = gtk_tool_button_new_from_stock (GTK_STOCK_EDIT);
         gtk_widget_set_tooltip_text (GTK_WIDGET (toolitem),
                                      _("Edit the selected bookmark"));
@@ -784,6 +796,17 @@ midori_bookmarks_get_toolbar (MidoriViewable* viewable)
         gtk_tool_item_set_is_important (toolitem, TRUE);//20141217 zlf add
         gtk_widget_show (GTK_WIDGET (toolitem));
         bookmarks->delete = GTK_WIDGET (toolitem);
+
+        toolitem = gtk_tool_button_new_from_stock (GTK_STOCK_CLEAR);            //add clear button by lyb 20150723
+        gtk_widget_set_tooltip_text (GTK_WIDGET (toolitem),
+                                     _("Clear the entire bookmarks"));
+        g_signal_connect (toolitem, "clicked",
+            G_CALLBACK (midori_bookmarks_clear_clicked_cb), bookmarks);
+        gtk_toolbar_insert (GTK_TOOLBAR (toolbar), toolitem, -1);
+        gtk_tool_item_set_is_important (toolitem, TRUE);//20141217 zlf add
+        gtk_widget_show (GTK_WIDGET (toolitem));
+        bookmarks->clear = GTK_WIDGET (toolitem);
+        
         midori_bookmarks_toolbar_update (bookmarks);
         midori_bookmarks_statusbar_update (bookmarks);
         toolitem = gtk_separator_tool_item_new ();
