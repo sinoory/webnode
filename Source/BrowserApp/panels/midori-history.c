@@ -18,7 +18,7 @@
 #define COMPLETION_DELAY 200
 
 void
-midori_browser_edit_bookmark_dialog_new (MidoriBrowser* browser,
+midori_browser_edit_bookmark_from_history_dialog_new (MidoriBrowser* browser,
                                          KatzeItem*     bookmark,
                                          gboolean       new_bookmark,
                                          gboolean       is_folder,
@@ -147,6 +147,7 @@ midori_history_toolbar_update (MidoriHistory *history)
     selected = katze_tree_view_get_selected_iter (
         GTK_TREE_VIEW (history->treeview), NULL, NULL);
     gtk_widget_set_sensitive (GTK_WIDGET (history->delete), selected);
+    gtk_widget_set_sensitive (GTK_WIDGET (history->bookmark), selected);
 }
 
 static void
@@ -315,25 +316,24 @@ static void
 midori_history_bookmark_add_cb (GtkWidget*     menuitem,
                                 MidoriHistory* history)
 {
-    GtkTreeModel* model;
+    GtkTreeModel* model;                                                                              //add by lyb start
     GtkTreeIter iter;
-    KatzeItem* item = NULL;
-
-    GtkWidget* proxy = GTK_IS_TOOL_ITEM (menuitem) ? menuitem : NULL;
-    MidoriBrowser* browser = midori_browser_get_for_widget (GTK_WIDGET (history));
     if (katze_tree_view_get_selected_iter (GTK_TREE_VIEW (history->treeview),
                                            &model, &iter))
+    {
+        KatzeItem* item;
+        MidoriBrowser* browser;
+
         gtk_tree_model_get (model, &iter, 0, &item, -1);
 
-    if (KATZE_IS_ITEM (item) && katze_item_get_uri (item))
-    {
-        katze_item_set_kind(item, 0);//0: history item
-        midori_browser_edit_bookmark_dialog_new (browser, item, TRUE, FALSE, proxy);
-        katze_item_set_kind(item, -1);//-1: others
+        g_assert (!KATZE_ITEM_IS_SEPARATOR (item));                                 
+
+        browser = midori_browser_get_for_widget (history->treeview);
+        midori_browser_edit_bookmark_from_history_dialog_new (                                   
+            browser, item, TRUE, KATZE_ITEM_IS_FOLDER (item), NULL);        //end
+
         g_object_unref (item);
     }
-    else
-        midori_browser_edit_bookmark_dialog_new (browser, NULL, TRUE, FALSE, proxy);
 }
 
 static GtkWidget*
