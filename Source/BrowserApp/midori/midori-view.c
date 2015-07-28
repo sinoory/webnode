@@ -5991,9 +5991,36 @@ midori_view_set_uri (MidoriView*  view,
 #ifdef APP_LEVEL_TIME
 printf("set_uri start time = %lld\n",g_get_real_time());
 #endif
+
     g_return_if_fail (MIDORI_IS_VIEW (view));
     g_return_if_fail (uri != NULL);
 
+    //add by luyue 2015/7/28 start
+    gchar* platform;
+    gchar* architecture;
+    char *string;
+    const gchar* os = midori_web_settings_get_system_name (&architecture, &platform);
+    const int webcore_major = 537;
+    const int webcore_minor = 32;
+
+    if(strstr(uri,"ccb.com.cn"))
+    {
+       string = g_strdup_printf ("Mozilla/5.0 (%s %s %s) AppleWebKit/%d.%d "
+                                 "(KHTML, like Gecko) Chrome/18.0.1025.133 Safari/%d.%d " "CDOSBrowser/",
+                                 platform, os, architecture,webcore_major, webcore_minor, webcore_major, webcore_minor);
+       g_object_set(view->settings, "user-agent", string, NULL);
+    }
+    else
+    {
+       g_object_get(G_OBJECT(view->settings), "user-agent", &string, NULL);
+       if(strstr(string,"Chrome"))
+       {
+          string = g_strdup_printf ("Mozilla/5.0 (%s %s %s) AppleWebKit/%d.%d "
+            "(KHTML, like Gecko) Safari/%d.%d " "CDOSBrowser/",
+            platform, os, architecture,webcore_major, webcore_minor, webcore_major, webcore_minor);
+          g_object_set(view->settings, "user-agent", string, NULL);
+       }
+    }
     //add by luyue 2015/5/4 start
     //解决有些页面要求自动关闭的问题
     g_signal_connect (view->web_view, "close",

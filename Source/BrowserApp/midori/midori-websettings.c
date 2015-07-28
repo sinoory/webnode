@@ -1035,7 +1035,7 @@ midori_web_settings_set_property (GObject*      object,
         }
         break;
     case MIDORI_PROP_USER_AGENT:
-        if (web_settings->identify_as == MIDORI_IDENT_CUSTOM)
+        if(g_value_dup_string (value))
             katze_assign (web_settings->ident_string, g_value_dup_string (value));
         g_object_set (web_settings, WEB_SETTINGS_STRING ("user-agent"),
                                     web_settings->ident_string, NULL);
