@@ -195,6 +195,11 @@ TextResourceDecoder* DocumentWriter::createDecoderIfNeeded()
         if (m_encoding.isEmpty()) {
             if (canReferToParentFrameEncoding(m_frame, parentFrame))
                 m_decoder->setEncoding(parentFrame->document()->inputEncoding(), TextResourceDecoder::EncodingFromParentFrame);
+            //add by luyue 2015/7/30 start
+            //当编码无法识别时，进行自动检测
+            else
+                m_decoder->setAutoDetect(true);
+            //add end
         } else {
             m_decoder->setEncoding(m_encoding,
                 m_encodingWasChosenByUser ? TextResourceDecoder::UserChosenEncoding : TextResourceDecoder::EncodingFromHTTPHeader);

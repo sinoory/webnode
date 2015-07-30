@@ -67,6 +67,7 @@ public:
    
     void useLenientXMLDecoding() { m_useLenientXMLDecoding = true; }
     bool sawError() const { return m_sawError; }
+    void setAutoDetect(bool autoDetectFlag) { m_autoDetectFlag = autoDetectFlag; } //add by luyue 2015/7/30
 
 private:
     WEBCORE_EXPORT TextResourceDecoder(const String& mimeType, const TextEncoding& defaultEncoding, bool usesEncodingDetector);
@@ -94,6 +95,7 @@ private:
     bool m_useLenientXMLDecoding; // Don't stop on XML decoding errors.
     bool m_sawError;
     bool m_usesEncodingDetector;
+    bool m_autoDetectFlag;  //add by luyue 2015/7/30
 
     std::unique_ptr<HTMLMetaCharsetParser> m_charsetParser;
 };
