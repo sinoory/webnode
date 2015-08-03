@@ -604,37 +604,36 @@ String TextResourceDecoder::decode(const char* data, size_t len)
         lengthOfBOM = checkForBOM(data, len);
 
     bool movedDataToBuffer = false;
-   //add by luyue 2015/7/30 start
-   //编码无法识别时，增加自动检测
-    if(m_autoDetectFlag)
+
+    if (m_contentType == CSS && !m_checkedForCSSCharset)
+       if (!checkForCSSCharset(data, len, movedDataToBuffer))
+          return emptyString();
+    if ((m_contentType == HTML || m_contentType == XML) && !m_checkedForHeadCharset) // HTML and XML
     {
-       TextEncoding detectedEncoding;
-       if (detectTextEncoding(data, len, m_hintEncoding, &detectedEncoding))
-          setEncoding(detectedEncoding, AutoDetectedEncoding);
+       //add by luyue 2015/7/30 start
+       //编码无法识别时，增加自动检测 
+       if(m_autoDetectFlag && (!checkForHeadCharset(data, len, movedDataToBuffer)))
+       {
+          TextEncoding detectedEncoding;
+          if (detectTextEncoding(data, len, m_hintEncoding, &detectedEncoding))
+             setEncoding(detectedEncoding, AutoDetectedEncoding);
+       }
+       //add end
+       else if (!checkForHeadCharset(data, len, movedDataToBuffer))
+          return emptyString();
     }
-    else
-    {
-       if (m_contentType == CSS && !m_checkedForCSSCharset)
-           if (!checkForCSSCharset(data, len, movedDataToBuffer))
-               return emptyString();
-       if ((m_contentType == HTML || m_contentType == XML) && !m_checkedForHeadCharset) // HTML and XML
-           if (!checkForHeadCharset(data, len, movedDataToBuffer))
-               return emptyString();
-       // FIXME: It is wrong to change the encoding downstream after we have already done some decoding.
-       if (shouldAutoDetect()) {
-           if (m_encoding.isJapanese())
-               detectJapaneseEncoding(data, len); // FIXME: We should use detectTextEncoding() for all languages.
-           else {
-               TextEncoding detectedEncoding;
-               if (detectTextEncoding(data, len, m_hintEncoding, &detectedEncoding))
-                   setEncoding(detectedEncoding, AutoDetectedEncoding);
-           }
+    // FIXME: It is wrong to change the encoding downstream after we have already done some decoding.
+    if (shouldAutoDetect()) {
+       if (m_encoding.isJapanese())
+          detectJapaneseEncoding(data, len); // FIXME: We should use detectTextEncoding() for all languages.
+       else {
+          TextEncoding detectedEncoding;
+          if (detectTextEncoding(data, len, m_hintEncoding, &detectedEncoding))
+             setEncoding(detectedEncoding, AutoDetectedEncoding);
        }
     }
-    //add end 
 
     ASSERT(m_encoding.isValid());
-
     if (!m_codec)
         m_codec = newTextCodec(m_encoding);
 
