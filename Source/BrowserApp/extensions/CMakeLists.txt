@@ -54,6 +54,7 @@ if (HALF_BRO_INCOM_WEBKIT2)
          "formhistory"
          "external-download-manager.vala"
          "nojs"
+	 "adblock"
          "nsplugin-manager.vala"
          )
 endif ()
