@@ -576,7 +576,7 @@ midori_extension_load_from_folder (MidoriApp* app,
 #ifdef APP_LEVEL_TIME
 printf("语句(g_assert (midori_extension_activate_gracefully (adblock))) start time = %lld\n",g_get_real_time());
 #endif
-        g_assert (midori_extension_activate_gracefully (app, extension_path, "libadblock." G_MODULE_SUFFIX, activate));
+//        g_assert (midori_extension_activate_gracefully (app, extension_path, "libadblock." G_MODULE_SUFFIX, activate));
 #ifdef APP_LEVEL_TIME
 printf("语句(g_assert (midori_extension_activate_gracefully (adblock))) end time = %lld\n",g_get_real_time());
 #endif
@@ -709,7 +709,7 @@ midori_extension_add_to_list (MidoriApp*       app,
 //     && strcmp (filename, "libtabby." G_MODULE_SUFFIX)
 //     && strcmp (filename, "libopen-with." G_MODULE_SUFFIX)
 //     && strcmp (filename, "libflummi." G_MODULE_SUFFIX)
-     && strcmp (filename, "libadblock." G_MODULE_SUFFIX))
+     /*&& strcmp (filename, "libadblock." G_MODULE_SUFFIX)*/)
         katze_array_add_item (extensions, extension);
 
     g_object_unref (extensions);
