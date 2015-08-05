@@ -291,6 +291,13 @@ katze_item_get_name (KatzeItem* item)
 {
     g_return_val_if_fail (KATZE_IS_ITEM (item), NULL);
 
+    if (item->name != NULL && strlen(item->name)>128)   //make sure name not too long
+        {
+            gchar *p;
+            p = item->name + 64;
+            *p = 0;
+        }
+
     return item->name;
 }
 

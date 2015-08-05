@@ -711,6 +711,7 @@ katze_array_action_create_tool_item_for (KatzeArrayAction* array_action,
 
     const gchar* title;
     const gchar* uri;
+    unsigned char tmp_title[30]={0};
 //    const gchar* desc;
     gchar desc[2048 + 1] = {0};
 
@@ -740,14 +741,14 @@ katze_array_action_create_tool_item_for (KatzeArrayAction* array_action,
         toolitem = gtk_toggle_tool_button_new ();
     else
     {
-#if zghtest
-        toolitem = gtk_tool_button_new (NULL, "");
-        gtk_widget_set_size_request(GTK_WIDGET(toolitem), 30, 30);  
-#else
         toolitem = gtk_tool_item_new();
         button = gtk_button_new();
         gtk_button_set_relief((GtkButton *)button, GTK_RELIEF_NONE);
-        gtk_widget_set_size_request(button, 140, -1);  
+
+        if (strlen(title)>0 && strlen(title)<=27)       //button smaller when title short by lyb
+            gtk_widget_set_size_request(button, (strlen(title)*3+30), -1);
+        else
+            gtk_widget_set_size_request(button, 140, -1);  
         gtk_container_add(GTK_CONTAINER(toolitem), button);
         gtk_widget_show(button);
 
@@ -755,7 +756,6 @@ katze_array_action_create_tool_item_for (KatzeArrayAction* array_action,
         itembox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
         gtk_container_add(GTK_CONTAINER(button), itembox);
         gtk_widget_show(itembox);
-#endif
         }
 
     g_signal_connect (toolitem, "create-menu-proxy",
@@ -766,11 +766,37 @@ katze_array_action_create_tool_item_for (KatzeArrayAction* array_action,
         gtk_tool_button_set_icon_widget (GTK_TOOL_BUTTON (toolitem), image);
     else
         gtk_box_pack_start (GTK_BOX(itembox), image, FALSE, FALSE ,0);
-
-    label = gtk_label_new (title);
+/* folder longth control */
+    if (KATZE_ITEM_IS_FOLDER (item))
+        {
+            int i = 0, i_longth = 0;
+            unsigned char *p;
+            p = title;
+            while (*p !=0)
+                {
+                    if (i>=18) break;
+                    if (*p >= 0xA1)
+                        {
+                            i_longth = i_longth + 3;
+                            i = i+2;
+                            p+=3;
+                        }
+                    else 
+                        {
+                            i_longth = i_longth + 1;
+                            i = i+1;
+                            p+=1;
+                        }
+                }
+            strncpy (tmp_title,title,i_longth);
+            label = gtk_label_new (tmp_title);
+        }
+    else
+        label = gtk_label_new (title);
     /* FIXME: Should text direction be respected here? */
     gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
     gtk_label_set_max_width_chars (GTK_LABEL (label), 25);
+    if (strlen(title)>27);
     gtk_label_set_ellipsize (GTK_LABEL (label), PANGO_ELLIPSIZE_END);
 //    gtk_label_set_text(GTK_LABEL(label), title);
     gtk_widget_show (label);
