@@ -993,7 +993,7 @@ midori_view_notify_statusbar_text_cb (GtkWidget*     view,
 
 //add by zgh 20141216
 static KatzeArray*
-midori_history_read_from_db (MidoriBrowser* browser)
+midori_browser_history_read_from_db(MidoriBrowser* browser)
 {
 
     sqlite3* db;
@@ -1388,7 +1388,7 @@ midori_browser_edit_bookmark_dialog_new (MidoriBrowser* browser,
         gtk_entry_set_activates_default (GTK_ENTRY (entry_uri), TRUE);
 	gchar *uri = katze_item_get_uri (bookmark);
 	//added by wangyl 2015.7.9
-	if(strlen(uri) == 0)gtk_entry_set_text (GTK_ENTRY (entry_uri), "about:dial");
+	if(g_str_has_prefix (uri, "file:"))gtk_entry_set_text (GTK_ENTRY (entry_uri), "about:dial");
 	else
         gtk_entry_set_text (GTK_ENTRY (entry_uri), katze_item_get_uri (bookmark));
         gtk_box_pack_start (GTK_BOX (vbox), entry_uri, FALSE, FALSE, 0);
@@ -1865,15 +1865,57 @@ midori_browser_save_uri (MidoriBrowser* browser,
 }
 
 static void
+midori_browser_speed_dial_refresh1_cb (MidoriSpeedDial* dial,
+                                      MidoriBrowser*   browser)
+{
+	MidoriView *view1;
+	GList   	  *browsers;
+	MidoriView *view = MIDORI_VIEW (midori_browser_get_current_tab (browser));
+	MidoriApp  *app = midori_app_get_default();	
+
+	browsers = midori_app_get_browsers(app);
+	for(; browsers; browsers=g_list_next(browsers))
+	{
+		GList* tabs = midori_browser_get_tabs (MIDORI_BROWSER(browsers->data));
+		for (; tabs != NULL; tabs = g_list_next (tabs))
+		{
+			view1 = MIDORI_VIEW(tabs->data);
+			if(view == view1)continue;
+			if ( !strncmp (midori_tab_get_uri (tabs->data), "file:",5)||!strcmp (midori_tab_get_uri (tabs->data), "about:dial"))
+		   		 midori_view_reload (tabs->data, FALSE);
+		}
+	    g_list_free (tabs);
+	}
+	g_list_free(browsers);
+}
+static void
 midori_browser_speed_dial_refresh_cb (MidoriSpeedDial* dial,
                                       MidoriBrowser*   browser)
 {
-    GList* tabs = midori_browser_get_tabs (browser);
-    for (; tabs != NULL; tabs = g_list_next (tabs))
-        if (!strcmp (midori_tab_get_uri (tabs->data), "about:dial"))
-            midori_view_reload (tabs->data, FALSE);
-    g_list_free (tabs);
+	gchar 		image_adr[1024]={0};
+	MidoriView	*view1;
+	GList   		*browsers;
+ 	g_sprintf(image_adr,"refresh('%s','%s','%s');",midori_speed_dial_get_imageid(dial),midori_speed_dial_get_imagename(dial),
+ 			midori_speed_dial_get_imagetitle(dial));
+	
+	 MidoriView*   view = MIDORI_VIEW (midori_browser_get_current_tab (browser));
+	 webkit_web_view_run_javascript(WEBKIT_WEB_VIEW (midori_view_get_web_view(view)),image_adr, NULL, NULL, NULL);
+	 MidoriApp* app = midori_app_get_default();	
+	browsers=midori_app_get_browsers(app);
+	for(; browsers; browsers=g_list_next(browsers))
+	{
+		GList* tabs = midori_browser_get_tabs (MIDORI_BROWSER(browsers->data));
+		for (; tabs != NULL; tabs = g_list_next (tabs)){
+			view1 = MIDORI_VIEW(tabs->data);
+			if(view == view1)continue;
+			if ( !strncmp (midori_tab_get_uri (tabs->data), "file:",5)||!strcmp (midori_tab_get_uri (tabs->data), "about:dial"))
+		   		 midori_view_reload (tabs->data, FALSE);
+		}
+		g_list_free (tabs);
+	}
+	g_list_free(browsers);
 }
+
 
 static void
 midori_browser_add_speed_dial (MidoriBrowser* browser, gchar* uri, gchar* title)
@@ -4047,7 +4089,7 @@ _action_historys_populate_folder (GtkAction*     action,
         return FALSE;
     
 //    midori_bookmarks_db_populate_folder (browser->bookmarks, folder);
-    array = midori_history_read_from_db(browser);
+    array = midori_browser_history_read_from_db(browser);
 
     /* Clear items from dummy array here */
     gtk_container_foreach (GTK_CONTAINER (menu),
@@ -9935,6 +9977,9 @@ printf("函数(_midori_browser_update_settings) end time = %lld\n",g_get_real_ti
         if (browser->dial != NULL)
             g_signal_connect (browser->dial, "refresh",
                 G_CALLBACK (midori_browser_speed_dial_refresh_cb), browser);
+	if (browser->dial != NULL)
+            g_signal_connect (browser->dial, "refresh1",
+                G_CALLBACK (midori_browser_speed_dial_refresh1_cb), browser);
         break;
     case PROP_SHOW_TABS:
         browser->show_tabs = g_value_get_boolean (value);

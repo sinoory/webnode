@@ -17,6 +17,9 @@ namespace About {
                 view.web_view.load_html_string (content, uri);
             #endif
         }
+	protected void load_uri (Midori.View view, string uri) {
+		 view.web_view.load_uri ( uri);
+	}
     }
 
     private class Widgets : Page {
@@ -233,7 +236,9 @@ namespace About {
             if (dial == null)
                 return;
             try {
-                this.load_html (view, dial.get_html (), uri);
+                //this.load_html (view, dial.get_html (), uri);
+		string filename = "file:/" + "/"  + Midori.Paths.get_res_filename ("speedial/"+ "speeddial-head.html");
+		this.load_uri (view,filename);
             } catch (Error error) {
                 this.load_html (view, error.message, uri);
             }

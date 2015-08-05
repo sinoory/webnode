@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>新标签页</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=3.0,minimum-scale=3.0, user-scalable=yes"/>
+
+    <style type="text/css">
+        html{ font-size: 16px; font-size: 62.5%; padding: 0; margin: 0;}
+        body{ width: 100%; height: 100%; padding: 0; margin: 0 auto; font-family: "微软雅黑";
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size:cover;
+            -webkit-background-origin:border-box; /* Safari */
+            background-origin:border-box;
+            font-size: 1.4rem;
+
+        }
+        ul{ width: auto; height: auto; padding: 0; margin: 0;}
+        ul li{ list-style: none;}
+        input { font-family: "微软雅黑"; font-size: 1.6rem;}
+
+        .main{ width:100%; height: 100%;}
+        .clear {
+            clear: both;
+            float: none;
+            width: 100%;
+        }
+
+        /*顶部栏*/
+        .main-header{ width: 100%; height: 50px; line-height: 50px; background:rgba(100,100,100,0.6); position: fixed; top: 0;}
+        .header-weather{ width: auto; height: 100%; float: left; margin-left: 20px;}
+        .header-settings{ width: auto; height: 100%; float: right; margin-right: 20px; color: #FFFFFF;}
+        .header-settings ul li{ width: auto; padding: 0 10px; display:inline-block; cursor: pointer;}
+        .header-settings ul li:hover{ text-decoration:underline;}
+        /*搜索栏*/
+        .main-search{ width: 100%; height: 150px; margin-top: 50px;}
+        .search-logo{ display: none;}
+        .search-box{ width: 80%; height: 100%; line-height: 150px; margin: 0 auto; text-align: center;}
+        .search-box input{border: 1px solid #999; border-radius: 5px;}
+        .search-box input.search-keyword{ width:480px; height: 30px; line-height: 20px; padding: 5px; background-color: #FFF; }
+        .search-box input.btn-search{ width: 120px; height: 40px; line-height: 30px; text-align: center; cursor: pointer; background-color: #CCC;}
+
+        /*导航栏*/
+        .main-nav{ width: 100%; height: auto;}
+        .nav-box{ width: 80%; height: auto; margin: 0 auto; padding: 20px; border-radius: 5px; background: rgba(200,200,200,0.6);}
+        .nav-box-tab{ width: 100%; height: auto; margin: 0 auto; text-align: center;}
+        .nav-box-tab ul li{ width: 90px; height: 30px; line-height: 30px;  display: inline-block;  cursor: pointer; margin: 0;}
+        .nav-box-tab ul li.tab-select{border-bottom: 2px solid #00FF00;}
+        .nav-box-tab ul li.tab-edit{ width: 30px; float: right; margin-right: 10px; background: url(./oper.png) no-repeat 0 -60px;}
+
+
+        .nav-box-items{ width: 100%; height: auto; overflow: auto; margin-top: 20px; text-align: center;}
+        .nav-box-items ul li{ width: 23%; height:150px; float: left; display: inline-block; margin: 10px 1%;position: relative; border-radius:5px; overflow: hidden; background: rgba(90,90,90,0.3);}
+        .nav-box-items ul li:hover{box-shadow: 0px 0px 5px #FFF;}
+        /*固定和取消固定*/
+        .nav-box-items .nav-box-item-pin{ width: 20px; height:20px; background-color: blue; position: absolute; left: 5px ; top: 5px; cursor: pointer; display: none;}
+        .nav-box-items ul li:hover .nav-box-item-pin{ display: block; background: url(./oper.png) no-repeat 0 0;}
+        .nav-box-items ul li .nav-box-item-pin:hover { display: block; background: url(./oper.png) no-repeat -30px 0;}
+        .nav-box-items ul li:hover .nav-box-item-pinned { display: block; background: url(./oper.png) no-repeat -60px 0;}
+
+        /*移出操作*/
+        .nav-box-items .nav-box-item-remove{ width: 20px; height:20px; background-color: blue; position: absolute; right: 5px ; top: 5px; cursor: pointer;  display: none;}
+        .nav-box-items ul li:hover .nav-box-item-remove{ display: block; background: url(./oper.png) no-repeat -90px 0;}
+        .nav-box-items ul li .nav-box-item-remove:hover{ display: block; background: url(./oper.png) no-repeat -120px 0;}
+
+        /*标题和图片*/
+        .nav-box-items .nav-box-item-title{ width: 100%; height:30px; line-height: 30px; background-color: blue; position: absolute; left:0 ; bottom: 0; text-align: left; background:rgba(50,50,50,0.8);}
+        .nav-box-items .nav-box-item-title a{ margin-left: 10px; color: #FFF;}
+        .nav-box-items .nav-box-item-photo{ width: 100%; height: 100%; overflow: hidden;}
+        .nav-box-items .nav-box-item-photo img{ width:auto; height: 100%; overflow: hidden;}
+
+        /*添加新导航弹窗*/
+        .popup-box{ width: 100%; height: 100%; position: fixed; top: 0; left: 0; background:rgba(50,50,50,0.8);  z-index: 99; display: none;}
+        .popup-item{ width:720px; height:360px; padding: 20px; margin: 0 auto; margin-top: 80px; background-color: #FFF; border-radius: 10px; box-shadow: 0px 0px 5px #FFF; position: relative;}
+        .popup-header-close{width: 36px; height: 36px; position: absolute; right: -18px; top: -18px; border-radius: 18px; cursor: pointer;background: url(./btn-close.png) no-repeat -80px 0;}
+
+        .popup-item-add{ width: 55%; height: auto; float: left; padding-right: 2%; }
+        .popup-item-add-form{ width: 100%; height:auto; overflow: hidden;}
+        .input-text-add{ width: 90%; height: 20px; line-height: 20px; padding: 5px; border: 1px solid #999;}
+        .btn-sub-add{ width: 72px; height: 30px; line-height: 20px; text-align: center; border-radius: 5px; background-color: #19b2ff; border: none; color: #fff;}
+        .btn-sub-add:hover{ background-color: #13c0ff;}
+        .btn-reset-add{ width: 72px; height: 30px; line-height: 20px; text-align: center; border-radius: 5px; background-color: #999; border: none; color: #fff; margin-left: 20px;}
+        .btn-reset-add:hover{ background-color: #ccc;}
+
+        .popup-item-add-recommend{ width: 100%; height: auto; overflow: hidden; text-align: center;}
+        .popup-item-add-recommend ul li{ width: 60px; height:auto; display: inline-block; margin-left: 10px; margin-top: 10px; text-align: center; overflow: hidden; cursor: pointer;}
+        .popup-item-add-recommend ul li img{ width: auto; height: 60px;}
+        .popup-item-add-recommend ul li.recommend-select{ background-color: #ccc;}
+
+
+        .popup-history-list{ width: 40%; height: 100%; float:left; padding-left: 2%; border-left: 1px solid #999999 }
+        .popup-history-list ul li{ width: 100%; height: 30px; line-height: 30px; overflow: hidden;}
+        .popup-history-list ul li i{ display: inline-block; float: left; width:25px; height: 25px; margin-top: 3px; overflow: hidden;}
+        .popup-history-list ul li span{line-height: 20px;}
+        .popup-history-list ul li img{ width:auto; height:auto; border: none; margin-top:0px;}
+        .popup-history-list .popup-history-list-page{ float: right; margin-right: 10px;}
+        .popup-history-list .popup-history-list-page-up{padding: 0 10px; float: left; cursor: pointer;}
+        .popup-history-list .popup-history-list-page-down{ padding:0 10px; float: left; margin-left: 20px; cursor: pointer;}
+        /*更换皮肤*/
+        .popup-skin{ width: 100%; height:0; position: absolute; top: 0; left:0; z-index: 199; background-color: #FFF;}
+        .skin-box{ width: 80%; height: 100%; padding: 0 20px; margin: 0 auto; display: none;}
+        .skin-box-header{ width: 100%; height:50px; border-bottom: 1px solid #BBB;}
+        .skin-box-header ul li{ width: 80px; height:100%; float: left; position: relative; text-align: center; cursor: pointer;}
+        .skin-box-header ul li span{ position: relative; top: 10px; line-height: 30px;}
+        .skin-box-header .skin-box-header-flag { position: absolute;  bottom:0px; left: 30px; display: none;}
+        .skin-box-header .skin-box-header-flag-show{ display: block;}
+        .skin-box-header .skin-box-header-flag-1{ border-width: 10px;
+            border-color: transparent transparent #999 transparent;
+            position: absolute; top: 0px;
+            border-style: dashed dashed solid dashed;
+            width: 0;
+            height: 0;
+            line-height: 0;
+            font-size: 0;
+            overflow: hidden;
+        }
+        .skin-box-header .skin-box-header-flag-2{ border-width:10px;
+            border-color: transparent transparent #FFF transparent;
+            position: absolute; top: 1px;
+            border-style: dashed dashed solid dashed;
+            width: 0;
+            height: 0;
+            line-height: 0;
+            font-size: 0;
+            overflow: hidden;
+        }
+        .skin-box-images{ width: 100%; height: auto; margin-top: 10px; overflow: hidden;}
+        .skin-box-images .skin-box-images-gallery{ width:auto; height: auto; margin: 0 auto; overflow: hidden; text-align: center;}
+        .skin-box-images .skin-box-images-gallery a{ float: left;}
+        /* line 32, ../sass/demo.scss */
+        .skin-box-images .skin-box-images-gallery a img {
+            margin: 0 auto;
+            width: auto;
+            height: 96px;
+            border: 2px solid #fff;
+            -webkit-transition: -webkit-transform .15s ease;
+            -moz-transition: -moz-transform .15s ease;
+            -o-transition: -o-transform .15s ease;
+            -ms-transition: -ms-transform .15s ease;
+            transition: transform .15s ease;
+        }
+        /* line 46, ../sass/demo.scss */
+        .skin-box-images .skin-box-images-gallery a:hover img {
+            -webkit-transform: scale(1.05);
+            -moz-transform: scale(1.05);
+            -o-transform: scale(1.05);
+            -ms-transform: scale(1.05);
+            transform: scale(1.05);
+            z-index: 300;
+        }
+        /* line 57, ../sass/demo.scss */
+        .skin-box-images .skin-box-images-gallery a.big img {
+            width:auto;
+            height: 96px;
+        }
+
+        /*底部栏*/
+        .main-footer{ width: 100%; height: 100px; margin-top:50px;}
+
+        @media only screen and (min-width:1900px){
+            .nav-box-items ul li{ height: 200px;}
+        }
+    </style>
+</head>
+<body>
+
+<div class="main">
+    <!--顶部工具栏-->
+    <div class="main-header">
+        <div class="header-weather">
+            <iframe allowtransparency="true" frameborder="0" width="180" height="36" scrolling="no" src="http://tianqi.2345.com/plugin/widget/index.htm?s=3&z=2&t=1&v=0&d=2&bd=0&k=&f=ffffff&q=0&e=1&a=0&c=58362&w=180&h=36&align=left"></iframe>
+        </div>
+        <div class="header-settings"><ul>
+            <li id="header-btn-skin"><span>皮肤</span></li>
+        </ul></div>
+    </div>
+    <!--搜索栏-->
+    <div class="main-search">
+        <div class="search-logo"></div>
+        <div class="search-box">
+            <form name="form-search" id="form-search" action="http://www.baidu.com/baidu" target="_blank" method="get">
+                <input type="text" class="search-keyword" id="search-keyword" name="word" value="" placeholder="关键词">
+                <input type="submit" id="btn-search" class="btn-search" value="搜的一下">
+            </form>
+        </div>
+    </div>
+    <!--导航栏-->
+    <div class="main-nav">
+        <div class="nav-box">
+            <div class="nav-box-tab"><ul>
+                <li class="tab-select"><span>推荐导航</span></li>
+
+                <li class="tab-edit" title="添加导航"></li>
+            </ul></div>
+            <div class="nav-box-items"><ul>
+
+            </ul></div>
+        </div>
+    </div>
+
+    <!--底部栏-->
+    <div class="main-footer">
+    </div>
+</div>
+<!--更换皮肤-->
+<div class="popup-skin">
+    <div class="skin-box">
+        <div class="skin-box-header"><ul>
+
+        </ul></div>
+        <div class="skin-box-images">
+            <div class="skin-box-images-gallery">
+                <img src="./loading.gif">
+            </div>
+        </div>
+    </div>
+</div>
+<!--弹出窗口：添加导航选项；-->
+<div class="popup-box">
+    <div class="popup-item">
+        <div class="popup-header-close" title="关闭"></div>
+        <div class="popup-item-add">
+            <div class="popup-item-add-form">
+                <form name="form-item-add" id="form-item-add" action="javascript:void(0)">
+                    <table width="100%" height="100%" border="0" cellpadding="0" cellspacing="0">
+                        <tr>
+                            <td width="20%" height="50" align="right">
+                                <label for="item-add-url">网址：</label>
+                            </td>
+                            <td width="80%" align="left">
+                                <input type="url" name="item-add-url" id="item-add-url" class="input-text-add" value="" placeholder="请输入网址" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td height="50" align="right">
+                                <label for="item-add-title">名称：</label>
+                            </td>
+                            <td align="left">
+                                <input type="text" name="item-add-title" id="item-add-title" class="input-text-add" value="" placeholder="请输入名称" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td height="50" align="right"></td>
+                            <td align="left">
+                                <input type="button" class="btn-sub-add" id="btn-sub-add" value="添加" />
+                                <input type="reset" class="btn-reset-add" id="btn-reset-add" value="重置" />
+
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+            <!--推荐列表-->
+            <div class="popup-item-add-recommend"><ul>
+                <li data-url="http://www.baidu.com" data-title="百度"><img src="./1.jpg"><br/><span>百度</span></li>
+                <li data-url="http://www.jd.com" data-title="京东"><img src="./2.jpg"><br/><span>京东</span></li>
+                <li data-url="http://www.ganji.com" data-title="赶集"><img src="./3.jpg"><br/><span>赶集</span></li>
+                <li data-url="http://www.12306.cn" data-title="12306"><img src="./4.jpg"><br/><span>12306</span></li>
+                <li data-url="http://www.ifeng.com" data-title="凤凰"><img src="./5.jpg"><br/><span>凤凰网</span></li>
+                <li data-url="http://www.qq.com" data-title="腾讯"><img src="./6.jpg"><br/><span>腾讯</span></li>
+                <li data-url="http://www.youku.com" data-title="优酷"><img src="./7.jpg"><br/><span>优酷</span></li>
+                <li data-url="http://www.163.com" data-title="网易"><img src="./8.jpg"><br/><span>网易</span></li>
+                <li data-url="http://www.sina.com" data-title="新浪"><img src="./9.jpg"><br/><span>新浪</span></li>
+                <li data-url="http://www.taobao.com" data-title="淘宝"><img src="./10.jpg"><br/><span>淘宝</span></li>
+
+            </ul></div>
+        </div>
+        <div class="popup-history-list"><ul>
+            <li><span>历史记录</span>
+                <span class="popup-history-list-page" data-page="1">
+                        <span class="popup-history-list-page-up" title="上一页"><</span>
+                        <span class="popup-history-list-page-down" title="下一页" >></span>
+                </span>
+            </li>
+
+        </ul></div>
+    </div>
+</div>
+</body>
+<script id="visit-history" type="application/json"></script>
+
+<script src="jquery-2.0.3.min.js"></script>
+<script type="text/javascript" src="./json.js"></script>
+<script type="text/javascript" src="./storage.js"></script>
+
+<script type="text/javascript">
+    (function($){
+        //导航列表显示数量
+        var itemNumber=8;
+        //设置背景；
+        //localStorage.clear();
+        var Storage = $.storage();
+        var bg=Storage.get("bg");
+
+        if(!bg) bg="./2.jpg";
+        $('body').css("background","url("+bg+")");
+
+        var init=function(){
+            var webList=loadData();
+            var html=renderHtml(webList);
+            $('.nav-box-items ul').html(html);
+            removeItem();
+            pinOper();
+            //打开弹窗
+            openPopup();
+
+            //关闭弹窗
+            closePopup();
+            //更改皮肤
+            openSkinBox();
+        }
+
+        //生成id;
+        var createId=function(){
+            var timestamp = Date.parse(new Date());
+            var id=parseInt(timestamp)+parseInt(Math.random()*1000);
+            return id;
+        }
+        //加载网址数据
+        var loadData=function(type){
+            var navItems=Storage.get("navItems");
+            if(!navItems || typeof navItems=="undefined"){
+                var navItems=[
+                    {id:createId(),title:"百度",url:"https://www.baidu.com/",photo:"./cdosbrowser-logo.png",pin:false,order:1},
+                    {id:createId(),title:"淘宝",url:"http://www.taobao.com/",photo:"./cdosbrowser-logo.png",pin:false,order:2},
+                    {id:createId(),title:"腾讯网",url:"http://www.qq.com/",photo:"./cdosbrowser-logo.png",pin:false,order:3},
+                    {id:createId(),title:"京东购物",url:"http://www.jd.com/",photo:"./cdosbrowser-logo.png",pin:false,order:4},
+                    {id:createId(),title:"58同城",url:"http://www.58.com/",photo:"./cdosbrowser-logo.png",pin:false,order:5},
+                    {id:createId(),title:"126邮箱",url:"http://www.126.com/",photo:"./cdosbrowser-logo.png",pin:false,order:6},
+                    {id:createId(),title:"携程网",url:"http://www.ctrip.com/",photo:"./cdosbrowser-logo.png",pin:false,order:7},
+                    {id:createId(),title:"美团网",url:"http://www.meituan.com/",photo:"./cdosbrowser-logo.png",pin:false,order:8},
+                    {id:createId(),title:"大众点评",url:"http://www.dianping.com/",photo:"./cdosbrowser-logo.png",pin:false,order:9},
+                ];
+                navItems=Storage.sort(navItems,"order");
+                Storage.set("navItems",navItems);
+            }else{
+                navItems=Storage.sort(navItems,"order");
+            }
+            console.log(navItems);
+            //对数据按order进行排序
+            return navItems;
+        }
+        //渲染快捷导航子项；
+        var renderHtml=function(data){
+            var html='';
+            if(data.length>0){
+                var len=data.length>itemNumber?itemNumber:data.length;
+                for(var i=0;i<len; i++){
+                    var pin=data[i].pin;
+                    //alert(pin+",type:"+typeof pin);
+                    var photo=data[i].photo;
+                    var title=data[i].title;
+                    var url=data[i].url;
+                    var id=data[i].id;
+                    //别针
+                    var pinData={};
+                    if(pin){    //已固定，可取消
+                        pinData={className:"nav-box-item-pinned",title:"取消固定",state:1};
+                    }else{  //未固定，可固定
+                        pinData={className:"",title:"固定",state:0};
+                    }
+                    if(!photo || photo=="./cdosbrowser-logo.png" || photo=="./loading.gif"){
+                        console.log("speeddial-add-"+id+"-"+url);
+                    }
+                    html+='<li data-id="'+id+'" id="item-'+id+'">'+
+                        '<div class="nav-box-item-pin '+pinData.className+'" title="'+pinData.title+'" data-pin="'+pinData.state+'"></div>'+
+                        '<div class="nav-box-item-remove" title="移出"></div>'+
+                        '<div class="nav-box-item-photo"><a href="'+url+'" target="_self"><img src="'+photo+'" title="'+title+'" alt="'+title+'"/></a></div>'+
+                        '<div class="nav-box-item-title"><a href="'+url+'" target="_self">'+title+'</a></div>'+
+                    +'</li>';
+                }
+            }
+            return html;
+        }
+
+        //移出导航；
+        var removeItem=function(){
+            //$(".nav-box-items").off();
+            $(".nav-box-items").on("click",".nav-box-item-remove",function(e){
+                var $this=$(this)
+                var it=$this.parents("li:first");
+                var id=it.data("id");
+                var imgSrc=it.find("img").attr("src");
+                Storage.removeOneItem("navItems",{key:"id",value:id},false,function(){
+                    it.fadeOut("fast",function(){
+                        $(this).remove();
+                        console.log("speeddial-remove-"+id+"-"+imgSrc);
+                    });
+                })
+            })
+        };
+        //添加导航；
+        var addItem=function(){
+            //从历史记录中添加
+            addFromHistory();
+            //从推荐列表中添加
+            addFromRecommend();
+            //自定义输入；
+            addFromForm();
+            //提交保存；
+            subForm();
+        };
+        //从历史记录中添加
+        var addFromHistory=function(){
+            var pageNum=1;
+            var pageCount=10;
+            console.log("speeddial-history-"+pageCount+"-"+pageNum);
+
+            //getHistoryList();
+            //设置历史记录的翻页;
+            $(".popup-history-list-page-up").on("click",function(){
+                var page=$(".popup-history-list-page").data("page");
+				           page=parseInt(page);
+                if(page>1){
+                    console.log("speeddial-history-"+pageCount+"-"+(page-1));
+                }
+            })
+            $(".popup-history-list-page-down").on("click",function(){
+                var page=$(".popup-history-list-page").data("page");
+					 page=parseInt(page);
+                if(page>0){
+                    console.log("speeddial-history-"+pageCount+"-"+(page+1));
+                }
+            })
+            //添加到表单
+            //$(".popup-history-list ul").off();
+            $(".popup-history-list ul").on("click","li:gt(0)",function(){
+                var uri=$(this).data("uri");
+                var name=$(this).data("name");
+                if(uri && name){
+                    $("#item-add-url").val(uri);
+                    $("#item-add-title").val(name);
+                }
+            })
+        };
+        //从推荐列表中添加
+        var addFromRecommend= function () {
+            $(".popup-item-add-recommend").off();
+            $(".popup-item-add-recommend").on("click","li",function(){
+                var $this=$(this);
+                var title=$this.data("title");
+                var url=$this.data("url");
+                $("#item-add-url").val(url);
+                $("#item-add-title").val(title);
+
+                $this.siblings("li.recommend-select").removeClass("recommend-select");
+                $this.addClass("recommend-select");
+            });
+        };
+        //自定义输入；
+        var addFromForm=function(){
+
+
+
+        };
+        //提交添加保存
+        var subForm=function(){
+            //更新图片
+            var _updatePhoto = function(it){
+                setTimeout(function(){
+                    var imgSrc=it.find("img").attr("src");
+                    if(imgSrc=="./loading.gif"){
+                        it.find("img").attr("src","./cdosbrowser-logo.png");
+                    }
+                },1000*3);
+            }
+
+            $("#btn-sub-add").off();
+            $("#btn-sub-add").on("click",function(){
+                var url=$("#item-add-url").val();
+                var title=$("#item-add-title").val();
+                var flag=true;
+                if(!url){
+                    flag=false;
+                    alert("请输入网址地址！");
+                }else{  //判断是不是以http://或https：//开头；
+                    var test= ['http','https','ftp'];
+                    var temp=false;
+                    for(var x in test){
+                        var len=test[x].length;
+                        var h=url.substr(0,len+3).toLocaleLowerCase();
+                        if(test[x]+"://"==h){
+                            temp=true;
+                        }
+                    }
+                    if(!temp){
+                        var newUrl=test[0]+"://"+url;
+                        $("#item-add-url").val(newUrl);
+                        url=newUrl;
+                    }
+                }
+                //提交保存；
+                if(flag){
+                    //alert("url:"+url+",title:"+title);
+                    //将新添加数据更新到列表；
+                    var data=[{id:createId(),title:title,url:url,photo:"./loading.gif",pin:false}];
+                    var html=renderHtml(data);
+                    //添加到列表的最后一个非固定位置；
+                    var itemLen=$(".nav-box-items ul li").length;
+                    data['order']=itemLen;
+                    //保存数据；
+                    if(itemLen<itemNumber){
+                        $(".nav-box-items ul").append(html); 
+                        var last=$(".nav-box-items ul li:last");
+                        _updatePhoto(last);
+                        Storage.add("navItems",data[0]);
+                        $(".popup-header-close").click();
+                    }else{
+                        $(".nav-box-items ul li:last").fadeOut("fast",function(){
+                            var id=$(this).data("id");
+                            Storage.removeOneItem("navItems",{key:"id",value:id});
+                            Storage.add("navItems",data[0]);
+                            $(this).remove();
+                            $(".nav-box-items ul").append(html);
+                            var last=$(".nav-box-items ul li:last");
+                            _updatePhoto(last);
+                            $(".popup-header-close").click();
+                        });
+                    }
+                }
+            });
+        }
+        //固定或取消别针
+        var pinOper=function(){
+            //$(".nav-box-items").off();
+            $(".nav-box-items").on("click","div.nav-box-item-pin",function(){
+                var $this=$(this)
+                var state=$this.data("pin");
+                var pin;
+                var li=$this.parents("li:first");
+                var index=li.index();
+                if(state==1){   //已固定，点击后取消固定；
+                    $this.removeClass("nav-box-item-pinned");
+                    $this.data("pin",0);
+                    pin=false;
+                }else{  //未固定，点击后固定；
+                    $this.addClass("nav-box-item-pinned");
+                    $this.data("pin",1);
+                    pin=true;
+                }
+                var id=li.data("id");
+                var updateData={pin:pin};
+                Storage.update("navItems",{key:"id",value:id},updateData,false);
+
+
+            })
+        };
+        //关闭编辑弹窗
+        var closePopup=function(){
+            $(".popup-header-close").off();
+            $(".popup-header-close").on("click",function(){
+                $(".popup-box").fadeOut("fast");
+            });
+
+            $(".popup-item").on("click",function(e){
+                e.stopPropagation();
+            })
+            $(".popup-box").on("click",function(){
+                $(".popup-box").fadeOut("fast");
+            })
+
+
+        };
+        //打开编辑弹窗
+        var openPopup=function(){
+            $(".nav-box-tab ul li.tab-edit").off();
+            $(".nav-box-tab ul li.tab-edit").on("click",function(){
+                $(".popup-box").fadeIn("fast",function(){
+                    addItem();
+                });
+            });
+        };
+
+        //拉去皮肤设置；
+        var openSkinBox=function(){
+            $("#header-btn-skin").off();
+            $("#header-btn-skin").on("click",function(){
+                $(".skin-box").fadeIn("fast");
+                $(".popup-skin").animate({
+                    height:'50%',
+                    opacity: 1
+                },function(){
+                    //加载皮肤分类列表
+                    loadSkinTab(function(){
+
+                    $(".skin-box-header ul").off();
+                    $(".skin-box-header ul").on("click",'li',function(){
+                        var $this=$(this);
+                        var id=$this.data("id");
+                        $this.siblings("li").each(function(){
+                            var f=$(this).find("div.skin-box-header-flag");
+                            if(f.hasClass("skin-box-header-flag-show")){
+                                f.removeClass("skin-box-header-flag-show");
+                            }
+                        });
+                        $this.find("div.skin-box-header-flag").addClass("skin-box-header-flag-show");
+                        if(id>0){
+                            loadSkinListData(id,function(data){
+                                var html=renderSkinListHtml(data);
+                                $(".skin-box-images-gallery").html(html);
+                            })
+                        }else if(id==-1){   //自定义
+
+                        }else if(id==-2){   //浏览历史
+                            var history=Storage.get("history");
+                            //更改排序
+                            var newHistory=[];
+                            if(history.length>0){
+                                var len=history.length>12?12:history.length;
+                                for(var i=len-1;i>=0;i--){
+                                    newHistory.push(history[i]);
+                                }
+                            }
+                            var html=renderSkinListHtml(newHistory);
+                            $(".skin-box-images-gallery").html(html);
+                        }
+                        useSkin();
+                    })
+
+                    $(".skin-box-header ul li:first").click();
+
+                    });
+                    closeSkinBox();
+                })
+            });
+        };
+
+        var renderSkinListHtml=function(data){
+            var html='';
+
+            if(data.length>0){
+                //每行显示数
+                var showNumber=8;
+                var showLen=data.length>showNumber*2?showNumber*2:data.length;
+                for(var i=0;i<data.length;i++){
+                    //show biger;Every four item has one biger;
+                    var big=false;
+                    var c='';
+                    if(i==0 || i==4 || i==11 || i==15){
+                        big=true;
+                    }
+                    if(big){
+                        var c="big";
+                    }
+                    var temp='<a data-url="'+data[i].url+'" data-thumb="'+data[i].thumb+'" class="'+c+'" href="javascript:void(0)"><img src="'+data[i].thumb+'" alt="'+data[i].title+'" title="'+data[i].title+'"/></a>';
+
+                    if(i==showNumber-1){
+                        //temp+='<div class="clear"></div>';
+                    }
+                    html+=temp;
+                }
+            }
+            return html;
+        }
+        //关闭皮肤设置；
+        var closeSkinBox=function(){
+            $(".popup-skin").on({
+                mouseleave:function(){
+                    $(this).animate({
+                        height:"0",
+                        opacity: 0
+                    },function(){
+                        $(".skin-box-images-gallery").empty();
+                    });
+                }
+            });
+        };
+        //使用皮肤
+        var useSkin=function(){
+            $(".skin-box-images-gallery>a").off();
+            $(".skin-box-images-gallery").on("click",'a',function(){
+                var url=$(this).data("url");
+                var thumb=$(this).data("thumb");
+                $('body').css("background-image","url("+url+")");
+                Storage.set("bg",url);
+                //保存到历史
+                var h=Storage.add("history",{url:url,thumb:thumb});
+            })
+        }
+        //加载皮肤分类列表
+        var loadSkinTab=function(callback){
+            var tabData=[
+                {id:1,name:"热门",order:1},
+                {id:2,name:"精选",order:2},
+                {id:3,name:"清新",order:3},
+                {id:4,name:"动物",order:4},
+                {id:5,name:"美女",order:5},
+                {id:6,name:"汽车",order:6},
+                {id:7,name:"风景",order:7},
+                {id:8,name:"明星",order:8}
+            ];
+            var html='';
+            for(var i=0;i<tabData.length;i++){
+                var it=tabData[i];
+                var showClass;
+                if(i==0){
+                    showClass='skin-box-header-flag-show';
+                }
+                var id=it.id;
+                var name=it.name;
+                var order=it.order;
+                html+='<li data-id="'+id+'"><span>'+name+'</span>'+
+                            '<div class="skin-box-header-flag '+showClass+'">'+
+                                '<div class="skin-box-header-flag-1"></div>'+
+                                '<div class="skin-box-header-flag-2"></div>'+
+                            '</div>'+
+                         '</li>';
+            }
+            html+=  '<li style=" width:2px; cursor: none;"><span>|</span></li>'+
+                    /*
+                    '<li data-id="-1"><span>自定义</span>'+
+                        '<div class="skin-box-header-flag">'+
+                            '<div class="skin-box-header-flag-1"></div>'+
+                            '<div class="skin-box-header-flag-2"></div>'+
+                        '</div>'+
+                    '</li>'+
+                    */
+                    '<li data-id="-2"><span>已使用</span>'+
+                        '<div class="skin-box-header-flag">'+
+                            '<div class="skin-box-header-flag-1"></div>'+
+                            '<div class="skin-box-header-flag-2"></div>'+
+                        '</div>'+
+                    '</li>';
+            $(".skin-box-header ul").html(html);
+            callback();
+        };
+        //加载皮肤列表
+        var loadSkinListData=function(id,callback){
+            var data=[];
+            for(var i = 0;i<12;i++){
+                var img=i+1;
+                data[i]={url:'./'+id+'-'+img+'.jpg',thumb:'./'+id+'-'+img+'.jpg',title:''}
+            }
+            callback(data);
+        }
+        init();
+    })(jQuery)
+
+    //获取页面缩略图
+    function　refresh(id,path,title){
+        if(!id){
+            return ;
+        }
+        var li=$("#item-"+id);
+        var img=li.find("img");
+        path=!path?"./cdosbrowser-logo.png":path;
+        img.attr("src",path);
+        if(title){
+            img.attr("title",title);
+            li.find("div.nav-box-item-title>a").text(title);
+        }
+		var Storage = $.storage();
+		Storage.update("navItems",{key:"id",value:id},{photo:path},false);
+    }
+    //拉去浏览历史记录；
+    function　getHistoryList(dataStr,page){
+            var data= $.parseJSON(dataStr);
+            var html='';
+            if(data.length>0){
+                for(var i=0; i<data.length;i++){
+                    var it=data[i];
+                    var icon=!it.image?"":'<img src="data:image/png;base64,'+it.image+'" />';
+                    html+='<li data-uri="'+it.uri+'" data-name="'+it.name+'"><a href="javascript:void(0);"><i>'+icon+'</i><span>'+it.name+'</span></a></li>';
+                }
+		
+					 page=parseInt(page);
+                if(page>0){
+                    $(".popup-history-list-page").data("page",page);
+						}
+            }else{
+                html='<li><span class="text-gray">暂无记录...</span></li>';
+            }
+
+            $(".popup-history-list ul li:gt(0)").remove();
+            $(".popup-history-list ul").append(html);
+    }
+</script>
+</html>

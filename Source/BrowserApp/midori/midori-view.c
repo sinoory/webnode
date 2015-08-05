@@ -31,6 +31,9 @@
 
 #include "marshal.h"
 
+#include "midori-history.h"
+#include "midori-array.h"
+
 #include <config.h>
 
 #include "midori-locationaction.h"
@@ -642,6 +645,12 @@ midori_view_set_title (MidoriView* view, const gchar* title)
     //ZRL 修复当uri为空时crash问题。
     if (uri == NULL)
         return;
+    if(g_str_has_prefix (uri, "file:"))
+    {
+       gchar*title_temp =  _("Speed Dial");
+       katze_assign (view->title, g_strdup (midori_tab_get_display_title (title_temp, uri)));
+    }
+    else katze_assign (view->title, g_strdup (midori_tab_get_display_title (title, uri)));
     katze_assign (view->title, g_strdup (midori_tab_get_display_title (title, uri)));
     view->ellipsize = midori_tab_get_display_ellipsize (view->title, uri);
     if (view->menu_item)
@@ -4169,417 +4178,146 @@ midori_view_download_started_cb (WebKitWebContext* context,
     g_signal_connect (download, "decide-destination",
                       G_CALLBACK (midori_view_download_decide_destination_cb), view);
 }
-
-/*static gboolean
-midori_view_download_query_action (MidoriView* view,
-                                   WebKitDownload*   download,
-                                   const gchar * suggested_filename)
+// added by wangyl 2015.8.5 start 
+gchar*  string_replace( gchar *string_data, gchar *old, gchar *replacement)
 {
-#else
-static gboolean
-midori_view_download_requested_cb (GtkWidget*      web_view,
-                                   WebKitDownload* download,
-                                   MidoriView*     view)
+	gchar* result = NULL;
+	GError * _inner_error_ = NULL;
+	g_return_val_if_fail (string_data != NULL, NULL);
+	g_return_val_if_fail (old != NULL, NULL);
+	g_return_val_if_fail (replacement != NULL, NULL);
+	{		
+		gchar* _tmp1_ = NULL;
+		GRegex* regex;
+		_tmp1_ = g_regex_escape_string (old, -1);
+		regex = g_regex_new (_tmp1_, 0, 0, &_inner_error_);
+		g_free (_tmp1_);
+		if (_inner_error_ != NULL) {
+			g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+			g_clear_error (&_inner_error_);
+			return NULL;
+		}
+		result = g_regex_replace_literal (regex, string_data, (gssize) (-1), 0, replacement, 0, &_inner_error_);
+		if (_inner_error_ != NULL) {
+			g_regex_unref (regex);
+			g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+			g_clear_error (&_inner_error_);
+			return NULL;
+		}
+		g_regex_unref (regex);
+		return result;
+	}		
+}
+
+KatzeArray* 
+midori_view_history_read_from_db(MidoriBrowser* browser, const gchar*   filter)
 {
-#endif
-    gboolean handled = TRUE;
-    gchar* hostname;
-    gchar* content_type;
-    gchar* description;
-    gchar* title;
-    gint response;
-    GString* details;*/
-    /* Opener may differ from displaying view:
-       http://lcamtuf.coredump.cx/fldl/ http://lcamtuf.coredump.cx/switch/ */
-    //by sunh 修复下载不正确显示网页来源 'from where'
-/*    WebKitURIRequest* request = webkit_download_get_request(download);  //add
-    const gchar* opener_uri = g_object_get_data (G_OBJECT (view), "opener-uri");
-    hostname = midori_uri_parse_hostname (
-        opener_uri ? opener_uri : webkit_uri_request_get_uri(request), NULL);
-        //opener_uri ? opener_uri : midori_view_get_display_uri (view), NULL);
-    //by sunh end
+	sqlite3* db;
+	sqlite3_stmt* statement;
+	gint result;
+	const gchar* sqlcmd;
+	g_return_if_fail (filter != NULL);
+	KatzeArray*history = katze_object_get_object (browser, "history");
+	db = g_object_get_data (G_OBJECT (history), "db");
+	if (!db)
+	return katze_array_new (KATZE_TYPE_ITEM);
 
-    #ifdef HAVE_WEBKIT2
-    content_type = g_content_type_guess (suggested_filename, NULL ,
-                                            0 ,NULL);
-    if (!content_type)
-        content_type = g_strdup ("application/octet-stream");
-    midori_download_set_filename (download, g_strdup (suggested_filename));
-    #else
-    content_type = midori_download_get_content_type (download,
-        g_object_get_data (G_OBJECT (view), "download-mime-type"));
-    #endif
-    description = g_content_type_get_description (content_type);
+	if (filter && *filter)
+	{
+		char* filterstr;
 
-    details = g_string_sized_new (20 * 4);
-    #ifdef HAVE_WEBKIT2
-    const gchar * suggestion = webkit_uri_response_get_suggested_filename (webkit_download_get_response (download));
-    g_string_append_printf (details, _("File Name: %s"),
-                suggestion ? suggestion : suggested_filename);
-    #else
-    g_string_append_printf (details, _("File Name: %s"),
-        webkit_download_get_suggested_filename (download));
-    #endif
-    g_string_append_c (details, '\n');
+		sqlcmd = "SELECT * FROM ("
+		"    SELECT uri, title, day, date FROM history"
+		"    WHERE uri LIKE ?1 OR title LIKE ?1 GROUP BY uri "
+		"UNION ALL "
+		"    SELECT replace (uri, '%s', keywords) AS uri, "
+		"    keywords AS title, day, 0 AS date FROM search "
+		"    WHERE uri LIKE ?1 OR keywords LIKE ?1 GROUP BY uri "
+		") ORDER BY day DESC";
 
-    if (g_strrstr (description, content_type))
-        g_string_append_printf (details, _("File Type: '%s'"), content_type);
-    else
-        g_string_append_printf (details, _("File Type: %s ('%s')"), description, content_type);
-    g_string_append_c (details, '\n');
+		result = sqlite3_prepare_v2 (db, sqlcmd, -1, &statement, NULL);
+		filterstr = g_strdup_printf ("%%%s%%", filter);
+		sqlite3_bind_text (statement, 1, filterstr, -1, g_free);
+	}
 
-    #ifndef HAVE_WEBKIT2*/
-    /* Link Fingerprint */
-    /* We look at the original URI because redirection would lose the fragment */
- /*   WebKitWebFrame* web_frame = webkit_web_view_get_main_frame (WEBKIT_WEB_VIEW (web_view));
-    WebKitWebDataSource* datasource = webkit_web_frame_get_provisional_data_source (web_frame);
-    if (datasource)
-    {
-        gchar* fingerprint;
-        gchar* fplabel;
-        WebKitNetworkRequest* original_request = webkit_web_data_source_get_initial_request (datasource);
-        const gchar* original_uri = webkit_network_request_get_uri (original_request);
-        midori_uri_get_fingerprint (original_uri, &fingerprint, &fplabel);
-        if (fplabel && fingerprint)
-        {
-            WebKitNetworkRequest* request = webkit_download_get_network_request (download);
-
-            g_string_append (details, fplabel);
-            g_string_append_c (details, ' ');
-            g_string_append (details, fingerprint);
-            g_string_append_c (details, '\n');
-*/
-            /* Propagate original URI to make it available when the download finishes */
-/*            g_object_set_data_full (G_OBJECT (request), "midori-original-uri",
-                                    g_strdup (original_uri), g_free);
-        }
-        g_free (fplabel);
-        g_free (fingerprint);
-
-    }
-
-    if (webkit_download_get_total_size (download) > webkit_download_get_current_size (download))
-    {
-        gchar* total = g_format_size (webkit_download_get_total_size (download));
-        g_string_append_printf (details, _("Size: %s"), total);
-        g_string_append_c (details, '\n');
-        g_free (total);
-    }
-    #endif
-
-    #ifdef HAVE_WEBKIT2*/
-    /* i18n: A file open dialog title, ie. "Open http://fila.com/manual.tgz" */
-/*    title = g_strdup_printf (_("Open %s"), webkit_uri_request_get_uri (webkit_download_get_request (download)));
-    #else
-    title = g_strdup_printf (_("Open %s"), webkit_download_get_uri (download));
-    #endif
-    response = midori_save_dialog (title,
-            hostname, details, content_type); //We prompt a dialog
-    g_free (title);
-    g_free (hostname);
-    g_free (description);
-    g_free (content_type);
-    g_string_free (details, TRUE);
-    midori_download_set_type (download, response);
-    g_signal_emit (view, signals[DOWNLOAD_REQUESTED], 0, download, &handled);
-    return handled;
+	if (result != SQLITE_OK)
+	return katze_array_new (KATZE_TYPE_ITEM);
+	return katze_array_from_statement (statement);
 }
-*/
-static gboolean
-  midori_dialog_action_button_press_cb_ctn (ScriptDialogAction*   action)
+
+static void _midori_view_show_speeddial_history(MidoriView*  view,  const gchar* message) 
 {
-    MidoriView* view =action->view;
-    gchar* new_uri;
-    gchar *uri = gtk_entry_get_text((GtkEntry*)(action->entry_uri)); 
-    //if(strlen(uri) == 0)return ;//modified by wangyl 2015.6.24
-    if(strlen(uri) == 0)
-    {
-       gtk_widget_destroy(action->dialog);
-       return TRUE;
-    }
-    uri = katze_skip_whitespace (uri);
-    new_uri = sokoke_magic_uri (uri, TRUE, FALSE);
-    MidoriBrowser* browser = midori_browser_get_for_widget (GTK_WIDGET (midori_view_get_web_view(view)));
-    MidoriSpeedDial* dial = katze_object_get_object (browser, "speed-dial");
-    midori_speed_dial_add(dial, new_uri, "dial-title", NULL);
-    g_free (new_uri);
-    gtk_widget_destroy(action->dialog);
-    return TRUE;
+	KatzeArray* array;
+	 struct json_object *my_object;
+	guint8* data = NULL;
+	size_t datalen;
+	int string_len,length=0,n=0,page_nth=0,page_n=0,item_nth=0;
+	gchar *string_data,*string_data1,*string_data2;
+	gchar file_adr[100] = {0};
+	KatzeItem* item;
+	
+	gchar**part =  g_strsplit (message, "-", 4);
+	page_n = atoi(part[2]);
+	page_nth = atoi(part[3]);	
+	item_nth = page_nth * page_n;
+	MidoriBrowser* browser = midori_browser_get_for_widget (GTK_WIDGET (midori_view_get_web_view(view)));
+	MidoriSpeedDial* dial = katze_object_get_object (browser, "speed-dial");
+	WebKitFaviconDatabase* dab = webkit_web_context_get_favicon_database(webkit_web_context_get_default ());
+	
+	array = midori_view_history_read_from_db (browser,"http");
+	g_sprintf(file_adr,"%s/temp_data.txt",midori_paths_get_cache_dir());
+	length = katze_array_get_length(array);
+	if((page_nth-1)*page_n >= length)return;
+	FILE * fp = fopen(file_adr,"w+");
+	
+	if(fp == NULL){
+		g_critical ("Failed open file:\n");
+		return;
+	}
+	fwrite("[",1,1,fp);
+	 KATZE_ARRAY_FOREACH_ITEM (item, array)
+	{
+		n++;
+		if(n > item_nth  )break;
+		if(n<=(page_nth-1)*page_n)continue;
+		my_object = json_object_new_object();  
+		GdkPixbuf*  pixbuf = webkit_favicon_database_try_get_favicon_pixbuf(dab,katze_item_get_uri(item),16,16);
+		if(pixbuf != NULL){
+			gdk_pixbuf_save (pixbuf, "/home/wyl/.cache/cdosbrowser/temp.png", "png", NULL, NULL, "compression", "7", NULL, NULL);
+			g_file_get_contents("/home/wyl/.cache/cdosbrowser/temp.png",&data,&datalen,NULL);
+			json_object_object_add(my_object, "image", json_object_new_string(g_base64_encode (data, datalen)));
+			g_free(data);
+		}
+		else json_object_object_add(my_object, "image",json_object_new_string(""));
+		json_object_object_add(my_object, "name", json_object_new_string(katze_item_get_name(item)));
+		json_object_object_add(my_object, "uri", json_object_new_string(katze_item_get_uri(item)));
+		string_data = json_object_to_json_string(my_object);
+		string_data1 = string_replace(string_data,"\\/","/");
+		string_len = strlen(string_data1);
+		fwrite(string_data1,string_len,1,fp);
+		fwrite(",",1,1,fp);
+		g_free(string_data1);
+		 json_object_put(my_object);
+		 g_object_unref (G_OBJECT(item));
+	}
+	g_object_unref (G_OBJECT (array));
+	 fseek(fp,-1,2);
+	fwrite("]",1,1,fp);
+	int total_size = ftell(fp);
+	 fseek(fp,0,0);
+	char * file_data =(char *) malloc(total_size+1);
+	memset(file_data,0,total_size+1);
+	 fread(file_data,total_size,1,fp);
+	 char * data_adr = (char *) malloc(total_size+100);
+	 memset(data_adr,0,total_size+100);
+	 g_sprintf(data_adr,"getHistoryList('%s','%d');",file_data,page_nth);
+	 free(file_data);
+	 fclose(fp); 
+	 webkit_web_view_run_javascript(WEBKIT_WEB_VIEW (midori_view_get_web_view(view)),data_adr, NULL, NULL, NULL);
+	  free(data_adr);
 }
-static gboolean
- midori_dialog_action_button_press_cb_dlt ( ScriptDialogAction*   action)
-{  
-  gtk_widget_destroy(action->dialog);
-  return TRUE;
-}
-static gboolean
-midori_dialog_action_treeview1_button_press_cb (GtkWidget*            treeview,
-                                                GdkEventButton*       event,
-                                                ScriptDialogAction*   action)
-{
-    GtkTreePath* path;
-    gchar* desc;
-
-    if(gtk_tree_view_get_path_at_pos (GTK_TREE_VIEW (treeview),
-        event->x, event->y, &path, NULL, NULL, NULL))
-    {
-	GtkTreeIter iter;
-	gchar* uri;
-	gchar* title;
-	gtk_tree_model_get_iter (gtk_tree_view_get_model(GTK_TREE_VIEW(treeview)), &iter, path);
-        gtk_tree_path_free (path);
-	gtk_tree_model_get (gtk_tree_view_get_model(GTK_TREE_VIEW(treeview)), &iter,1, &title, 2, &uri, -1);
-        gtk_entry_set_text(action->entry_uri,uri);
-        gtk_entry_set_text(action->entry_title,title);
-        g_free (uri);
-        g_free (title);
-        return TRUE;
-   } 
-   return FALSE;
-}
-
-static gboolean
-midori_dialog_action_treeview_button_press_cb (GtkWidget*            treeview,
-                                               GdkEventButton*       event,
-                                               ScriptDialogAction*   action)
-{
-    GtkTreePath* path;
-    gchar* desc;
-    if (gtk_tree_view_get_path_at_pos (GTK_TREE_VIEW (treeview),
-        event->x, event->y, &path, NULL, NULL, NULL))
-    {
-        GtkTreeIter iter;
-        gchar* uri;
-        gchar* title;
-        gtk_tree_model_get_iter (action->completion_model, &iter, path);
-        gtk_tree_path_free (path);
-        gtk_tree_model_get (action->completion_model, &iter,
-            MIDORI_AUTOCOMPLETER_COLUMNS_URI, &uri, 
-           MIDORI_AUTOCOMPLETER_COLUMNS_MARKUP, &title,  -1);   
-        if (strchr (title, '\n')) /* A search engine or action suggestion */
-        {
-            gchar** parts = g_strsplit (title, "\n", 2);
-            desc = g_strdup (parts[0]);
-            g_strfreev (parts);
-            title = desc;
-        }
-        gtk_entry_set_text(action->entry_uri,uri);
-        gtk_entry_set_text(action->entry_title,title);
-        g_free (uri);
-        g_free (title);
-        return TRUE;
-    }
-
-    return FALSE;
-}
-
-static void
-midori_dialog_entry_render_title_cb (GtkCellLayout*   layout,
-                                     GtkCellRenderer* renderer,
-                                     GtkTreeModel*    model,
-                                     GtkTreeIter*     iter,
-                                     gpointer         data)
-{
-    MidoriLocationAction* action = data;
-    gchar* title;
-    gchar* desc;
-
-    gtk_tree_model_get (model, iter,
-        MIDORI_AUTOCOMPLETER_COLUMNS_MARKUP, &title,
-        -1);
-
-    if (strchr (title, '\n')) /* A search engine or action suggestion */
-    {
-        gchar** parts = g_strsplit (title, "\n", 2);
-        desc = g_strdup (parts[0]);
-        g_strfreev (parts);
-    }
-    else
-    {
-        gchar** keys = g_strsplit_set (key, " %", -1);
-        desc = midori_location_action_render_title (keys, title);
-        g_strfreev (keys);
-    }
-    g_object_set (renderer, "markup", desc,NULL);
-    g_free (desc);
-    g_free (title);
-}
-
-static gboolean 
-midori_view_script_dialog_popup_cb_destroyed(GtkWidget          *widget,
-		                             ScriptDialogAction *action)
-{
-   
-   g_free(action);
-   action = NULL;
-    return TRUE;
-}
-
-static void 
-list_append(GtkWidget *list, const gchar *icon,const gchar *str,const gchar *str1)
-{
-   GtkListStore *store;
-   GtkTreeIter iter;
-   store = GTK_LIST_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(list)));
-   gtk_list_store_append(store, &iter);
-   gtk_list_store_set(store, &iter, 0,icon,1, str,2,str1,-1);
-}
-
-static GtkTreeModel  *list_model_create()
-{  
-   GtkListStore *store;
-   store = gtk_list_store_new(3,G_TYPE_STRING, G_TYPE_STRING,G_TYPE_STRING);
-   return GTK_TREE_MODEL(store);
-}
-
-static void
-midori_view_script_dialog_popup_cb (GtkWidget*          web_view,
-                                    MidoriView*         view)
-{
-   GtkWidget *button_ctn,*dialog,*label_uri,*label_title,*entry_uri,*entry_title,*button_dlt;
-   GtkWidget  *hbox_uri,*hbox_title,*hbutton_box;
-   GtkWidget *popup_frame,*scrolled,*treeview_one,*notebook,*label_one, *label_two, *popup_frame_one;
-   GtkTreeViewColumn *column;
-   ScriptDialogAction* action;
-   GtkCellRenderer* renderer;
-   MidoriAutocompleter *autocompleter = NULL;
-   GtkTreeModel* completion_model;
-   MidoriApp* app = midori_app_new_proxy (NULL);
-   action = malloc(sizeof(ScriptDialogAction));
-   action->view = view;
-   autocompleter = midori_autocompleter_new (G_OBJECT (app));
-   action->autocompleter = autocompleter;
-   //dialog = gtk_dialog_new ();
-   dialog = gtk_dialog_new_with_buttons("添加网址",NULL,GTK_DIALOG_MODAL,GTK_STOCK_OK,GTK_RESPONSE_OK,GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,NULL);        
-   action->dialog = dialog;
-   gtk_window_set_destroy_with_parent(GTK_WINDOW(dialog), TRUE);
-   gtk_window_set_default_size(GTK_WINDOW(dialog), 500, 400);
-   gtk_window_set_resizable(GTK_WINDOW(dialog),FALSE);  
-   //gtk_window_set_title(GTK_WINDOW(dialog), "\u6dfb\u52a0\u7f51\u5740");
-   //gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
-   GtkWidget *box = gtk_dialog_get_content_area ((GtkDialog *)dialog);      
-   gtk_box_set_spacing(GTK_BOX(box),10);
-   midori_autocompleter_add (autocompleter,MIDORI_COMPLETION (midori_history_completion_new ()));
-   midori_autocompleter_complete (autocompleter, "http", NULL, NULL);
-   completion_model = (GtkTreeModel*)midori_autocompleter_get_model (autocompleter);
-   action->completion_model = completion_model;
-   g_object_unref (app);
-        
-   label_uri = gtk_label_new( "   网址:");   
-   entry_uri = gtk_entry_new();
-   action->entry_uri =entry_uri;
-   hbox_uri = gtk_box_new(false ,20);
-   gtk_box_set_spacing(GTK_BOX(hbox_uri),20);  
-   label_title = gtk_label_new("   名称:");
-      
-   entry_title= gtk_entry_new();
-   action->entry_title =entry_title;  
-   hbox_title = gtk_box_new(false ,20);
-        
-   notebook = gtk_notebook_new();
-   label_one = gtk_label_new("打开记录");
-   popup_frame = gtk_frame_new (NULL);
-   gtk_frame_set_shadow_type (GTK_FRAME (popup_frame), GTK_SHADOW_ETCHED_IN);
-   action->popup_frame = popup_frame;
-   gtk_notebook_append_page(GTK_NOTEBOOK(notebook),popup_frame,label_one);
-   gtk_widget_set_size_request(label_one,250,10);
-   scrolled = g_object_new (GTK_TYPE_SCROLLED_WINDOW,
-        "hscrollbar-policy", GTK_POLICY_AUTOMATIC,
-        "vscrollbar-policy", GTK_POLICY_AUTOMATIC, NULL);
-   action->scrolled = scrolled;
-   gtk_container_add (GTK_CONTAINER (popup_frame), scrolled); 
-   treeview_one = gtk_tree_view_new_with_model (completion_model);
-   action->treeview_one = treeview_one;
-   gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (treeview_one), FALSE);
-   gtk_tree_view_set_hover_selection (GTK_TREE_VIEW (treeview_one), TRUE);
-   gtk_container_add (GTK_CONTAINER (scrolled), treeview_one);
-   g_signal_connect (treeview_one, "button-press-event",
-            G_CALLBACK (midori_dialog_action_treeview_button_press_cb), action);
-   gtk_widget_set_size_request (gtk_scrolled_window_get_vscrollbar (
-            GTK_SCROLLED_WINDOW (scrolled)), -1, 0);
-   gtk_widget_set_size_request (gtk_scrolled_window_get_hscrollbar (
-            GTK_SCROLLED_WINDOW (scrolled)), -1, 0);
-     
-   column = gtk_tree_view_column_new ();
-   renderer = gtk_cell_renderer_pixbuf_new ();
-   gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (column), renderer, FALSE);
-   gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (column), renderer,
-            "gicon", MIDORI_AUTOCOMPLETER_COLUMNS_ICON,
-            "stock-size", MIDORI_AUTOCOMPLETER_COLUMNS_SIZE,
-            "yalign", MIDORI_AUTOCOMPLETER_COLUMNS_YALIGN,
-            "cell-background", MIDORI_AUTOCOMPLETER_COLUMNS_BACKGROUND,
-            NULL);
-   renderer = gtk_cell_renderer_text_new ();
-   gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (column), renderer, TRUE);
-   gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (column), renderer,
-            "cell-background", MIDORI_AUTOCOMPLETER_COLUMNS_BACKGROUND,
-            NULL);
-   gtk_tree_view_column_set_expand (column, TRUE);
-   gtk_cell_layout_set_cell_data_func (GTK_CELL_LAYOUT (column), renderer,
-            midori_dialog_entry_render_title_cb, NULL, NULL);
-   gtk_tree_view_append_column (GTK_TREE_VIEW (treeview_one), column);
-   gtk_scrolled_window_set_min_content_height (GTK_SCROLLED_WINDOW (action->scrolled), 6 * 23);
-        
-   label_two = gtk_label_new("热门网页");
-   popup_frame_one = gtk_frame_new (NULL);
-   gtk_frame_set_shadow_type (GTK_FRAME (popup_frame_one), GTK_SHADOW_ETCHED_IN);
-   gtk_notebook_append_page(GTK_NOTEBOOK(notebook),popup_frame_one,label_two);
-   gtk_widget_set_size_request(label_two,250,10);
-             
-   GtkWidget *scrolled_one = g_object_new (GTK_TYPE_SCROLLED_WINDOW,
-        	"hscrollbar-policy", GTK_POLICY_NEVER,
-        	"vscrollbar-policy", GTK_POLICY_AUTOMATIC, NULL);
-   gtk_container_add (GTK_CONTAINER (popup_frame_one), scrolled_one);
-   GtkWidget *treeview_two = gtk_tree_view_new_with_model (list_model_create());
-   gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (treeview_two), FALSE);
-   gtk_tree_view_set_hover_selection (GTK_TREE_VIEW (treeview_two), TRUE);
-   g_signal_connect (treeview_two, "button-press-event",
-            G_CALLBACK (midori_dialog_action_treeview1_button_press_cb), action);
-   gtk_container_add (GTK_CONTAINER (scrolled_one), treeview_two);
-
-   GtkCellRenderer *renderer_icon = gtk_cell_renderer_pixbuf_new();
-   GtkCellRenderer *renderer_text = gtk_cell_renderer_text_new();
-   GtkTreeViewColumn *column1=gtk_tree_view_column_new ();
-   //gtk_tree_view_column_set_title(column1,"hello world");  
-   gtk_tree_view_column_pack_start(column1,renderer_icon,FALSE);
-   gtk_tree_view_column_pack_start(column1,renderer_text,FALSE); 
-   gtk_tree_view_column_add_attribute(column1,renderer_icon,"stock-id",0); 
-   gtk_tree_view_column_add_attribute(column1,renderer_text,"text",1);
-   gtk_tree_view_append_column(GTK_TREE_VIEW(treeview_two), column1);
-    gtk_scrolled_window_set_min_content_height (GTK_SCROLLED_WINDOW (scrolled_one), 6 * 23);
-	 
-   list_append(treeview_two, STOCK_BAIDU,"百度","https://www.baidu.com/");
-   list_append(treeview_two, STOCK_SINA,"新浪","http://www.sina.com.cn/");
-   list_append(treeview_two, STOCK_IFENG,"凤凰","http://www.ifeng.com/");
-   list_append(treeview_two, STOCK_SOHU,"搜狐","http://www.sohu.com/");
-   list_append(treeview_two, STOCK_TAOBAO,"淘宝","http://www.taobao.com/");
-            
-   gtk_box_pack_start(GTK_BOX(hbox_uri),label_uri,FALSE,FALSE,0);
-   gtk_box_pack_start(GTK_BOX(hbox_uri),entry_uri,TRUE,TRUE,0);
-   gtk_box_pack_start(GTK_BOX(box),hbox_uri,FALSE,FALSE,0);        
-   gtk_box_pack_start(GTK_BOX(hbox_title),label_title,FALSE,FALSE,0);
-   gtk_box_pack_start(GTK_BOX(hbox_title),entry_title,TRUE,TRUE,0);
-   gtk_box_pack_start(GTK_BOX(box),hbox_title,FALSE,FALSE,0);        
-   gtk_box_pack_start(GTK_BOX(box),notebook,FALSE,FALSE,0);        
-   //gtk_box_pack_start(GTK_BOX(box),hbutton_box,FALSE,FALSE,0);           
-   gtk_widget_show_all(box);
-   gtk_widget_show(dialog);       
-   g_signal_connect (dialog, "destroy",
-        G_CALLBACK (midori_view_script_dialog_popup_cb_destroyed), action);
-	gint result = gtk_dialog_run(GTK_DIALOG(dialog));
-	switch(result){
-		case GTK_RESPONSE_OK:
-			midori_dialog_action_button_press_cb_ctn(action);
-			break;
-		case GTK_RESPONSE_CANCEL:
-			midori_dialog_action_button_press_cb_dlt(action);
-			break;
-		default:
-			gtk_widget_destroy(dialog);
-			break;
-	}       
-}
-
+	
+//added by wangyl 2015.8.5 end
 // ZRL Implement to receive signal console-message for console.log
 #ifdef HAVE_WEBKIT2
 static gboolean
@@ -4604,6 +4342,57 @@ printf("signal(console-message) callback start time = %lld\n",g_get_real_time())
             g_error_free (error);
         }
     }
+      else if( !strncmp (message, "speeddial-history-", 18))
+    {
+	_midori_view_show_speeddial_history(view,message);
+    }
+    else if( !strncmp (message, "speeddial-update-", 17))
+    {
+	MidoriBrowser* browser = midori_browser_get_for_widget (GTK_WIDGET (midori_view_get_web_view(view)));
+	MidoriSpeedDial* dial = katze_object_get_object (browser, "speed-dial");
+	gchar**part =  g_strsplit (message, "-", 4);
+	GError* error = NULL;
+	gchar id[25]={0};
+	int i = 0;
+	strncpy(id,part[2],strlen(part[2]));
+	if(strlen(id) != 13)return FALSE;
+	for( i = 0;i<13;i++)if(id[i]<'0'||id[i]>'9')return FALSE;
+	midori_speed_dial_add(dial, part[3], id, NULL);
+	if (error != NULL)
+	{
+	  g_critical ("Failed speed dial message: %s\n", error->message);
+	  g_error_free (error);
+	}
+			
+    }
+    else if( !strncmp (message, "speeddial-remove-", 17))
+    {
+	gchar id[50]={0};
+	MidoriBrowser* browser = midori_browser_get_for_widget (GTK_WIDGET (midori_view_get_web_view(view)));
+	MidoriSpeedDial* dial = katze_object_get_object (browser, "speed-dial");
+	gchar**part =  g_strsplit (message, "-", 4);
+	GError* error = NULL;
+	g_sprintf(id,"speed_dial-save-delete %s",part[2]);
+	midori_speed_dial_save_message (dial, id, error);
+	if (error != NULL)
+	{
+		g_critical ("Failed speed dial message: %s\n", error->message);
+		g_error_free (error);
+	}
+			
+   }
+   else if( !strncmp (message, "speeddial-add-", 14) ) 
+   {
+	MidoriBrowser* browser = midori_browser_get_for_widget (GTK_WIDGET (midori_view_get_web_view(view)));
+	MidoriSpeedDial* dial = katze_object_get_object (browser, "speed-dial");
+	gchar**part =  g_strsplit (message, "-", 4);
+	gchar id[25]={0};
+	int i = 0;
+	strncpy(id,part[2],strlen(part[2]));
+	if(strlen(id) != 13)return FALSE;
+	for( i = 0;i<13;i++)if(id[i]<'0'||id[i]>'9')return FALSE; 
+  	midori_speed_dial_add(dial, part[3], id, NULL);
+   }
     else if(!strncmp (message, "cdosExtension", 13))
     {
        
@@ -5545,8 +5334,8 @@ midori_view_constructor (GType                  type,
 // ZRL add new signal for console.log
                       "signal::console-message",
                       webkit_web_view_console_message_cb, view,
-                      "signal::script-dialog-popup",
-                   midori_view_script_dialog_popup_cb, view,
+                   //   "signal::script-dialog-popup",
+                  // midori_view_script_dialog_popup_cb, view,
 #if TRACK_LOCATION_TAB_ICON //lxx, 20150203
 //lxx, 20150127	
                       "signal::permission-request",
@@ -6036,8 +5825,16 @@ printf("set_uri start time = %lld\n",g_get_real_time());
     {
         gboolean handled = FALSE;
         if (g_str_has_prefix (uri, "about:"))
+        {
+	    GtkNotebook *notebook;
             g_signal_emit (view, signals[ABOUT_CONTENT], 0, uri, &handled);
-
+	     MidoriBrowser* browser =  midori_browser_get_for_widget((GtkWidget*)view);
+            GtkWidget* tab = midori_browser_get_current_tab ( browser);
+            g_object_get(browser,"notebook",&notebook,NULL);
+            GtkWidget*label =  gtk_notebook_get_tab_label(notebook,tab);
+            GtkImage*image =  midori_tally_get_icon((MidoriTally*)label);
+            gtk_image_set_from_gicon(image,g_themed_icon_new_with_default_fallbacks ("text-html-symbolic"),GTK_ICON_SIZE_MENU);
+        }
         if (handled)
         {
 	    GtkNotebook *notebook;

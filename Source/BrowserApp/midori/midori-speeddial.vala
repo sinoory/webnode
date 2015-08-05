@@ -38,10 +38,16 @@ namespace Midori {
         List<Spec> thumb_queue = null;
         WebKit.WebView thumb_view = null;
         Spec? spec = null;
+	//added by wangyl 2015.8.5 start 
+	public string imagename{get; set; default = null;}
+	public string imagetitle{get; set; default = null;}
+	public string imageid{get; set; default = null;}
+	////added by wangyl 2015.8.5 end
 
         public GLib.KeyFile keyfile;
         public bool close_buttons_left { get; set; default = false; }
         public signal void refresh ();
+	public signal void refresh1 ();// added by wangyl 2015.8.5 
 
         public class Spec {
             public string dial_id;
@@ -80,15 +86,16 @@ namespace Midori {
         for (var i in json['shortcuts']) {
         var tile = json['shortcuts'][i];
         keyfile += '[Dial ' + tile['id'].substring (1) + ']\n'
+		+  'imageid=' + tile['imageid'] + '\n'
                 +  'uri=' + tile['href'] + '\n'
                 +  'img=' + tile['img'] + '\n'
                 +  'title=' + tile['title'] + '\n\n';
         }
-        var columns = json['width'] ? json['width'] : 3;
+        var columns = json['width'] ? json['width'] : 4;
         var rows = json['shortcuts'] ? json['shortcuts'].length / columns : 0;
         keyfile += '[settings]\n'
                 +  'columns=' + columns + '\n'
-                +  'rows=' + (rows > 3 ? rows : 3) + '\n\n';
+                +  'rows=' + (rows > 4 ? rows : 4) + '\n\n';
         keyfile;
                     """);
 
@@ -147,9 +154,10 @@ namespace Midori {
 
         public void add (string uri, string title, Gdk.Pixbuf? img) {
             string id = get_next_free_slot ();
+	    keyfile.set_string (id, "imageid", title);
             uint slot = id.substring (5, -1).to_int ();
             try {
-                save_message ("speed_dial-save-add %u %s".printf (slot, uri));
+		save_message ("speed_dial-save-add %u %s %s".printf (slot, uri,title));
             }
             catch (Error error) {
                 critical ("Failed to add speed dial thumbnail: %s", error.message);
@@ -163,6 +171,9 @@ namespace Midori {
             Katze.mkdir_with_parents (Path.build_path (Path.DIR_SEPARATOR_S,
                 Paths.get_cache_dir (), "thumbnails"), 0700);
             string filename = build_thumbnail_path (uri);
+	    imagename = filename;
+	    imagetitle = title;
+	    imageid  = keyfile.get_string (id, "imageid");
             try {
                 img.save (filename, "png", null, "compression", "7", null);
             }
@@ -170,6 +181,7 @@ namespace Midori {
                 critical ("Failed to save speed dial thumbnail: %s", error.message);
             }
             save ();
+	    refresh ();
         }
 
         string build_thumbnail_path (string filename) {
@@ -291,7 +303,7 @@ namespace Midori {
                 throw new SpeedDialError.INVALID_MESSAGE ("Invalid message '%s'", message);
 
             string msg = message.substring (16, -1);
-            string[] parts = msg.split (" ", 3);
+            string[] parts = msg.split (" ", 4);
             if (parts[0] == null)
                 throw new SpeedDialError.NO_ACTION ("No action.");
             string action = parts[0];
@@ -300,11 +312,28 @@ namespace Midori {
                 throw new SpeedDialError.NO_ID ("No ID argument.");
             string dial_id = "Dial " + parts[1];
 
-                if (action == "delete") {
-                    string uri = keyfile.get_string (dial_id, "uri");
-                    string file_path = build_thumbnail_path (uri);
-                    keyfile.remove_group (dial_id);
-                    FileUtils.unlink (file_path);
+		if (action == "delete"){
+		   int n = 0;
+		   foreach (string tile in keyfile.get_groups ()){
+	             try {
+		           string image_id = keyfile.get_string (tile, "imageid");
+			   if(parts[1] == image_id){
+				string uri = keyfile.get_string (tile, "uri");
+                                foreach (string tile1 in keyfile.get_groups ()){
+                                  try {
+                                       if(uri == keyfile.get_string (tile1, "uri"))n++;
+                                  }
+                                  catch (KeyFileError error) { }
+			        }
+		                string file_path = build_thumbnail_path (uri);
+                                keyfile.remove_group (tile);
+                                if(n==1)FileUtils.unlink (file_path);
+                                break;
+			    }
+			}
+			catch (KeyFileError error) { }
+		    }
+		   refresh1 ();
                 }
                 else if (action == "add") {
                     if (parts[2] == null)
@@ -349,7 +378,7 @@ namespace Midori {
             catch (Error error) {
                 critical ("Failed to update speed dial: %s", error.message);
             }
-            refresh ();
+            //refresh ();
         }
 
 // ZRL implement for Webkit2gtk API
@@ -374,6 +403,7 @@ namespace Midori {
         bool load_failed (GLib.Object thumb_view_, WebKit.LoadEvent load_event, string failingURI, void *error) {
             thumb_view.load_failed.disconnect (load_failed);
             thumb_view.load_changed.disconnect (load_changed);
+	    Idle.add (save_thumbnail);
             return true;
         }
 #endif

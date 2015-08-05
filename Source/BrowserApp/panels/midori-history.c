@@ -202,7 +202,7 @@ midori_history_read_from_db (MidoriHistory* history,
     sqlite3* db;
     sqlite3_stmt* statement;
     gint result;
-    const gchar* sqlcmd;
+    gchar* sqlcmd;
 
     db = g_object_get_data (G_OBJECT (history->array), "db");
 
@@ -232,11 +232,18 @@ midori_history_read_from_db (MidoriHistory* history,
     }
     else
     {
-        sqlcmd = "SELECT uri, title, date, day "
-                 "FROM history WHERE day = ? "
-                 "GROUP BY uri ORDER BY date ASC";
-        result = sqlite3_prepare_v2 (db, sqlcmd, -1, &statement, NULL);
-        sqlite3_bind_int64 (statement, 1, req_day);
+       // sqlcmd = "SELECT uri, title, date, day "
+       //          "FROM history WHERE day = ? "
+        //         "GROUP BY uri ORDER BY date ASC";
+       // result = sqlite3_prepare_v2 (db, sqlcmd, -1, &statement, NULL);
+       // sqlite3_bind_int64 (statement, 1, req_day);
+	gchar* filterstr = "%http%";
+	 
+	sqlcmd = g_strdup_printf( "SELECT  uri, title, date, day "
+		"FROM history WHERE day = %d AND uri LIKE '%s'"
+		"GROUP BY uri ORDER BY date ASC",req_day,filterstr);
+	result = sqlite3_prepare_v2 (db, sqlcmd, -1, &statement, NULL);
+	g_free (sqlcmd);
     }
 
     if (result != SQLITE_OK)

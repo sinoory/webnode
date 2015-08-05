@@ -120,6 +120,7 @@ target_link_libraries(${LIBMIDORI}
                       m
                       X11
                       pthread
+		      json-c
 #if(BOOKMARK_SYNC)
 #                      ssl
 #                      crypto
@@ -170,6 +171,7 @@ target_link_libraries(${MIDORI_PROJECT_NAME}
                       m
                       X11
                       pthread
+		      json-c
 #if(BOOKMARK_SYNC)
 #                      ssl
 #                      crypto
