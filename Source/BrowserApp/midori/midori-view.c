@@ -3056,15 +3056,16 @@ midori_view_get_cookie_cb(WebKitCookieManager* cookiemanager,
                           const gchar*         cookie,
                           MidoriView*          view)
 {
+   const gchar* uri = webkit_web_view_get_uri (WEBKIT_WEB_VIEW  (view->web_view));
    if (cookie && strlen(cookie))
    {
-      view->download_exec = (char *)malloc(strlen(view->download_uri)+strlen(view->download_filename)+strlen(cookie)+64);
-      sprintf(view->download_exec,"/usr/local/libexec/cdosbrowser/cdosbrowser_download %s%s%s %s%s%s %s%s%s &","\"",view->download_uri,"\"","\"",view->download_filename,"\"", "\"",cookie,"\"");  
+      view->download_exec = (char *)malloc(strlen(view->download_uri)+strlen(view->download_filename)+strlen(cookie)+strlen(uri)+64);
+      sprintf(view->download_exec,"/usr/local/libexec/cdosbrowser/cdosbrowser_download %s%s%s %s%s%s %s%s%s %s%s%s","\"",view->download_uri,"\"","\"",view->download_filename,"\"", "\"",cookie,"\"","\"",uri,"\"","&");  
    }
    else
    {
-      view->download_exec = (char *)malloc(strlen(view->download_uri)+strlen(view->download_filename)+64);
-      sprintf(view->download_exec,"/usr/local/libexec/cdosbrowser/cdosbrowser_download %s%s%s %s%s%s","\"",view->download_uri,"\"","\"",view->download_filename,"\"");
+      view->download_exec = (char *)malloc(strlen(view->download_uri)+strlen(view->download_filename)+strlen(uri)+64);
+      sprintf(view->download_exec,"/usr/local/libexec/cdosbrowser/cdosbrowser_download %s%s%s %s%s%s %s%s%s","\"",view->download_uri,"\"","\"",view->download_filename,"\"","\"",uri,"\"","&");
    }
    free(view->download_uri);
    view->download_uri = NULL;
