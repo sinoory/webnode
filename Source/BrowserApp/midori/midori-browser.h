@@ -110,14 +110,6 @@ midori_browser_assert_action          (MidoriBrowser*     browser,
                                        const gchar*       name);
 
 void
-midori_browser_block_action           (MidoriBrowser*     browser,
-                                       GtkAction*         action);
-
-void
-midori_browser_unblock_action         (MidoriBrowser*     browser,
-                                       GtkAction*         action);
-
-void
 midori_browser_set_action_visible     (MidoriBrowser*     browser,
                                        const gchar*       name,
                                        gboolean           visible);
@@ -214,12 +206,6 @@ void midori_browser_clear_history(MidoriBrowser*     browser);
 void midori_browser_clear_bookmarks(MidoriBrowser* browser);
 
 void midori_browser_change_history_seting(MidoriBrowser* browser, gint *settings);
-//add by luyue 2014/12/30
-gboolean
-web_view_navigation_decision_cb       (WebKitWebView*             web_view,
-                                       WebKitPolicyDecision*      decision,
-                                       WebKitPolicyDecisionType   decision_type,
-                                       MidoriBrowser*             browser);
 
 // 当前用于Web扩展内通过新建窗口形式打开某个网页
 void

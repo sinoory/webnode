@@ -29,10 +29,10 @@ webkit_web_view_create_web_view_cb (GtkWidget*      web_view,
     gchar *destUri = webkit_uri_request_get_uri(naviationRequest);
     midori_browser_open_new_tab_from_extension(browser, destUri, false);
     if(popup_window)
-           {              
+    {              
        gtk_widget_destroy(popup_window);
        popup_window = NULL;
-          }
+    }
     return NULL;
 }
 
@@ -43,10 +43,10 @@ gupiao_function_realization (GtkWidget* botton,MidoriBrowser* browser)
    sprintf(uri,"file://%s",midori_paths_get_res_filename("gupiao/index.html"));
    
    if(popup_window)
-        {
+   {
      gtk_widget_destroy(popup_window);
      popup_window = NULL;
-        }
+   }
    popup_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
    gtk_window_set_title(popup_window,"股票小助手");
    gtk_widget_set_size_request (popup_window, 600, 450);

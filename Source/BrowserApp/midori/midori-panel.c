@@ -108,9 +108,6 @@ static void
 midori_panel_button_open_in_window_cb(GtkWidget*   toolitem,
                                       MidoriPanel* panel);
 
-void midori_panel_open_in_window(MidoriPanel* panel,
-                                gboolean     open_in_window,
-                                gint page_n);
 void _midori_panel_open_in_window(MidoriPanel* panel,
                                 gboolean     open_in_window);
 

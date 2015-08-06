@@ -64,6 +64,10 @@ midori_panel_append_widget          (MidoriPanel*       panel,
                                      const gchar*       label,
                                      GtkWidget*         toolbar);
 
+void midori_panel_open_in_window(MidoriPanel* panel,
+                                 gboolean     open_in_window,
+                                 gint page_n);
+
 G_END_DECLS
 
 #endif /* __MIDORI_PANEL_H__ */
