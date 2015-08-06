@@ -111,9 +111,6 @@ const gchar*
 midori_view_get_selected_text          (MidoriView*        view);
 
 GtkWidget*
-midori_view_get_proxy_menu_item        (MidoriView*        view);
-
-GtkWidget*
 midori_view_get_tab_menu               (MidoriView*        view);
 
 GtkWidget*
@@ -121,9 +118,6 @@ midori_view_duplicate                  (MidoriView*        view);
 
 PangoEllipsizeMode
 midori_view_get_label_ellipsize        (MidoriView*        view);
-
-GtkWidget*
-midori_view_get_proxy_tab_label        (MidoriView*        view);
 
 KatzeItem*
 midori_view_get_proxy_item             (MidoriView*        view);
@@ -157,14 +151,6 @@ midori_view_can_go_forward             (MidoriView*        view);
 void
 midori_view_go_forward                 (MidoriView*        view);
 
-
-void midori_view_go_back_or_forward    (MidoriView*        view,
-                                        gint               steps);
-
-gboolean
-midori_view_can_go_back_or_forward     (MidoriView*        view,
-                                        gint               steps);
-
 const gchar*
 midori_view_get_previous_page          (MidoriView*        view);
 
@@ -183,21 +169,10 @@ midori_view_save_source                (MidoriView*        view,
                                         const gchar*       outfile,
                                         gboolean           use_dom);
 
-void
-midori_view_search_text                (MidoriView*        view,
-                                        const gchar*       text,
-                                        gboolean           case_sensitive,
-                                        gboolean           forward);
-
 gboolean
 midori_view_execute_script             (MidoriView*        view,
                                         const gchar*       script,
                                         gchar**            exception);
-
-GdkPixbuf*
-midori_view_get_snapshot               (MidoriView*        view,
-                                        gint               width,
-                                        gint               height);
 
 GtkWidget*
 midori_view_get_web_view               (MidoriView*        view);
@@ -234,16 +209,6 @@ void
 midori_view_list_plugins               (MidoriView*        view,
                                         GString*           markup,
                                         gboolean           html);
-
-void
-midori_view_list_video_formats         (MidoriView*        view,
-                                        GString*           formats,
-                                        gboolean           html);
-
-void
-midori_view_set_colors                 (MidoriView*        view,
-                                        GdkColor*          fg_color,
-                                        GdkColor*          bg_color);
 
 gboolean
 midori_view_get_tls_info               (MidoriView*        view,

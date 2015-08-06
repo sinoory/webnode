@@ -149,7 +149,7 @@ namespace About {
             view.settings.get ("user-agent", out ident);
 
             GLib.StringBuilder video_formats = new GLib.StringBuilder ();
-            view.list_video_formats (video_formats, true);
+            //view.list_video_formats (video_formats, true);
 
             GLib.StringBuilder ns_plugins = new GLib.StringBuilder ();
             view.list_plugins (ns_plugins, false);
