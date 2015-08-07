@@ -867,6 +867,7 @@ midori_browser_step_history (MidoriBrowser* browser,
         time_t now = time (NULL);
         katze_item_set_added (proxy, now);
         gint64 day = sokoke_time_t_to_julian (&now);
+        if(!strncmp(katze_item_get_uri (proxy),"file:",5))return;
         midori_history_database_insert (browser->history_database,
             katze_item_get_uri (proxy),
             katze_item_get_name (proxy),

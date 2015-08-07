@@ -768,35 +768,35 @@ katze_array_action_create_tool_item_for (KatzeArrayAction* array_action,
         gtk_box_pack_start (GTK_BOX(itembox), image, FALSE, FALSE ,0);
 /* folder longth control */
     if (KATZE_ITEM_IS_FOLDER (item))
-        {
-            int i = 0, i_longth = 0;
-            unsigned char *p;
-            p = title;
-            while (*p !=0)
-                {
-                    if (i>=18) break;
-                    if (*p >= 0xA1)
-                        {
-                            i_longth = i_longth + 3;
-                            i = i+2;
-                            p+=3;
-                        }
-                    else 
-                        {
-                            i_longth = i_longth + 1;
-                            i = i+1;
-                            p+=1;
-                        }
-                }
-            strncpy (tmp_title,title,i_longth);
-            label = gtk_label_new (tmp_title);
-        }
+    {
+      int i = 0, i_longth = 0;
+      unsigned char *p;
+      p = title;
+      while (*p !=0)
+      {
+       if (i>=18) break;
+       if (*p >= 0xA1)
+       {
+         i_longth = i_longth + 3;
+         i = i+2;
+         p+=3;
+       }
+       else 
+       {
+        i_longth = i_longth + 1;
+        i = i+1;
+        p+=1;
+       }
+      }
+      strncpy (tmp_title,title,i_longth);
+      label = gtk_label_new (tmp_title);
+    }
     else
         label = gtk_label_new (title);
     /* FIXME: Should text direction be respected here? */
     gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
     gtk_label_set_max_width_chars (GTK_LABEL (label), 25);
-    if (strlen(title)>27);
+    if (strlen(title)>27)
     gtk_label_set_ellipsize (GTK_LABEL (label), PANGO_ELLIPSIZE_END);
 //    gtk_label_set_text(GTK_LABEL(label), title);
     gtk_widget_show (label);

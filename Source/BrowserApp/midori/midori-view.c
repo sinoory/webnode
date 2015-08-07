@@ -611,7 +611,6 @@ midori_view_set_title (MidoriView* view, const gchar* title)
        katze_assign (view->title, g_strdup (midori_tab_get_display_title (title_temp, uri)));
     }
     else katze_assign (view->title, g_strdup (midori_tab_get_display_title (title, uri)));
-    katze_assign (view->title, g_strdup (midori_tab_get_display_title (title, uri)));
     view->ellipsize = midori_tab_get_display_ellipsize (view->title, uri);
     if (view->menu_item)
         gtk_label_set_text (GTK_LABEL (gtk_bin_get_child (GTK_BIN (
@@ -3200,6 +3199,7 @@ _midori_view_show_speeddial_history(MidoriView*  view,
    int string_len,length=0,n=0,page_nth=0,page_n=0,item_nth=0;
    gchar *string_data,*string_data1;
    gchar file_adr[100] = {0};
+   gchar image_adr[100] = {0};
    KatzeItem* item;
 	
    gchar**part =  g_strsplit (message, "-", 4);
@@ -3227,8 +3227,9 @@ _midori_view_show_speeddial_history(MidoriView*  view,
       GdkPixbuf*  pixbuf = webkit_favicon_database_try_get_favicon_pixbuf(dab,katze_item_get_uri(item),16,16);
       if(pixbuf != NULL)
       {
-         gdk_pixbuf_save (pixbuf, "/home/wyl/.cache/cdosbrowser/temp.png", "png", NULL, NULL, "compression", "7", NULL, NULL);
-	 g_file_get_contents("/home/wyl/.cache/cdosbrowser/temp.png",&data,&datalen,NULL);
+         g_sprintf(image_adr,"%s/temp.png",midori_paths_get_cache_dir());
+         gdk_pixbuf_save (pixbuf, image_adr, "png", NULL, NULL, "compression", "7", NULL, NULL);
+	 g_file_get_contents(image_adr,&data,&datalen,NULL);
 	 json_object_object_add(my_object, "image", json_object_new_string(g_base64_encode ((guchar*)data, datalen)));
 	 g_free(data);
       }

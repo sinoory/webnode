@@ -38,17 +38,17 @@ namespace Midori {
         List<Spec> thumb_queue = null;
         WebKit.WebView thumb_view = null;
         Spec? spec = null;
-	//added by wangyl 2015.8.5 start 
-	public string imagename{get; set; default = null;}
-	public string imagetitle{get; set; default = null;}
-	public string imageid{get; set; default = null;}
-	////added by wangyl 2015.8.5 end
-
+	//added by wangyl 2015.8.7 start
+        public string imagename{get; set; default = null;}
+        public string imagetitle{get; set; default = null;}
+        public string imageid{get; set; default = null;}
+        bool Load_status = false;//Whether to download
+        public int    load_time = 30;//Maximum download time
         public GLib.KeyFile keyfile;
         public bool close_buttons_left { get; set; default = false; }
         public signal void refresh ();
-	public signal void refresh1 ();// added by wangyl 2015.8.5 
-
+        public signal void refresh1 ();
+	//added by wangyl 2015.8.7 end
         public class Spec {
             public string dial_id;
             public string uri;
@@ -86,7 +86,7 @@ namespace Midori {
         for (var i in json['shortcuts']) {
         var tile = json['shortcuts'][i];
         keyfile += '[Dial ' + tile['id'].substring (1) + ']\n'
-		+  'imageid=' + tile['imageid'] + '\n'
+					 +  'imageid=' + tile['imageid'] + '\n'
                 +  'uri=' + tile['href'] + '\n'
                 +  'img=' + tile['img'] + '\n'
                 +  'title=' + tile['title'] + '\n\n';
@@ -129,67 +129,8 @@ namespace Midori {
                 }
             }
         }
-
-        public string get_next_free_slot (out uint count = null) {
-            uint slot_count = 0;
-            foreach (string tile in keyfile.get_groups ()) {
-                try {
-                    if (keyfile.has_key (tile, "uri"))
-                        slot_count++;
-                }
-                catch (KeyFileError error) { }
-            }
-            count = slot_count;
-
-            uint slot = 1;
-            while (slot <= slot_count) {
-                string tile = "Dial %u".printf (slot);
-                if (!keyfile.has_group (tile))
-                    return tile;
-                slot++;
-            }
-
-            return "Dial %u".printf (slot_count + 1);
-        }
-
-        public void add (string uri, string title, Gdk.Pixbuf? img) {
-            string id = get_next_free_slot ();
-	    keyfile.set_string (id, "imageid", title);
-            uint slot = id.substring (5, -1).to_int ();
-            try {
-		save_message ("speed_dial-save-add %u %s %s".printf (slot, uri,title));
-            }
-            catch (Error error) {
-                critical ("Failed to add speed dial thumbnail: %s", error.message);
-            }
-        }
-
-        public void add_with_id (string id, string uri, string title, Gdk.Pixbuf? img) {
-            keyfile.set_string (id, "uri", uri);
-            keyfile.set_string (id, "title", title);
-
-            Katze.mkdir_with_parents (Path.build_path (Path.DIR_SEPARATOR_S,
-                Paths.get_cache_dir (), "thumbnails"), 0700);
-            string filename = build_thumbnail_path (uri);
-	    imagename = filename;
-	    imagetitle = title;
-	    imageid  = keyfile.get_string (id, "imageid");
-            try {
-                img.save (filename, "png", null, "compression", "7", null);
-            }
-            catch (Error error) {
-                critical ("Failed to save speed dial thumbnail: %s", error.message);
-            }
-            save ();
-	    refresh ();
-        }
-
-        string build_thumbnail_path (string filename) {
-            string thumbnail = Checksum.compute_for_string (ChecksumType.MD5, filename) + ".png";
-            return Path.build_filename (Paths.get_cache_dir (), "thumbnails", thumbnail);
-        }
-
-        public unowned string get_html () throws Error {
+       #if 0
+          public unowned string get_html () throws Error {
             bool load_missing = true;
 
             if (html != null)
@@ -297,7 +238,75 @@ namespace Midori {
 
             return html;
         }
+	#endif
+	
+        public string get_next_free_slot (out uint count = null) {
+            uint slot_count = 0;
+            foreach (string tile in keyfile.get_groups ()) {
+                try {
+                    if (keyfile.has_key (tile, "uri"))
+                        slot_count++;
+                }
+                catch (KeyFileError error) { }
+            }
+            count = slot_count;
 
+            uint slot = 1;
+            while (slot <= slot_count) {
+                string tile = "Dial %u".printf (slot);
+                if (!keyfile.has_group (tile))
+                    return tile;
+                slot++;
+            }
+
+            return "Dial %u".printf (slot_count + 1);
+        }
+
+        public void add (string uri, string title, Gdk.Pixbuf? img) {
+                foreach (string tile in keyfile.get_groups ()){
+                    try {
+                               string image_id = keyfile.get_string (tile, "imageid");
+                               if( title == image_id)return;
+                   }
+                   catch (KeyFileError error) { }
+              }	 
+             string id = get_next_free_slot ();
+             keyfile.set_string (id, "imageid", title);
+            uint slot = id.substring (5, -1).to_int ();
+            try {
+                save_message ("speed_dial-save-add %u %s %s".printf (slot, uri,title));
+            }
+            catch (Error error) {
+                critical ("Failed to add speed dial thumbnail: %s", error.message);
+            }
+        }
+
+        public void add_with_id (string id, string uri, string title, Gdk.Pixbuf? img) {
+            keyfile.set_string (id, "uri", uri);
+            keyfile.set_string (id, "title", title);
+
+            Katze.mkdir_with_parents (Path.build_path (Path.DIR_SEPARATOR_S,
+                Paths.get_cache_dir (), "thumbnails"), 0700);
+            string filename = build_thumbnail_path (uri);
+	  imagename = filename;			
+           imagetitle = title;
+           imageid  = keyfile.get_string (id, "imageid");
+            try {
+                img.save (filename, "png", null, "compression", "7", null);
+            }
+            catch (Error error) {
+                critical ("Failed to save speed dial thumbnail: %s", error.message);
+            }
+            save ();
+            refresh ();
+        }
+			
+        string build_thumbnail_path (string filename) {
+            string thumbnail = Checksum.compute_for_string (ChecksumType.MD5, filename) + ".png";
+            return Path.build_filename (Paths.get_cache_dir (), "thumbnails", thumbnail);
+        }
+
+      
         public void save_message (string message) throws Error {
             if (!message.has_prefix ("speed_dial-save-"))
                 throw new SpeedDialError.INVALID_MESSAGE ("Invalid message '%s'", message);
@@ -307,34 +316,34 @@ namespace Midori {
             if (parts[0] == null)
                 throw new SpeedDialError.NO_ACTION ("No action.");
             string action = parts[0];
-
             if (parts[1] == null)
                 throw new SpeedDialError.NO_ID ("No ID argument.");
             string dial_id = "Dial " + parts[1];
 
-		if (action == "delete"){
-		   int n = 0;
-		   foreach (string tile in keyfile.get_groups ()){
-	             try {
-		           string image_id = keyfile.get_string (tile, "imageid");
-			   if(parts[1] == image_id){
-				string uri = keyfile.get_string (tile, "uri");
-                                foreach (string tile1 in keyfile.get_groups ()){
-                                  try {
-                                       if(uri == keyfile.get_string (tile1, "uri"))n++;
-                                  }
-                                  catch (KeyFileError error) { }
-			        }
-		                string file_path = build_thumbnail_path (uri);
-                                keyfile.remove_group (tile);
-                                if(n==1)FileUtils.unlink (file_path);
-                                break;
-			    }
-			}
-			catch (KeyFileError error) { }
-		    }
-		   refresh1 ();
-                }
+                if (action == "delete") {
+                 int n = 0;
+                   foreach (string tile in keyfile.get_groups ()){
+                          try {
+                             string image_id = keyfile.get_string (tile, "imageid");					
+                               if(parts[1] == image_id){
+                                        string uri = keyfile.get_string (tile, "uri");
+                                        foreach (string tile1 in keyfile.get_groups ()){
+                                                try {
+                                                            if(uri == keyfile.get_string (tile1, "uri"))n++;
+                                                 }
+                                               catch (KeyFileError error) { }
+                                       }
+										
+                                       string file_path = build_thumbnail_path (uri);
+                                       keyfile.remove_group (tile);
+                                        if(n==1)FileUtils.unlink (file_path);
+                                        break;
+                              }
+                         }		
+                        catch (KeyFileError error) { }
+                      }
+                     refresh1 ();
+                  }
                 else if (action == "add") {
                     if (parts[2] == null)
                         throw new SpeedDialError.NO_URL ("No URL argument.");
@@ -378,7 +387,7 @@ namespace Midori {
             catch (Error error) {
                 critical ("Failed to update speed dial: %s", error.message);
             }
-            //refresh ();
+           // refresh ();
         }
 
 // ZRL implement for Webkit2gtk API
@@ -395,6 +404,7 @@ namespace Midori {
         void load_changed (GLib.Object thumb_view_, WebKit.LoadEvent load_event) {
             if (load_event != WebKit.LoadEvent.FINISHED)
                 return;
+             Load_status = true;
             thumb_view.load_changed.disconnect (load_changed);
             /* Schedule an idle to give the offscreen time to draw */
             Idle.add (save_thumbnail);
@@ -403,7 +413,8 @@ namespace Midori {
         bool load_failed (GLib.Object thumb_view_, WebKit.LoadEvent load_event, string failingURI, void *error) {
             thumb_view.load_failed.disconnect (load_failed);
             thumb_view.load_changed.disconnect (load_changed);
-	    Idle.add (save_thumbnail);
+             Load_status = true;
+            Idle.add (save_thumbnail);
             return true;
         }
 #endif
@@ -479,12 +490,81 @@ namespace Midori {
                 spec = thumb_queue.nth_data (0);
                 thumb_view.load_changed.connect (load_changed);
                 thumb_view.load_failed.connect (load_failed);
+               GLib.Timeout.add(1000,check_load_status);
                 thumb_view.load_uri (spec.uri);
             }
             return false;
         }
 #endif
+         bool  save_unfinished_thumbnail(){
+              return_val_if_fail (spec != null, false);
 
+              thumb_view.load_failed.disconnect (load_failed);
+              thumb_view.load_changed.disconnect (load_changed);
+
+              var offscreen = (thumb_view.parent as Gtk.OffscreenWindow);
+              var pixbuf = offscreen.get_pixbuf ();
+              int image_width = pixbuf.get_width (), image_height = pixbuf.get_height ();
+              int thumb_width = 240, thumb_height = 160;
+              float image_ratio = image_width / image_height;
+              float thumb_ratio = thumb_width / thumb_height;
+              int x_offset, y_offset, computed_width, computed_height;
+              if (image_ratio > thumb_ratio) {
+	           computed_width = (int)(image_height * thumb_ratio);
+	           computed_height = image_height;
+	           x_offset = (image_width - computed_width) / 2;
+	          y_offset = 0;
+              }
+             else {
+	          computed_width = image_width;
+	          computed_height = (int)(image_width / thumb_ratio);
+	           x_offset = 0;
+	           y_offset = 0;
+              }
+             var sub = pixbuf;
+             if (y_offset + computed_height <= image_height)
+	      sub = new Gdk.Pixbuf.subpixbuf (pixbuf, x_offset, y_offset, computed_width, computed_height);
+              var scaled = sub.scale_simple (thumb_width, thumb_height, Gdk.InterpType.TILES);
+              add_with_id (spec.dial_id, spec.uri, thumb_view.get_title () ?? spec.uri, scaled);
+
+               thumb_queue.remove (spec);
+               offscreen.remove(thumb_view);
+                thumb_view.destroy();
+                thumb_view = new WebKit.WebView ();
+               thumb_view.get_settings().set (
+                   "enable-javascript", true,
+                   "enable-plugins", false,
+                   "auto-load-images", true,
+                   "enable-html5-database", false,
+                   "enable-html5-local-storage", false,
+                   "enable-java", false);
+              offscreen.add (thumb_view);
+               thumb_view.set_size_request (800, 600);
+               offscreen.show_all ();	
+               if (thumb_queue.length () > 0) {
+	     spec = thumb_queue.nth_data (0);
+	     thumb_view.load_changed.connect (load_changed);
+	     thumb_view.load_failed.connect (load_failed);
+               GLib.Timeout.add(1000,check_load_status);
+	      thumb_view.load_uri (spec.uri);
+               }
+               return false;		
+          }
+bool check_load_status(){ 
+	     if( Load_status == true){
+                    Load_status = false;
+                    load_time = 30;
+                     return false;//delete timer
+	     }
+              else if( load_time == 0  && Load_status == false ){
+                     Load_status = false;
+                    load_time = 30;
+		 save_unfinished_thumbnail();
+                   return false;//delete timer
+              }
+            load_time--;
+            return    true;//continue use timer
+	}
         void get_thumb (string dial_id, string uri) {
 #if !HAVE_WEBKIT2
             if (thumb_view == null) {
@@ -536,13 +616,16 @@ namespace Midori {
                     return;
 
             thumb_queue.append (new Spec (dial_id, uri));
-            if (thumb_queue.length () > 1)
-                return;
 
+            if (thumb_queue.length () > 1){
+                return;
+            }
+             GLib.Timeout.add(1000,check_load_status);
             spec = thumb_queue.nth_data (0);
             thumb_view.load_changed.connect (load_changed);
-            thumb_view.load_failed.connect (load_failed);
+            thumb_view.load_failed.connect (load_failed);				
             thumb_view.load_uri (spec.uri);
+				
 #endif
         }
     }

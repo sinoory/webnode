@@ -161,10 +161,10 @@
             for(var i=0; i<len; i++){
                 if(position){
                     if(original[i][position.key]==position.value){
+                        has=true;
                         targetIndex=i;
                     }
                 }
-
                 //判断当前数据是否已经存在，如果不存在则添加，存在则重新排序；
                 if(json.isEqual(data,original[i])) {
                     has=true;
@@ -193,13 +193,13 @@
                 result=1;
             }
         }
+
         if(result>0){
             this.set(key,original,isSession);
         }
         if(typeof callback=="function"){
             callback(data,result);
         }
-
         return result;
 
     };
@@ -252,12 +252,13 @@
             }
         }
         var result=false;
-
+        var has=false;
         if(typeof original=="object"){
             if(original.length>0){//二维；
                 for(var x in original){
                     var it=original[x];
                     if(it[position.key]==position.value){
+                        has=true;
                         for(var y in data){
                             it[y]=data[y];
                         }
@@ -265,6 +266,7 @@
                 }
             }else{  //一维
                 for(var y in data) {
+                    has=true;
                     original[y] = data[y];
                 }
             }
@@ -272,17 +274,18 @@
             result=true;
         }else if(typeof original=="string"){  //字符串；
             this.set(key,data,isSession);
+            has=true;
             result=true;
         }
-
-        if(typeof callback=="function"){
-            callback(result);
+        if(!has){
+            var a=this.add(key,data,position,isSession,callback);
+            result=a>0?true:false;
+        }else{
+            if(typeof callback=="function"){
+                callback(result);
+            }
         }
         return result;
-
-
-
-
     };
 
     /**
