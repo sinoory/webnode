@@ -236,6 +236,12 @@ midori_view_set_secure_level (MidoriView*        view,
                               MidoriWebSettings* settings);
 //add end
 
+//add by luyue 2015/8/8 start
+void
+midori_view_set_user_agent (MidoriView*  view,
+                            const gchar* uri);
+//add end
+
 G_END_DECLS
 
 #endif /* __MIDORI_VIEW_H__ */

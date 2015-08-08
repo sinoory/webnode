@@ -119,6 +119,11 @@ midori_view_check_popupwindow_cb (WebKitWebView* web_view,
                                   MidoriView*    view);
 //add end
 
+//add by luyue 2015/8/8 start
+static void
+midori_view_reset_user_agent(MidoriView*   view);
+//add end
+
 static gboolean
 midori_view_web_view_close_cb (WebKitWebView* web_view,
                                GtkWidget*     view);
@@ -1453,6 +1458,10 @@ printf("signal(navigation-decision) callback end time = %lld\n",g_get_real_time(
 #endif
         return FALSE;
     }
+    //add by luyue 2015/8/8 start
+    midori_view_set_user_agent(view,webkit_web_view_get_uri(web_view));
+    //add end
+
     void* request = NULL;
     const gchar* uri = webkit_uri_request_get_uri (
         webkit_navigation_policy_decision_get_request (WEBKIT_NAVIGATION_POLICY_DECISION (decision)));
@@ -3059,12 +3068,12 @@ midori_view_get_cookie_cb(WebKitCookieManager* cookiemanager,
    if (cookie && strlen(cookie))
    {
       view->download_exec = (char *)malloc(strlen(view->download_uri)+strlen(view->download_filename)+strlen(cookie)+strlen(uri)+64);
-      sprintf(view->download_exec,"/usr/local/libexec/cdosbrowser/cdosbrowser_download %s%s%s %s%s%s %s%s%s %s%s%s","\"",view->download_uri,"\"","\"",view->download_filename,"\"", "\"",cookie,"\"","\"",uri,"\"","&");  
+      sprintf(view->download_exec,"/usr/local/libexec/cdosbrowser/cdosbrowser_download %s%s%s %s%s%s %s%s%s %s%s%s &","\"",view->download_uri,"\"","\"",view->download_filename,"\"", "\"",cookie,"\"","\"",uri,"\"");  
    }
    else
    {
       view->download_exec = (char *)malloc(strlen(view->download_uri)+strlen(view->download_filename)+strlen(uri)+64);
-      sprintf(view->download_exec,"/usr/local/libexec/cdosbrowser/cdosbrowser_download %s%s%s %s%s%s %s%s%s","\"",view->download_uri,"\"","\"",view->download_filename,"\"","\"",uri,"\"","&");
+      sprintf(view->download_exec,"/usr/local/libexec/cdosbrowser/cdosbrowser_download %s%s%s %s%s%s %s%s%s &","\"",view->download_uri,"\"","\"",view->download_filename,"\"","\"",uri,"\"");
    }
    free(view->download_uri);
    view->download_uri = NULL;
@@ -3097,6 +3106,9 @@ midori_view_download_decide_destination_cb (WebKitDownload*   download,
     }
     view->download_filename = (char *) malloc (strlen(suggested_filename)+1);
     strcpy(view->download_filename,suggested_filename);
+    //add by luyue 2015/8/8 start
+    midori_view_reset_user_agent(view);
+    //add end
     WebKitURIRequest *request = webkit_download_get_request(download);
     const gchar* opener_uri = webkit_uri_request_get_uri(request);
     view->download_uri = (char *)malloc (strlen(opener_uri)+1);
@@ -4267,6 +4279,76 @@ webkit_web_view1_console_message_cb (GtkWidget*   web_view,
 }
 //add end
 
+static void
+midori_view_reset_user_agent(MidoriView*   view)
+{
+    gchar* platform;
+    gchar* architecture;
+    char *string;
+    const gchar* os = midori_web_settings_get_system_name (&architecture, &platform);
+    const int webcore_major = 537;
+    const int webcore_minor = 32;
+       string = g_strdup_printf ("Mozilla/5.0 (%s %s %s) AppleWebKit/%d.%d "
+                                 "(KHTML, like Gecko) Chrome/18.0.1025.133 Safari/%d.%d " "CDOSBrowser/",
+                                 platform, os, architecture,webcore_major, webcore_minor, webcore_major, webcore_minor);
+       g_object_set(view->settings, "user-agent", string, NULL);
+
+}
+
+//add by luyue 2015/8/8 start
+void
+midori_view_set_user_agent (MidoriView*   view,
+                            const gchar*  uri)
+{
+    gchar* platform;
+    gchar* architecture;
+    char *string;
+    const gchar* os = midori_web_settings_get_system_name (&architecture, &platform);
+    const int webcore_major = 537;
+    const int webcore_minor = 32;
+    ssize_t read = -1;
+
+    //present_safiri_agent_uri.txt中预制需要safiri代理网站的主域名
+    gchar* path = midori_paths_get_res_filename ("safiri_agent/present_safiri_agent_uri.txt");
+    FILE * fp = fopen(path, "r");
+    if(fp)
+    {
+       char* line = NULL;
+       size_t len = 0;
+       while ((read = getline(&line, &len, fp)) != -1)
+       {
+           line[strlen(line)-1]='\0';
+          if(strstr(uri,line))
+          {
+             free(line);
+             line = NULL;
+             break;
+          }
+          free(line);
+          line = NULL;
+       }
+       fclose(fp);
+    }
+    if(read == -1)
+    {
+       //chrome的代理
+       string = g_strdup_printf ("Mozilla/5.0 (%s %s %s) AppleWebKit/%d.%d "
+                                 "(KHTML, like Gecko) Chrome/18.0.1025.133 Safari/%d.%d " "CDOSBrowser/",
+                                 platform, os, architecture,webcore_major, webcore_minor, webcore_major, webcore_minor);
+       g_object_set(view->settings, "user-agent", string, NULL);
+    }
+    else
+    {
+       //safiri的代理
+       string = g_strdup_printf ("Mozilla/5.0 (%s %s %s) AppleWebKit/%d.%d "
+                                 "(KHTML, like Gecko) Safari/%d.%d " "CDOSBrowser/",
+                                 platform, os, architecture,webcore_major, webcore_minor, webcore_major, webcore_minor);
+                                 g_object_set(view->settings, "user-agent", string, NULL);
+    }
+    string = NULL;
+}
+//add end
+
 /**
  * midori_view_set_uri:
  * @view: a #MidoriView
@@ -4288,32 +4370,6 @@ printf("set_uri start time = %lld\n",g_get_real_time());
     g_return_if_fail (MIDORI_IS_VIEW (view));
     g_return_if_fail (uri != NULL);
 
-    //add by luyue 2015/7/28 start
-    gchar* platform;
-    gchar* architecture;
-    char *string;
-    const gchar* os = midori_web_settings_get_system_name (&architecture, &platform);
-    const int webcore_major = 537;
-    const int webcore_minor = 32;
-
-    if(strstr(uri,"ccb.com.cn"))
-    {
-       string = g_strdup_printf ("Mozilla/5.0 (%s %s %s) AppleWebKit/%d.%d "
-                                 "(KHTML, like Gecko) Chrome/18.0.1025.133 Safari/%d.%d " "CDOSBrowser/",
-                                 platform, os, architecture,webcore_major, webcore_minor, webcore_major, webcore_minor);
-       g_object_set(view->settings, "user-agent", string, NULL);
-    }
-    else
-    {
-       g_object_get(G_OBJECT(view->settings), "user-agent", &string, NULL);
-       if(strstr(string,"Chrome"))
-       {
-          string = g_strdup_printf ("Mozilla/5.0 (%s %s %s) AppleWebKit/%d.%d "
-            "(KHTML, like Gecko) Safari/%d.%d " "CDOSBrowser/",
-            platform, os, architecture,webcore_major, webcore_minor, webcore_major, webcore_minor);
-          g_object_set(view->settings, "user-agent", string, NULL);
-       }
-    }
     //add by luyue 2015/5/4 start
     //解决有些页面要求自动关闭的问题
     g_signal_connect (view->web_view, "close",

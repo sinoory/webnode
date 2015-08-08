@@ -154,7 +154,7 @@ namespace Midori {
             web_view = new WebKit.WebView ();
 #endif
             /* Load something to avoid a bug where WebKit might not set a main frame */
-           web_view.load_uri ("");
+//           web_view.load_uri ("");
         }
 
         public void inject_stylesheet (string stylesheet) {
