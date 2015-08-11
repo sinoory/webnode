@@ -289,16 +289,29 @@ katze_item_new (void)
 const gchar*
 katze_item_get_name (KatzeItem* item)
 {
-    g_return_val_if_fail (KATZE_IS_ITEM (item), NULL);
+  g_return_val_if_fail (KATZE_IS_ITEM (item), NULL);
 
-    if (item->name != NULL && strlen(item->name)>128)   //make sure name not too long
-        {
-            gchar *p;
-            p = item->name + 64;
-            *p = 0;
-        }
-
-    return item->name;
+  if (item->name != NULL && strlen(item->name)>128)   //make sure name not too long
+     {
+    unsigned char *p;
+    p = item->name;
+    int i_longth = 0;
+	 while (i_longth <=42)
+           {
+	   if(*p>=0xA1)
+	        {
+	    i_longth = i_longth + 1;
+	    p+=3;
+	        }
+		else
+		{
+		  i_longth = i_longth + 1;
+		  p+=1;		
+		}
+	   }
+	 *p=0;
+     }
+  return item->name;
 }
 
 /**
