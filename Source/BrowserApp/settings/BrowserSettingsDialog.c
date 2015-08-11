@@ -539,7 +539,7 @@ static void clearDataCallback(GtkButton *button, MidoriWebSettings *settings)
        gchar* home = getenv("HOME");
        gchar download_record_dir[2048];
        g_sprintf(download_record_dir, "/bin/rm -rf %s/.config/cdosbrowser/appex_config/", home);
-       system("/usr/local/libexec/cdosbrowser/cdosbrowser_download quit &");
+       system("/usr/local/libexec/cdosbrowser/cdosbrowser_download quit");
        system(download_record_dir);
     }
 

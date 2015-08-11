@@ -342,6 +342,7 @@ namespace Midori {
                          }		
                         catch (KeyFileError error) { }
                       }
+                     save();
                      refresh1 ();
                   }
                 else if (action == "add") {
@@ -374,8 +375,6 @@ namespace Midori {
                 }
                 else
                     throw new SpeedDialError.INVALID_ACTION ("Invalid action '%s'", action);
-
-            save ();
         }
 
         void save () {

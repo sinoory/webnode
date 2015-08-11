@@ -1597,7 +1597,8 @@ midori_view_load_started (MidoriView* view)
 printf("load start callback start time = %lld\n",g_get_real_time());
 #endif
     midori_view_update_load_status (view, MIDORI_LOAD_PROVISIONAL);
-    midori_tab_set_progress (MIDORI_TAB (view), 0.0);
+    if(strncmp(midori_tab_get_uri (MIDORI_TAB (view)),"file",4))
+       midori_tab_set_progress (MIDORI_TAB (view), 0.0);
     midori_tab_set_load_error (MIDORI_TAB (view), MIDORI_LOAD_ERROR_NONE);
 
 #if TRACK_LOCATION_TAB_ICON //lxx, 20150204
@@ -1711,7 +1712,7 @@ printf("signal(progress-change) callback start time = %lld\n",g_get_real_time())
     //增加一个url时，不需要设置progress,即不需滚动spinner
     GtkWidget* current_web_view = midori_view_get_web_view (view);
     const gchar *uri = webkit_web_view_get_uri (WEBKIT_WEB_VIEW(current_web_view));
-    if(uri && strcmp(uri,"about:dial")!=0)
+    if(uri && strncmp(uri,"file",4)!=0)
     {
        //add end
        g_object_get (web_view, pspec->name, &progress, NULL);
@@ -2833,10 +2834,16 @@ midori_view_get_page_context_action (MidoriView*          view,
             ? _("Open _Image in New Window") : _("Open _Image in New Tab")
             , NULL, STOCK_TAB_NEW,
             midori_web_view_menu_image_new_tab_activate_cb, view);
-        midori_context_action_add_simple (menu, "CopyImage", _("Copy Im_age"), NULL, NULL,
-            midori_web_view_menu_image_copy_activate_cb, view);
-        midori_context_action_add_simple (menu, "SaveImage", _("Save I_mage"), NULL, GTK_STOCK_SAVE,
-            midori_web_view_menu_image_save_activate_cb, view);
+        //add by luyue 2015/8/10 start
+        //非本地图片可以保存
+        if(strncmp(midori_tab_get_uri (MIDORI_TAB (view)),"file",4))
+        {
+           midori_context_action_add_simple (menu, "CopyImage", _("Copy Im_age"), NULL, NULL,
+               midori_web_view_menu_image_copy_activate_cb, view);
+           midori_context_action_add_simple (menu, "SaveImage", _("Save I_mage"), NULL, GTK_STOCK_SAVE,
+               midori_web_view_menu_image_save_activate_cb, view);
+        }
+       //add end
     }
 
     if (context & WEBKIT_HIT_TEST_RESULT_CONTEXT_MEDIA)
@@ -3064,16 +3071,29 @@ midori_view_get_cookie_cb(WebKitCookieManager* cookiemanager,
                           const gchar*         cookie,
                           MidoriView*          view)
 {
-   const gchar* uri = webkit_web_view_get_uri (WEBKIT_WEB_VIEW  (view->web_view));
-   if (cookie && strlen(cookie))
+   const gchar* uri;
+   MidoriBrowser* browser =  midori_browser_get_for_widget((GtkWidget*)view);
+   if(browser)
+   {
+      GtkWidget* tab = midori_browser_get_current_tab ( browser);
+      uri = midori_tab_get_uri (MIDORI_TAB(tab));
+   }
+   else uri = NULL;
+
+   if (cookie && strlen(cookie) && uri)
    {
       view->download_exec = (char *)malloc(strlen(view->download_uri)+strlen(view->download_filename)+strlen(cookie)+strlen(uri)+64);
-      sprintf(view->download_exec,"/usr/local/libexec/cdosbrowser/cdosbrowser_download %s%s%s %s%s%s %s%s%s %s%s%s &","\"",view->download_uri,"\"","\"",view->download_filename,"\"", "\"",cookie,"\"","\"",uri,"\"");  
+      sprintf(view->download_exec,"/usr/local/libexec/cdosbrowser/cdosbrowser_download %s%s%s %s%s%s %s%s%s %s%s%s","\"",view->download_uri,"\"","\"",view->download_filename,"\"", "\"",cookie,"\"","\"",uri,"\"","&");  
+   }
+   else if (uri)
+   {
+      view->download_exec = (char *)malloc(strlen(view->download_uri)+strlen(view->download_filename)+strlen(uri)+64);
+      sprintf(view->download_exec,"/usr/local/libexec/cdosbrowser/cdosbrowser_download %s%s%s %s%s%s %s%s%s %s%s%s","\"",view->download_uri,"\"","\"",view->download_filename,"\"","\"","","\"","\"",uri,"\"","&");
    }
    else
    {
-      view->download_exec = (char *)malloc(strlen(view->download_uri)+strlen(view->download_filename)+strlen(uri)+64);
-      sprintf(view->download_exec,"/usr/local/libexec/cdosbrowser/cdosbrowser_download %s%s%s %s%s%s %s%s%s &","\"",view->download_uri,"\"","\"",view->download_filename,"\"","\"",uri,"\"");
+      view->download_exec = (char *)malloc(strlen(view->download_uri)+strlen(view->download_filename)+64);
+      sprintf(view->download_exec,"/usr/local/libexec/cdosbrowser/cdosbrowser_download %s%s%s %s%s%s %s%s%s %s%s%s","\"",view->download_uri,"\"","\"",view->download_filename,"\"","\"","","\"","\"","","\"","&");
    }
    free(view->download_uri);
    view->download_uri = NULL;
@@ -3087,8 +3107,7 @@ midori_view_get_cookie_cb(WebKitCookieManager* cookiemanager,
       _exit(127); //子进程正常执行则不会执行此语句    
    }
 
-   g_signal_handlers_disconnect_by_func (cookiemanager,
-                                         midori_view_get_cookie_cb, view);
+   g_signal_handlers_disconnect_by_func (cookiemanager,midori_view_get_cookie_cb, view);
 }
 //add end
 
