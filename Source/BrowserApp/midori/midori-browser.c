@@ -3667,11 +3667,17 @@ _action_zoom_activate (GtkAction*     action,
     GtkWidget* view = midori_browser_get_current_tab (browser);
 
     if (g_str_equal (gtk_action_get_name (action), "ZoomIn"))
-        midori_view_set_zoom_level (MIDORI_VIEW (view),
-            midori_view_get_zoom_level (MIDORI_VIEW (view)) + 0.10f);
+           {
+	   if (3.00f - midori_view_get_zoom_level (MIDORI_VIEW (view)) > 0.00f)
+	     midori_view_set_zoom_level (MIDORI_VIEW (view),
+            midori_view_get_zoom_level (MIDORI_VIEW (view)) + 0.10f);		
+	   }
     else if (g_str_equal (gtk_action_get_name (action), "ZoomOut"))
+	   {
+      if (midori_view_get_zoom_level (MIDORI_VIEW (view)) - 0.30f > 0.00f)
         midori_view_set_zoom_level (MIDORI_VIEW (view),
             midori_view_get_zoom_level (MIDORI_VIEW (view)) - 0.10f);
+	   }
     else
         midori_view_set_zoom_level (MIDORI_VIEW (view), 1.0f);
 }

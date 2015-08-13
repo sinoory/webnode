@@ -34,7 +34,7 @@
 #if 1
 #define FontNum 118
 #define FontSizeNum 5
-#define PageZoomNum 16
+#define PageZoomNum 13
 //lxx add fontNum = 118, fontSizeNum = 5, pageZoomNum = 16
 const gchar* font[]  =    {"sans-serif", "AR PL UKai CN", "AR PL UKai HK", "AR PL UKai TW",
                             "AR PL UKai TW MBE", "AR PL UMing CN", "AR PL UMing HK", "AR PL UMing TW",
@@ -74,8 +74,8 @@ const  guint32 font_size[] = {9, 12, 16, 20, 24
                              };
 
 
-const gdouble zoom_factor[] = {0.25, 0.33, 0.5, 0.67, 0.75, 0.9, 1.0, 1.1, 1.25, 1.5, 1.75, 2.0,
-                               2.5, 3.0, 4.0, 5.0  
+const gdouble zoom_factor[] = {0.33, 0.5, 0.67, 0.75, 0.9, 1.0, 1.1, 1.25, 1.5, 1.75, 2.0,
+                               2.5, 3.0
                                  
                               };
 
