@@ -3344,13 +3344,13 @@ _action_historys_populate_folder (GtkAction*     action,
         (GtkCallback)(gtk_widget_destroy), NULL);
 
     /* "ManageHistorys" at the top */
-    /*if (folder == KATZE_ARRAY (browser->history_database))
+    //if (folder == KATZE_ARRAY (browser->history_database))
     {    
        menuitem = gtk_action_create_menu_item (_action_by_name (browser, "ManageHistorys"));
        gtk_menu_item_set_label(GTK_MENU_ITEM(menuitem), N_("管理历史记录(H)"));
        gtk_menu_shell_append (menu, menuitem);
        gtk_widget_show (menuitem);
-    }*/
+    }
     menuitem = gtk_separator_menu_item_new ();
     gtk_menu_shell_append (menu, menuitem);
     gtk_widget_show (menuitem);
