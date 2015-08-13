@@ -3123,13 +3123,21 @@ midori_view_download_decide_destination_cb (WebKitDownload*   download,
        view->save_menu_flag = false;
        return TRUE;
     }
+    WebKitURIRequest *request = webkit_download_get_request(download);
+    const gchar* opener_uri = webkit_uri_request_get_uri(request);
+    //data:image打头的不走下载流程
+    if(strncmp(opener_uri,"data:image",10)==0)
+    {
+       MidoriBrowser* browser = midori_browser_get_for_widget (GTK_WIDGET (view));
+       midori_browser_save_uri (browser,view,opener_uri,"index");
+       webkit_download_cancel (download);
+       return TRUE;
+    }    
     view->download_filename = (char *) malloc (strlen(suggested_filename)+1);
     strcpy(view->download_filename,suggested_filename);
     //add by luyue 2015/8/8 start
     midori_view_reset_user_agent(view);
     //add end
-    WebKitURIRequest *request = webkit_download_get_request(download);
-    const gchar* opener_uri = webkit_uri_request_get_uri(request);
     view->download_uri = (char *)malloc (strlen(opener_uri)+1);
     strcpy(view->download_uri,opener_uri);
     WebKitCookieManager* cookiemanager = webkit_web_context_get_cookie_manager(webkit_web_context_get_default());

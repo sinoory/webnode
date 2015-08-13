@@ -1573,11 +1573,13 @@ midori_browser_save_uri (MidoriBrowser* browser,
     gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (dialog),filter);
 
     //后缀为.mht文件，可保存网页的全部内容
-    filter = gtk_file_filter_new();
-    gtk_file_filter_set_name (filter, _("网页，全部(.mht)"));
-		 gtk_file_filter_add_pattern(filter,"*.mht");
-    gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (dialog),filter);
-
+    if(!strstr(title,"index"))
+    {
+       filter = gtk_file_filter_new();
+       gtk_file_filter_set_name (filter, _("网页，全部(.mht)"));
+       gtk_file_filter_add_pattern(filter,"*.mht");
+       gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (dialog),filter);
+    }
     if (uri == NULL)
         uri = midori_view_get_display_uri (view);
 
@@ -1632,31 +1634,40 @@ midori_browser_save_uri (MidoriBrowser* browser,
 
     if (midori_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK)
     {
-		GtkFileFilter *filtertwo = gtk_file_chooser_get_filter( GTK_FILE_CHOOSER (dialog));
-		const gchar * filternamee =  gtk_file_filter_get_name(filtertwo);
+       GtkFileFilter *filtertwo = gtk_file_chooser_get_filter( GTK_FILE_CHOOSER (dialog));
+       const gchar * filternamee =  gtk_file_filter_get_name(filtertwo);
+       // ZRL 实现网页的保存功能。
+       char *filename1 = gtk_file_chooser_get_uri (GTK_FILE_CHOOSER (dialog));
+       if(NULL == filename1)return;
 
-// ZRL 实现网页的保存功能。
-   char *filename1 = gtk_file_chooser_get_uri (GTK_FILE_CHOOSER (dialog));
-		if(NULL == filename1)return;
-		gchar* suggested_filename = NULL;
-		if(0 == strcmp(filternamee, _("网页，全部(.mht)")))
-		{
-			    suggested_filename = g_strconcat (filename1, ".mht", NULL);
-		}
-		else if(0 == strcmp(filternamee, _("网页，仅HTML(.html)")))
-		{
-			    suggested_filename = g_strconcat (filename1, ".html", NULL);
-		}
-
-        if (uri != NULL)
-        {
-            midori_view_save_source (view, uri, suggested_filename, false);
-            g_free (filename1);
-        }
-        katze_assign (last_dir,
-            gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER (dialog)));
-				
-				g_free (suggested_filename);
+       if(uri != NULL)
+       {
+          gchar* suggested_filename = NULL;
+          //图片的格式保存到html中
+          if(strstr(filename1,"index"))
+          {
+             char *save_filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+             suggested_filename = g_strconcat (save_filename, ".html", NULL);
+             FILE *fp=fopen(suggested_filename,"w");
+             char *context = (char *)malloc(strlen(uri)+48);
+             sprintf(context,"<html><body><img src=%s></body></html>",uri);
+             fprintf(fp,"%s\n",context);
+             free(context);
+             context = NULL;
+             fclose(fp);
+          }
+          else
+          {
+             if(0 == strcmp(filternamee, _("网页，全部(.mht)")))
+                suggested_filename = g_strconcat (filename1, ".mht", NULL);
+             else if(0 == strcmp(filternamee, _("网页，仅HTML(.html)")))
+                suggested_filename = g_strconcat (filename1, ".html", NULL);
+             midori_view_save_source (view, uri, suggested_filename, false); 
+          }
+          g_free (suggested_filename);
+       }
+       g_free (filename1);
+       katze_assign (last_dir,gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER (dialog)));
     }
     gtk_widget_destroy (dialog);
 }
