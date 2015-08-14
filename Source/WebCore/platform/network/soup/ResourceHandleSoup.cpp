@@ -51,7 +51,8 @@
 #include <fcntl.h>
 #include <gio/gio.h>
 #include <glib.h>
-#include <libsoup/soup.h>
+//#include <libsoup/soup.h>
+#include "libsoup/soup.h"
 #include <sys/stat.h>
 #include <sys/types.h>
 #if !COMPILER(MSVC)

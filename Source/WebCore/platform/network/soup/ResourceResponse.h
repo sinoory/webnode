@@ -28,7 +28,8 @@
 
 #include "ResourceResponseBase.h"
 
-#include <libsoup/soup.h>
+//#include <libsoup/soup.h>
+#include "libsoup/soup.h"
 #include <wtf/gobject/GRefPtr.h>
 
 namespace WebCore {

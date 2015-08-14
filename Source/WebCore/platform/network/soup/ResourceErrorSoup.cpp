@@ -29,7 +29,8 @@
 #if USE(SOUP)
 
 #include "LocalizedStrings.h"
-#include <libsoup/soup.h>
+//#include <libsoup/soup.h>
+#include "libsoup/soup.h"
 #include <wtf/gobject/GUniquePtr.h>
 #include <wtf/text/CString.h>
 

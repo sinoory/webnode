@@ -32,7 +32,8 @@
 #include <WebCore/SoupNetworkSession.h>
 #include <gtk/gtk.h>
 #include <libintl.h>
-#include <libsoup/soup.h>
+//#include <libsoup/soup.h>
+#include "libsoup/soup.h"
 
 using namespace WebCore;
 

@@ -25,7 +25,8 @@
 #define WebKitURIResponse_h
 
 #include <gio/gio.h>
-#include <libsoup/soup.h>
+//#include <libsoup/soup.h>
+#include "libsoup/soup.h"
 #include <webkit2/WebKitDefines.h>
 
 G_BEGIN_DECLS

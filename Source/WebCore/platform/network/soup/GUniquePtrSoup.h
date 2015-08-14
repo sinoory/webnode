@@ -20,7 +20,8 @@
 #ifndef GUniquePtrSoup_h
 #define GUniquePtrSoup_h
 
-#include <libsoup/soup.h>
+//#include <libsoup/soup.h>
+#include "libsoup/soup.h"
 #include <wtf/gobject/GUniquePtr.h>
 
 namespace WTF {

@@ -29,7 +29,8 @@
 
 #include "ProxyResolverSoup.h"
 
-#include <libsoup/soup.h>
+//#include <libsoup/soup.h>
+#include "libsoup/soup.h"
 #include <string.h>
 #include <wtf/Vector.h>
 #include <wtf/text/CString.h>

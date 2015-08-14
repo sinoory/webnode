@@ -31,7 +31,8 @@
 #if USE(SOUP)
 
 #include "SoupNetworkSession.h"
-#include <libsoup/soup.h>
+//#include <libsoup/soup.h>
+#include "libsoup/soup.h"
 #include <wtf/MainThread.h>
 #include <wtf/text/CString.h>
 

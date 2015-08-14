@@ -106,6 +106,10 @@ else
 	cmake . && make && cd ../
 	cp -rf ./uchardet/src/lib*.so* ../../lib
 
+	tar -xvf libsoup-2.51.3.tar.xz && cd libsoup-2.51.3
+	./autogen.sh && make && cd ../
+	cp -rf ./libsoup-2.51.3/libsoup/.libs/lib*.so* ../../lib
+
 	tar -zxvf uci.tar.gz && cd uci
 	make
 	cp -rf ./libuci.so* ../../../lib
@@ -133,6 +137,7 @@ else
 	sudo mkdir -p /usr/local/lib/cdosbrowser && sudo cp ./lib/libaria2.so.0.0.0 /usr/local/lib/cdosbrowser
 	sudo cp ./lib/libuci.so.0.8 /usr/local/lib/cdosbrowser
 	sudo cp ./lib/libaria2.so.0.0.0 /usr/local/lib/cdosbrowser/libaria2.so.0
+	sudo cp ./lib/libsoup*.so* /usr/local/lib/cdosbrowser/
 	sudo mkdir -p /usr/local/libexec/cdosbrowser && sudo cp ./bin/cdosbrowser_download /usr/local/libexec/cdosbrowser
 fi
 	;;

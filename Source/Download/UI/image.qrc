@@ -1,0 +1,33 @@
+<RCC>
+    <qresource prefix="/home/appex/image">
+        <file>finish.png</file>
+        <file>offline.png</file>
+        <file>network.png</file>
+        <file>dustbin.png</file>
+        <file>downloading.png</file>
+        <file>addnew.png</file>
+        <file>settings.png</file>
+        <file>version.png</file>
+        <file>files.png</file>
+        <file>logo.png</file>
+        <file>error.png</file>
+        <file>info.png</file>
+        <file>upload.png</file>
+        <file>btn_download_pressed.jpg</file>
+        <file>btn_download.jpg</file>
+        <file>btn_dustbin_pressed.jpg</file>
+        <file>btn_dustbin.jpg</file>
+        <file>btn_finish_pressed.jpg</file>
+        <file>btn_finish.jpg</file>
+        <file>btn_network_pressed.jpg</file>
+        <file>btn_network.jpg</file>
+        <file>btn_offline_pressed.jpg</file>
+        <file>btn_offline.jpg</file>
+        <file>uploading_pressed.jpg</file>
+        <file>uploading.jpg</file>
+        <file>filelist_pressed.jpg</file>
+        <file>filelist.jpg</file>
+        <file>btn_cloud_network.jpg</file>
+        <file>btn_cloud_network_pressed.jpg</file>
+    </qresource>
+</RCC>

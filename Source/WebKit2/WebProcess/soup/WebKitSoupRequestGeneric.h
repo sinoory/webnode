@@ -21,7 +21,8 @@
 #define WebKitSoupRequestGeneric_h
 
 #include <glib-object.h>
-#include <libsoup/soup.h>
+//#include <libsoup/soup.h>
+#include "libsoup/soup.h"
 
 #if ENABLE(CUSTOM_PROTOCOLS)
 #include "CustomProtocolManagerImpl.h"

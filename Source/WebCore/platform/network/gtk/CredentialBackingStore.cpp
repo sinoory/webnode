@@ -33,7 +33,8 @@
 #include "GRefPtrGtk.h"
 #include <glib/gi18n-lib.h>
 #include <libsecret/secret.h>
-#include <libsoup/soup.h>
+//#include <libsoup/soup.h>
+#include "libsoup/soup.h"
 #include <wtf/gobject/GUniquePtr.h>
 #include <wtf/text/CString.h>
 #endif

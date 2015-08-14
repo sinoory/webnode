@@ -25,7 +25,8 @@
 #define WebKitURIRequest_h
 
 #include <glib-object.h>
-#include <libsoup/soup.h>
+//#include <libsoup/soup.h>
+#include "libsoup/soup.h"
 #include <webkit2/WebKitDefines.h>
 
 G_BEGIN_DECLS

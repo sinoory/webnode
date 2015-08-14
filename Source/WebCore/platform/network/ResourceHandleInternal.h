@@ -50,7 +50,8 @@
 
 #if USE(SOUP)
 #include "GUniquePtrSoup.h"
-#include <libsoup/soup.h>
+//#include <libsoup/soup.h>
+#include "libsoup/soup.h"
 #include <wtf/gobject/GMainLoopSource.h>
 #include <wtf/gobject/GRefPtr.h>
 #endif

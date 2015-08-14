@@ -22,7 +22,8 @@
 
 #include "SharedBuffer.h"
 
-#include <libsoup/soup.h>
+//#include <libsoup/soup.h>
+#include "libsoup/soup.h"
 
 namespace WebCore {
 

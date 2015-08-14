@@ -30,7 +30,8 @@
 #include "AuthenticationChallenge.h"
 
 #include "ResourceError.h"
-#include <libsoup/soup.h>
+//#include <libsoup/soup.h>
+#include "libsoup/soup.h"
 
 namespace WebCore {
 
