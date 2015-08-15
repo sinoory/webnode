@@ -133,6 +133,13 @@ namespace Midori {
                     warning ("suggestion.markup != null");
                     continue;
                 }
+                //add by luyue 2015/8/16 start
+                //Markup.escape_text函数的参数需要utf8,但是有的中文网站编码是gb2312等。
+                //这里对编码进行判断，如果不是utf8,寻找下一个
+                if(!suggestion.markup.validate ()){
+                    continue;
+                }
+                //add end
                 model.insert_with_values (null, start + count,
                     Columns.URI, suggestion.uri,
                     Columns.MARKUP, suggestion.use_markup
