@@ -1822,7 +1822,7 @@ midori_location_action_set_text (MidoriLocationAction* location_action,
     if (GTK_IS_TOOL_ITEM (proxies->data))
     {
         GtkWidget* entry = midori_location_action_entry_for_proxy (proxies->data);
-         if (strncmp (text, "file:",5))midori_location_action_entry_set_text (entry, text);
+         if (!strstr (text, "speeddial-head.html"))midori_location_action_entry_set_text (entry, text);
 	 else midori_location_action_entry_set_text (entry, "");
     }
 }

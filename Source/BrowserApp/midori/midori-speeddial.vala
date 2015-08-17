@@ -44,6 +44,7 @@ namespace Midori {
         public string imageid{get; set; default = null;}
         bool Load_status = false;//Whether to download
         public int    load_time = 30;//Maximum download time
+        public uint  timer_id;
         public GLib.KeyFile keyfile;
         public bool close_buttons_left { get; set; default = false; }
         public signal void refresh ();
@@ -64,6 +65,15 @@ namespace Midori {
             keyfile = new GLib.KeyFile ();
             try {
                 keyfile.load_from_file (filename, GLib.KeyFileFlags.NONE);
+	        foreach (string tile in keyfile.get_groups ()) {
+                 try {
+		      string load_status1 = keyfile.get_string (tile, "load_status");
+		      if(load_status1 == "0" ||load_status1 == "1" ) keyfile.set_string (tile, "load_status", "2");
+                 }
+                    catch (GLib.Error img_error) {
+                        /* img and uri can be missing */
+                    }
+	       }
             }
             catch (GLib.Error io_error) {
                 string json;
@@ -74,7 +84,7 @@ namespace Midori {
                 }
                 catch (GLib.Error fallback_error) {
                     json = "'{}'";
-                    len = 4;
+                    len = 5;
                 }
 
                 var script = new StringBuilder.sized (len);
@@ -86,16 +96,17 @@ namespace Midori {
         for (var i in json['shortcuts']) {
         var tile = json['shortcuts'][i];
         keyfile += '[Dial ' + tile['id'].substring (1) + ']\n'
-					 +  'imageid=' + tile['imageid'] + '\n'
+                +  'imageid=' + tile['imageid'] + '\n'
+                +  'load_status=' + tile['load_status'] + '\n'
                 +  'uri=' + tile['href'] + '\n'
                 +  'img=' + tile['img'] + '\n'
                 +  'title=' + tile['title'] + '\n\n';
         }
-        var columns = json['width'] ? json['width'] : 4;
+        var columns = json['width'] ? json['width'] : 5;
         var rows = json['shortcuts'] ? json['shortcuts'].length / columns : 0;
         keyfile += '[settings]\n'
                 +  'columns=' + columns + '\n'
-                +  'rows=' + (rows > 4 ? rows : 4) + '\n\n';
+                +  'rows=' + (rows > 5 ? rows : 5) + '\n\n';
         keyfile;
                     """);
 
@@ -112,13 +123,14 @@ namespace Midori {
                     Path.build_path (Path.DIR_SEPARATOR_S,
                                      Environment.get_user_cache_dir (),
                                      PACKAGE_NAME, "thumbnails"), 0700);
-
                 foreach (string tile in keyfile.get_groups ()) {
                     try {
-                        string img = keyfile.get_string (tile, "img");
-                        keyfile.remove_key (tile, "img");
-                        string uri = keyfile.get_string (tile, "uri");
-                        if (img != null && uri[0] != '\0' && uri[0] != '#') {
+		         string load_status1 = keyfile.get_string (tile, "load_status");
+		         if(load_status1 == "0" ||load_status1 == "1" ) keyfile.set_string (tile, "load_status", "2");
+                         string img = keyfile.get_string (tile, "img");
+                         keyfile.remove_key (tile, "img");
+                         string uri = keyfile.get_string (tile, "uri");
+                         if (img != null && uri[0] != '\0' && uri[0] != '#') {
                             uchar[] decoded = Base64.decode (img);
                             FileUtils.set_data (build_thumbnail_path (uri), decoded);
                         }
@@ -272,6 +284,8 @@ namespace Midori {
               }	 
              string id = get_next_free_slot ();
              keyfile.set_string (id, "imageid", title);
+	    if(Load_status == false && load_time < 30)keyfile.set_string (id, "load_status", "0");
+	    else keyfile.set_string (id, "load_status", "1");//0 for waiting for loading , 1 for  start loading ,2 for finish loading  
             uint slot = id.substring (5, -1).to_int ();
             try {
                 save_message ("speed_dial-save-add %u %s %s".printf (slot, uri,title));
@@ -284,13 +298,14 @@ namespace Midori {
         public void add_with_id (string id, string uri, string title, Gdk.Pixbuf? img) {
             keyfile.set_string (id, "uri", uri);
             keyfile.set_string (id, "title", title);
-
+	    keyfile.set_string (id, "load_status", "2");
+	  
             Katze.mkdir_with_parents (Path.build_path (Path.DIR_SEPARATOR_S,
                 Paths.get_cache_dir (), "thumbnails"), 0700);
             string filename = build_thumbnail_path (uri);
-	  imagename = filename;			
-           imagetitle = title;
-           imageid  = keyfile.get_string (id, "imageid");
+	    imagename = filename;			
+            imagetitle = title;
+            imageid  = keyfile.get_string (id, "imageid");
             try {
                 img.save (filename, "png", null, "compression", "7", null);
             }
@@ -299,7 +314,7 @@ namespace Midori {
             }
             save ();
             refresh ();
-        }
+       }
 			
         string build_thumbnail_path (string filename) {
             string thumbnail = Checksum.compute_for_string (ChecksumType.MD5, filename) + ".png";
@@ -322,11 +337,21 @@ namespace Midori {
 
                 if (action == "delete") {
                  int n = 0;
+		int n_th = 0;
+		string Load_status1=null;
+		string Load_status2=null;
                    foreach (string tile in keyfile.get_groups ()){
+		   Load_status1 =  keyfile.get_string (tile, "load_status");
+		     if(Load_status1 == "0" ||Load_status1 == "1" ) n_th++;
                           try {
                              string image_id = keyfile.get_string (tile, "imageid");					
                                if(parts[1] == image_id){
                                         string uri = keyfile.get_string (tile, "uri");
+				  
+				    if(Load_status1 == "0" ||Load_status1 == "1" ){
+  				        keyfile.remove_group (tile);
+ 				       break;
+				    }	  
                                         foreach (string tile1 in keyfile.get_groups ()){
                                                 try {
                                                             if(uri == keyfile.get_string (tile1, "uri"))n++;
@@ -342,9 +367,54 @@ namespace Midori {
                          }		
                         catch (KeyFileError error) { }
                       }
-                     save();
-                     refresh1 ();
-                  }
+		 if (Load_status1 == "0" ){
+		 	Spec? spec1 = thumb_queue.nth_data (n_th-1);
+			 thumb_queue.remove (spec1);
+			 return;
+                 }
+		 if(Load_status1 == "1"){
+		   if (thumb_view == null)return;
+		   if(load_time<30){
+                      Source.remove(timer_id);
+		      Load_status = false;
+                      load_time = 30;
+                   }
+		   thumb_view.load_failed.disconnect (load_failed);
+                   thumb_view.load_changed.disconnect (load_changed);
+		   var offscreen = (thumb_view.parent as Gtk.OffscreenWindow);
+		   thumb_queue.remove (spec);
+                   offscreen.remove(thumb_view);
+                   thumb_view.destroy();
+                   thumb_view = new WebKit.WebView ();
+                   thumb_view.get_settings().set (
+                     "enable-javascript", true,
+                     "enable-plugins", false,
+                     "auto-load-images", true,
+                     "enable-html5-database", false,
+                     "enable-html5-local-storage", false,
+                     "enable-java", false);
+                  offscreen.add (thumb_view);
+                  thumb_view.set_size_request (800, 600);
+                  offscreen.show_all ();	
+                  if (thumb_queue.length () > 0) {
+	            spec = thumb_queue.nth_data (0);
+	            foreach (string tile in keyfile.get_groups ()){
+		      Load_status2 =  keyfile.get_string (tile, "load_status");
+		       if(Load_status2 == "0"){
+                         keyfile.set_string (tile, "load_status", "1");
+                         break;
+                      }
+	            }
+	           thumb_view.load_changed.connect (load_changed);
+	           thumb_view.load_failed.connect (load_failed);
+                   timer_id =  GLib.Timeout.add(1000,check_load_status);
+	           thumb_view.load_uri (spec.uri);
+                 }
+	         return;
+              }
+              save();
+              refresh1 ();
+             }
                 else if (action == "add") {
                     if (parts[2] == null)
                         throw new SpeedDialError.NO_URL ("No URL argument.");
@@ -485,12 +555,21 @@ namespace Midori {
             add_with_id (spec.dial_id, spec.uri, thumb_view.get_title () ?? spec.uri, scaled);
 
             thumb_queue.remove (spec);
+	    if(load_time < 30) {
+              Source.remove(timer_id);
+	      Load_status = false;
+              load_time = 30;
+            }
             if (thumb_queue.length () > 0) {
-                spec = thumb_queue.nth_data (0);
-                thumb_view.load_changed.connect (load_changed);
-                thumb_view.load_failed.connect (load_failed);
-               GLib.Timeout.add(1000,check_load_status);
-                thumb_view.load_uri (spec.uri);
+                spec = thumb_queue.nth_data (0); 
+	       foreach (string tile in keyfile.get_groups ()){
+		  string Load_status2 =  keyfile.get_string (tile, "load_status");
+		  if(Load_status2 == "0"){keyfile.set_string (tile, "load_status", "1");break;}
+	     }
+             thumb_view.load_changed.connect (load_changed);
+             thumb_view.load_failed.connect (load_failed);
+             timer_id =   GLib.Timeout.add(1000,check_load_status);
+             thumb_view.load_uri (spec.uri);
             }
             return false;
         }
@@ -539,17 +618,29 @@ namespace Midori {
                    "enable-java", false);
               offscreen.add (thumb_view);
                thumb_view.set_size_request (800, 600);
-               offscreen.show_all ();	
+               offscreen.show_all ();
+	     if(load_time < 30) {
+	        Source.remove(timer_id);
+	        Load_status = false;
+                 load_time = 30;
+	     }
                if (thumb_queue.length () > 0) {
 	     spec = thumb_queue.nth_data (0);
+	       foreach (string tile in keyfile.get_groups ()){
+		   string  Load_status2 =  keyfile.get_string (tile, "load_status");
+		    if(Load_status2 == "0"){
+			keyfile.set_string (tile, "load_status", "1");
+			break;
+		   }
+	       	}
 	     thumb_view.load_changed.connect (load_changed);
 	     thumb_view.load_failed.connect (load_failed);
-               GLib.Timeout.add(1000,check_load_status);
+             timer_id =   GLib.Timeout.add(1000,check_load_status);
 	      thumb_view.load_uri (spec.uri);
                }
                return false;		
           }
-bool check_load_status(){ 
+          bool check_load_status(){ 
 	     if( Load_status == true){
                     Load_status = false;
                     load_time = 30;
@@ -619,7 +710,7 @@ bool check_load_status(){
             if (thumb_queue.length () > 1){
                 return;
             }
-             GLib.Timeout.add(1000,check_load_status);
+            timer_id =  GLib.Timeout.add(1000,check_load_status);
             spec = thumb_queue.nth_data (0);
             thumb_view.load_changed.connect (load_changed);
             thumb_view.load_failed.connect (load_failed);				

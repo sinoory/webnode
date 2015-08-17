@@ -277,14 +277,15 @@
             has=true;
             result=true;
         }
-        if(!has){
-            var a=this.add(key,data,position,isSession,callback);
-            result=a>0?true:false;
-        }else{
+        //if(!has){
+            //var a=this.add(key,data,position,isSession,callback);
+            //result=a>0?true:false;
+				
+        //}else{
             if(typeof callback=="function"){
                 callback(result);
             }
-        }
+        //}
         return result;
     };
 

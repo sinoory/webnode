@@ -284,7 +284,7 @@
         //导航列表显示数量
         var itemNumber=8;
         //设置背景；
-        //localStorage.clear();
+       // localStorage.clear();
         var Storage = $.storage();
         var bg=Storage.get("bg");
 
@@ -358,6 +358,7 @@
                         pinData={className:"",title:"固定",state:0};
                     }
                     if(!photo || photo=="./cdosbrowser-logo.png" || photo=="./loading.gif"){
+								
                         console.log("speeddial-add-"+id+"-"+url);
                     }
                     html+='<li data-id="'+id+'" id="item-'+id+'">'+
@@ -500,9 +501,9 @@
 						  var id=$("#item-add-id").val();
 						  id=!id?createId():id;
                     var data=[{id:id,title:title,url:url,photo:"./loading.gif",pin:false}];
-							
-                    var save=Storage.add("navItems",data[0],{key:"id",value:id});
-							
+							if(id){		
+                    		var save=Storage.add("navItems",data[0],{key:"id",value:id});
+							}
                     if(save){
                         var html=renderHtml(data);
                         //添加到列表的最后一个非固定位置；
@@ -517,6 +518,8 @@
                         }else{
                             $(".nav-box-items ul li:last").fadeOut("fast",function(){
                                 var tid=$(this).data("id");
+											var imgSrc=$(this).find("img").attr("src");
+											console.log("speeddial-remove-"+tid+"-"+imgSrc);
                                 Storage.removeOneItem("navItems",{key:"id",value:tid});
                                 $(this).remove();
                                 $(".nav-box-items ul").append(html);
@@ -751,19 +754,28 @@
 
     //获取页面缩略图
     function　refresh(id,path,title){
-        if(!id){
+        if(!id || id.toLocaleLowerCase()=="undefined"){
             return ;
-        }
+       		      }
+		  if(!path || path.toLocaleLowerCase()=="undefined"){
+            return ;
+       		      }
         var li=$("#item-"+id);
-        var img=li.find("img");
-        path=!path?"./cdosbrowser-logo.png":path;
-        img.attr("src",path);
-        if(title){
-            img.attr("title",title);
-            li.find("div.nav-box-item-title>a").text(title);
-        }
-		var Storage = $.storage();
-		Storage.update("navItems",{key:"id",value:id},{photo:path},false);
+		  if(li.length && parseInt(id)>0){
+					var img=li.find("img");
+					path=!path?"./cdosbrowser-logo.png":path;
+					img.attr("src",path);
+					var newData={photo:path};
+					if(title){
+						newData['title']=title;
+			    		img.attr("title",title);
+			    		li.find("div.nav-box-item-title>a").text(title);
+					}
+					var Storage = $.storage();
+					Storage.update("navItems",{key:"id",value:id},newData,false);
+		
+		}
+		
     }
     //拉去浏览历史记录；
     function　getHistoryList(dataStr,page){
