@@ -1315,7 +1315,7 @@ midori_browser_edit_bookmark_dialog_new (MidoriBrowser* browser,
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (check_toolbar), TRUE);
 //zgh 20150324        katze_item_get_meta_boolean (bookmark, "toolbar"));
     gtk_box_pack_start (GTK_BOX (hbox), check_toolbar, FALSE, FALSE, 0);
-
+	#if 0//这个按钮功能已经不起作用，所以在界面上除去 by wangyl 2015.8.18
     if (new_bookmark && !is_folder)
     {
         hbox = gtk_hbox_new (FALSE, 6);
@@ -1328,6 +1328,7 @@ midori_browser_edit_bookmark_dialog_new (MidoriBrowser* browser,
             G_CALLBACK (midori_browser_edit_bookmark_add_speed_dial_cb), bookmark);
         gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
     }
+	#endif
 
     gtk_widget_show_all (content_area);
     gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_ACCEPT);
@@ -1448,7 +1449,6 @@ midori_browser_edit_bookmark_from_history_dialog_new (MidoriBrowser* browser,
     entry_title = gtk_entry_new ();
     gtk_entry_set_activates_default (GTK_ENTRY (entry_title), TRUE);
     value = katze_item_get_name (bookmark);
-    printf("katze_item_get_name = %s\n",value);
     gtk_entry_set_text (GTK_ENTRY (entry_title), katze_str_non_null (value));
     midori_browser_edit_bookmark_title_changed_cb (GTK_ENTRY (entry_title),
                                                    GTK_DIALOG (dialog));
@@ -1479,7 +1479,7 @@ midori_browser_edit_bookmark_from_history_dialog_new (MidoriBrowser* browser,
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (check_toolbar), TRUE);
 //zgh 20150324        katze_item_get_meta_boolean (bookmark, "toolbar"));
     gtk_box_pack_start (GTK_BOX (hbox), check_toolbar, FALSE, FALSE, 0);
-
+	#if 0 //这个按钮功能已经不起作用，所以在界面上除去 by wangyl 2015.8.18 
     if (new_bookmark && !is_folder)
     {
         hbox = gtk_hbox_new (FALSE, 6);
@@ -1492,7 +1492,7 @@ midori_browser_edit_bookmark_from_history_dialog_new (MidoriBrowser* browser,
             G_CALLBACK (midori_browser_edit_bookmark_add_speed_dial_cb), bookmark);
         gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
     }
-
+    #endif 
     gtk_widget_show_all (content_area);
     gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_ACCEPT);
     if (midori_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT)
