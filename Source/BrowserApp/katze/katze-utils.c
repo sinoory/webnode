@@ -804,7 +804,8 @@ katze_bookmark_populate_tree_view (KatzeArray*   array,
     {
         if (KATZE_ITEM_IS_BOOKMARK (child))
         {
-            gchar* tooltip = g_markup_escape_text (katze_item_get_uri (child), -1);
+            //gchar* tooltip = g_markup_escape_text (katze_item_get_uri (child), -1);
+            gchar* tooltip = g_markup_escape_text (g_locale_to_utf8(katze_item_get_uri (child),-1,0,0,0), -1);
             gtk_tree_store_insert_with_values (model, NULL, parent,
                                                0, 0, child, 1, tooltip, -1);
             g_free (tooltip);

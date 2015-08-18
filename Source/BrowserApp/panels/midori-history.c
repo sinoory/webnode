@@ -433,7 +433,10 @@ midori_history_add_item_cb (KatzeArray*    array,
 
         if (has_today)
         {
-            gchar* tooltip = g_markup_escape_text (katze_item_get_uri (item), -1);
+            //add by luyue 2015/8/18 start
+            //gchar* tooltip = g_markup_escape_text (katze_item_get_uri (item), -1);
+            gchar* tooltip = g_markup_escape_text (g_locale_to_utf8(katze_item_get_uri (item),-1,0,0,0), -1);
+            //add end
             KatzeItem* copy = katze_item_copy (item);
             gtk_tree_store_insert_with_values (GTK_TREE_STORE (model), NULL, &iter,
                                                0, 0, copy, 1, tooltip, -1);

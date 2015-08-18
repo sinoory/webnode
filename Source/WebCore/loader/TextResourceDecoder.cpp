@@ -616,7 +616,12 @@ String TextResourceDecoder::decode(const char* data, size_t len)
        {
           TextEncoding detectedEncoding;
           if (detectTextEncoding(data, len, m_hintEncoding, &detectedEncoding))
-             setEncoding(detectedEncoding, AutoDetectedEncoding);
+          {
+             if(strcmp(detectedEncoding.name(),"ISO-8859-1"))
+                setEncoding(detectedEncoding, AutoDetectedEncoding);
+          }
+          else
+             return emptyString();
        }
        //add end
        else if (!checkForHeadCharset(data, len, movedDataToBuffer))

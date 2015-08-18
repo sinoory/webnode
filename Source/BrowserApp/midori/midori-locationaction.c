@@ -316,10 +316,12 @@ midori_location_action_render_uri (gchar**      keys,
             break;
     }
     if (key)
-        katze_assign (desc_uri,g_markup_escape_text (stripped_uri, -1));
+        //katze_assign (desc_uri,g_markup_escape_text (stripped_uri, -1));
+        katze_assign (desc_uri,g_markup_escape_text (g_locale_to_utf8(stripped_uri,-1,0,0,0), -1));
     else
     {
-        gchar* temp_markup = g_markup_escape_text (desc_iter, -1);
+        //gchar* temp_markup = g_markup_escape_text (desc_iter, -1);
+        gchar* temp_markup = g_markup_escape_text (g_locale_to_utf8(desc_iter,-1,0,0,0), -1);
         gchar* temp_concat = g_strconcat (desc_uri, temp_markup, NULL);
         g_free (temp_markup);
         katze_assign (desc_uri, temp_concat);
@@ -373,10 +375,12 @@ midori_location_action_render_title (gchar**      keys,
             break;
     }
     if (key)
-        katze_assign (desc_title, g_markup_escape_text (title, -1));
+        //katze_assign (desc_title, g_markup_escape_text (title, -1));
+        katze_assign (desc_title, g_markup_escape_text (g_locale_to_utf8(title,-1,0,0,0), -1));
     else
     {
-        gchar* temp_markup = g_markup_escape_text (desc_iter, -1);
+        //gchar* temp_markup = g_markup_escape_text (desc_iter, -1);
+        gchar* temp_markup = g_markup_escape_text (g_locale_to_utf8(desc_iter,-1,0,0,0), -1);
         gchar* temp_concat = g_strconcat (desc_title, temp_markup, NULL);
         g_free (temp_markup);
         katze_assign (desc_title, temp_concat);

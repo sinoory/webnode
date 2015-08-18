@@ -2055,6 +2055,10 @@ midori_view_display_error (MidoriView*     view,
         gboolean show_button_images = TRUE;
         if (uri == NULL)
             uri = midori_tab_get_uri (MIDORI_TAB (view));
+        //add by luyue 2015/8/18 start
+        g_locale_to_utf8(title,-1,0,0,0);
+        g_locale_to_utf8(view->title,-1,0,0,0);
+        //add end
         title_escaped = g_markup_escape_text (title ? title : view->title, -1);
         icon = katze_item_get_icon (view->item);
         favicon = icon && !g_str_has_prefix (icon, "stock://")
@@ -4210,7 +4214,10 @@ midori_view_display_message (MidoriView*     view,
     {
         gchar* title_escaped;
         gchar* result;
-
+        //add by luyue 2015/8/18 start
+        g_locale_to_utf8(title,-1,0,0,0);
+        g_locale_to_utf8(view->title,-1,0,0,0);
+        //add end
         title_escaped = g_markup_escape_text (title ? title : view->title, -1);
         result = sokoke_replace_variables (template,
             "{dir}", gtk_widget_get_default_direction () == GTK_TEXT_DIR_RTL ?

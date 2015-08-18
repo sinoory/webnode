@@ -295,7 +295,10 @@ midori_bookmarks_add_item_to_model(GtkTreeStore*    model,
 {
     if (KATZE_ITEM_IS_BOOKMARK (item))
     {
-        gchar* tooltip = g_markup_escape_text (katze_item_get_uri (item), -1);
+        //add by luyue 2015/8/18 start
+        //gchar* tooltip = g_markup_escape_text (katze_item_get_uri (item), -1);
+        gchar* tooltip = g_markup_escape_text (g_locale_to_utf8(katze_item_get_uri (item),-1,0,0,0), -1);
+        //add end
 
         gtk_tree_store_insert_with_values (model, NULL, parent,
             0,
@@ -328,7 +331,10 @@ midori_bookmarks_update_item_in_model(MidoriBookmarks* bookmarks,
 
     if (KATZE_ITEM_IS_BOOKMARK (item))
     {
-        gchar* tooltip = g_markup_escape_text (katze_item_get_uri (item), -1);
+        //add by luyue 2015/8/18 start
+        //gchar* tooltip = g_markup_escape_text (katze_item_get_uri (item), -1);
+          gchar* tooltip = g_markup_escape_text (g_locale_to_utf8(katze_item_get_uri (item),-1,0,0,0), -1);
+        //add end	
 
         gtk_tree_store_set(model, iter,
             0, item, 1, tooltip, -1);
