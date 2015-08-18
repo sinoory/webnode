@@ -610,7 +610,7 @@ midori_view_set_title (MidoriView* view, const gchar* title)
     //ZRL 修复当uri为空时crash问题。
     if (uri == NULL)
         return;
-    if(g_str_has_prefix (uri, "file:"))
+    if(g_str_has_prefix (uri, "file:")||g_str_has_prefix (uri, "about:"))
     {
        gchar*title_temp =  _("Speed Dial");
        katze_assign (view->title, g_strdup (midori_tab_get_display_title (title_temp, uri)));
@@ -4414,13 +4414,13 @@ printf("set_uri start time = %lld\n",g_get_real_time());
         if (g_str_has_prefix (uri, "about:"))
         {
 	    GtkNotebook *notebook;
-            g_signal_emit (view, signals[ABOUT_CONTENT], 0, uri, &handled);
+            g_signal_emit (view, signals[ABOUT_CONTENT], 0, uri, &handled);/*
 	     MidoriBrowser* browser =  midori_browser_get_for_widget((GtkWidget*)view);
             GtkWidget* tab = midori_browser_get_current_tab ( browser);
             g_object_get(browser,"notebook",&notebook,NULL);
             GtkWidget*label =  gtk_notebook_get_tab_label(notebook,tab);
             GtkImage*image =  midori_tally_get_icon((MidoriTally*)label);
-            gtk_image_set_from_gicon(image,g_themed_icon_new_with_default_fallbacks ("text-html-symbolic"),GTK_ICON_SIZE_MENU);
+            gtk_image_set_from_gicon(image,g_themed_icon_new_with_default_fallbacks ("text-html-symbolic"),GTK_ICON_SIZE_MENU);*/
         }
         if (handled)
         {
@@ -5206,6 +5206,21 @@ midori_view_go_back (MidoriView* view)
     /* Force the speed dial to kick in if going back to a blank page */
     if (midori_view_is_blank (view))
         midori_view_set_uri (view, "");
+    gchar *uri = webkit_web_view_get_uri(WEBKIT_WEB_VIEW (view->web_view));
+    if(strstr (uri, "speeddial-head.html"))
+    {
+     GtkNotebook *notebook;
+     midori_tab_set_uri (MIDORI_TAB (view), uri);
+     midori_tab_set_special (MIDORI_TAB (view), TRUE);
+     katze_item_set_meta_integer (view->item, "delay", MIDORI_DELAY_UNDELAYED);
+     katze_item_set_uri (view->item, midori_tab_get_uri (MIDORI_TAB (view)));
+     MidoriBrowser* browser =  midori_browser_get_for_widget((GtkWidget*)view);
+     GtkWidget* tab = midori_browser_get_current_tab ( browser);
+     g_object_get(browser,"notebook",&notebook,NULL);
+     GtkWidget*label =  gtk_notebook_get_tab_label(notebook,tab);
+     GtkImage*image =  midori_tally_get_icon((MidoriTally*)label);
+     gtk_image_set_from_gicon(image,g_themed_icon_new_with_default_fallbacks ("text-html-symbolic"),GTK_ICON_SIZE_MENU);
+   }
 }
 
 static gchar*

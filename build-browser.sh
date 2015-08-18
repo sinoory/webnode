@@ -95,11 +95,11 @@ if [ ${USE_32BITS} -eq 1 ]; then
 else
 #compile project on 64bits Linux machine
 	echo "-----------build 64 bits"
-#	cd $ThirdParty_DIR
-#	tar -zxvf openssl-1.0.0d.tar.gz && cd openssl-1.0.0d
-#	./config shared && make && cd ../../../
-#	mkdir lib 
-#	cp -rf $ThirdParty_DIR/openssl-1.0.0d/lib*.so* ./lib
+	cd $ThirdParty_DIR
+	tar -zxvf openssl-1.0.0d.tar.gz && cd openssl-1.0.0d
+	./config shared && make && cd ../../../
+	mkdir lib 
+	cp -rf $ThirdParty_DIR/openssl-1.0.0d/lib*.so* ./lib
 	
 	cd $ThirdParty_DIR
 	tar -zxvf uchardet.tar.gz && cd uchardet
