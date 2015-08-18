@@ -5988,8 +5988,8 @@ midori_browser_switched_tab_cb (MidoriNotebook* notebook,
 
     gint currPageIndex = midori_browser_get_current_page(browser);
     gint  lastPageIndex = gtk_notebook_get_n_pages(MIDORI_NOTEBOOK(browser->notebook)->notebook); 
-    if(lastPageIndex - 1 == currPageIndex && notebook->btn_end ==0 )
-        new_view = gtk_notebook_get_nth_page(MIDORI_NOTEBOOK(browser->notebook)->notebook,lastPageIndex - 2);
+ //   if(lastPageIndex - 1 == currPageIndex && notebook->btn_end ==0 )
+  //      new_view = gtk_notebook_get_nth_page(MIDORI_NOTEBOOK(browser->notebook)->notebook,lastPageIndex - 2);
     if (old_widget != NULL)
     {
         action = _action_by_name (browser, "Location");
@@ -5998,8 +5998,8 @@ midori_browser_switched_tab_cb (MidoriNotebook* notebook,
                                 g_strdup (text), g_free);
     }
 
-    if(!MIDORI_IS_VIEW (new_view))return;
-    g_return_if_fail (new_view != MIDORI_VIEW (old_widget));
+     if(!MIDORI_IS_VIEW (new_view) || new_view == MIDORI_VIEW (old_widget))return;
+    //return_if_fail (new_view != MIDORI_VIEW (old_widget));
 
     uri = g_object_get_data (G_OBJECT (new_view), "midori-browser-typed-text");
     if (!uri)
@@ -8019,7 +8019,7 @@ midori_bookmarkbar_populate_idle (MidoriBrowser* browser)
                         gtk_separator_tool_item_new (), -1);
 
     array = midori_bookmarks_db_query_recursive (browser->bookmarks,
-        "id, parentid, title, uri, desc, app, toolbar, pos_panel, pos_bar", "1 = 1", NULL, FALSE);
+        "id, parentid, title, uri, desc, app, toolbar, pos_panel, pos_bar", "toolbar = 1", NULL, FALSE);
     if (!array)
     {
         _action_set_sensitive (browser, "BookmarkAdd", FALSE);

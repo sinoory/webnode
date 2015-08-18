@@ -794,8 +794,9 @@ int  is_arrrow_appear(Gtk.Allocation allocation,int page_n)
 #endif
   
   //modified by wangyl in 2015.5.18 start 
-             Gtk.Allocation tab_size, btn_size; 
-            var page_n = notebook.get_n_pages();
+           Gtk.Allocation tab_size, btn_size;             
+           var page_n = notebook.get_n_pages();
+           if(page_n == 1)return;
            Idle.add(control_close_button_show);
            have_arrow = is_arrrow_appear(allocation,page_n);   
            if(have_arrow == 0){
@@ -823,6 +824,9 @@ int  is_arrrow_appear(Gtk.Allocation allocation,int page_n)
 #else
         void page_switched (Gtk.NotebookPage new_tab_s, uint new_index) {
 #endif 
+            var n_page = notebook.get_n_pages();  	 
+	    if(n_page == 1)return;
+	    if(new_index + 1 ==n_page)new_tab_s  =   notebook.get_nth_page((int)new_index - 1); 
             tab_switched (previous, new_tab_s as Tab);
             previous = (Midori.Tab)new_tab_s;
             notify["index"].disconnect (index_changed);
@@ -843,7 +847,7 @@ int  is_arrrow_appear(Gtk.Allocation allocation,int page_n)
 //modified by wangyl in 2015.5.18 start
             int page_n = notebook.get_n_pages();
           
-            if(page_n == new_index + 1) {
+            if(page_n == new_index + 1 && btn_end == false) {
                 notebook.remove_page(page_n - 2);
                 notebook.add(add_tab_btn);
                 Gtk.Widget page = notebook.get_nth_page(-1);
