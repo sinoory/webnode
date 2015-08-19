@@ -1629,7 +1629,12 @@ midori_browser_save_uri (MidoriBrowser* browser,
         g_free (dirname);
     }
     if(title)
-       filename = g_strdelimit (title,"/ ","_");
+    {
+       //add by luyue 2015/8/19 start
+       //gtk不支持非utf-8显示
+       filename = g_locale_to_utf8(title,-1,0,0,0);
+       //add end
+    }
     gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (dialog), filename);
 
     if (midori_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK)
