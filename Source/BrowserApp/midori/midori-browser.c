@@ -867,7 +867,7 @@ midori_browser_step_history (MidoriBrowser* browser,
         time_t now = time (NULL);
         katze_item_set_added (proxy, now);
         gint64 day = sokoke_time_t_to_julian (&now);
-        if(!strncmp(katze_item_get_uri (proxy),"file:",5))return;
+        if(strstr(katze_item_get_uri (proxy),"speeddial-head.html"))return;
         midori_history_database_insert (browser->history_database,
             katze_item_get_uri (proxy),
             katze_item_get_name (proxy),
@@ -1694,7 +1694,7 @@ midori_browser_speed_dial_refresh1_cb (MidoriSpeedDial* dial,
       {
          view1 = MIDORI_VIEW(tabs->data);
 	 if(view == view1)continue;
-	 if ( !strncmp (midori_tab_get_uri (tabs->data), "file:",5)||!strcmp (midori_tab_get_uri (tabs->data), "about:dial"))
+	 if (strstr(midori_tab_get_uri (tabs->data), "speeddial-head.html")||!strcmp (midori_tab_get_uri (tabs->data), "about:dial"))
 	    midori_view_reload (tabs->data, FALSE);
       }
       g_list_free (tabs);
@@ -1707,12 +1707,21 @@ midori_browser_speed_dial_refresh_cb (MidoriSpeedDial* dial,
                                       MidoriBrowser*   browser)
 {
    gchar image_adr[1024]={0};
-   MidoriView	*view1;
    GList   	*browsers;
-   g_sprintf(image_adr,"refresh('%s','%s','%s');",midori_speed_dial_get_imageid(dial),midori_speed_dial_get_imagename(dial),
- 	     midori_speed_dial_get_imagetitle(dial));
-	
-   MidoriView*   view = MIDORI_VIEW (midori_browser_get_current_tab (browser));
+   MidoriView  *view1,*view2;
+   bool is_view_exist =false;
+   //当有多个speeddial页时，在不同的页面上都添加缩略图，保证各个页面都能显示添加的缩略图 start	
+   MidoriView*   view = (MidoriView*)atoi(midori_speed_dial_get_viewadr(dial));
+   GList* tabs1 = midori_browser_get_tabs (browser);
+   for (; tabs1 != NULL; tabs1 = g_list_next (tabs1))
+   {
+      view2 = MIDORI_VIEW(tabs1->data);
+      if(view == view2)is_view_exist = true;
+   }
+   if(is_view_exist == false)return; 
+   // end
+    g_sprintf(image_adr,"refresh('%s','%s','%s');",midori_speed_dial_get_imageid(dial),midori_speed_dial_get_imagename(dial),
+             midori_speed_dial_get_imagetitle(dial));
    webkit_web_view_run_javascript(WEBKIT_WEB_VIEW (midori_view_get_web_view(view)),image_adr, NULL, NULL, NULL);
    MidoriApp* app = midori_app_get_default();	
    browsers=midori_app_get_browsers(app);
@@ -1722,7 +1731,7 @@ midori_browser_speed_dial_refresh_cb (MidoriSpeedDial* dial,
       for (; tabs != NULL; tabs = g_list_next (tabs)){
          view1 = MIDORI_VIEW(tabs->data);
 	 if(view == view1)continue;
-	 if ( !strncmp (midori_tab_get_uri (tabs->data), "file:",5)||!strcmp (midori_tab_get_uri (tabs->data), "about:dial"))
+	 if (strstr (midori_tab_get_uri (tabs->data), "speeddial-head.html")||!strcmp (midori_tab_get_uri (tabs->data), "about:dial"))
 	    midori_view_reload (tabs->data, FALSE);
       }
       g_list_free (tabs);
@@ -1759,6 +1768,14 @@ static void
 midori_view_destroy_cb (GtkWidget*     view,
                         MidoriBrowser* browser)
 {
+    gchar *uri = webkit_web_view_get_uri(WEBKIT_WEB_VIEW (midori_view_get_web_view(view)));
+    gchar adr_message[80] = {0};
+    if(strstr(uri,"speeddial-head.html"))
+    {
+       MidoriSpeedDial* dial = katze_object_get_object (browser, "speed-dial");
+       g_sprintf(adr_message,"speed_dial-save-stop %d",view);
+       midori_speed_dial_save_message (dial, adr_message, NULL);
+    }
     if (browser->proxy_array)
     {
         KatzeItem* item = midori_view_get_proxy_item (MIDORI_VIEW (view));

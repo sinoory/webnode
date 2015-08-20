@@ -41,6 +41,7 @@ namespace Midori {
 	//added by wangyl 2015.8.7 start
         public string imagename{get; set; default = null;}
         public string imagetitle{get; set; default = null;}
+        public string viewadr{get; set; default = null;}
         public string imageid{get; set; default = null;}
         bool Load_status = false;//Whether to download
         public int    load_time = 30;//Maximum download time
@@ -97,16 +98,17 @@ namespace Midori {
         var tile = json['shortcuts'][i];
         keyfile += '[Dial ' + tile['id'].substring (1) + ']\n'
                 +  'imageid=' + tile['imageid'] + '\n'
+                +  'viewadr=' + tile['viewadr'] + '\n'
                 +  'load_status=' + tile['load_status'] + '\n'
                 +  'uri=' + tile['href'] + '\n'
                 +  'img=' + tile['img'] + '\n'
                 +  'title=' + tile['title'] + '\n\n';
         }
-        var columns = json['width'] ? json['width'] : 5;
+        var columns = json['width'] ? json['width'] : 6;
         var rows = json['shortcuts'] ? json['shortcuts'].length / columns : 0;
         keyfile += '[settings]\n'
                 +  'columns=' + columns + '\n'
-                +  'rows=' + (rows > 5 ? rows : 5) + '\n\n';
+                +  'rows=' + (rows > 6 ? rows : 6) + '\n\n';
         keyfile;
                     """);
 
@@ -274,7 +276,8 @@ namespace Midori {
             return "Dial %u".printf (slot_count + 1);
         }
 
-        public void add (string uri, string title, Gdk.Pixbuf? img) {
+        //public void add (string uri, string title, Gdk.Pixbuf? img) {
+         public void add (string uri, string title,string view_adr) {
                 foreach (string tile in keyfile.get_groups ()){
                     try {
                                string image_id = keyfile.get_string (tile, "imageid");
@@ -282,8 +285,9 @@ namespace Midori {
                    }
                    catch (KeyFileError error) { }
               }	 
-             string id = get_next_free_slot ();
-             keyfile.set_string (id, "imageid", title);
+            string id = get_next_free_slot ();
+            keyfile.set_string (id, "imageid", title);
+            keyfile.set_string (id, "viewadr", view_adr);
 	    if(Load_status == false && load_time < 30)keyfile.set_string (id, "load_status", "0");
 	    else keyfile.set_string (id, "load_status", "1");//0 for waiting for loading , 1 for  start loading ,2 for finish loading  
             uint slot = id.substring (5, -1).to_int ();
@@ -306,6 +310,7 @@ namespace Midori {
 	    imagename = filename;			
             imagetitle = title;
             imageid  = keyfile.get_string (id, "imageid");
+            viewadr  = keyfile.get_string (id, "viewadr");
             try {
                 img.save (filename, "png", null, "compression", "7", null);
             }
@@ -335,58 +340,57 @@ namespace Midori {
                 throw new SpeedDialError.NO_ID ("No ID argument.");
             string dial_id = "Dial " + parts[1];
 
-                if (action == "delete") {
-                 int n = 0;
-		int n_th = 0;
-		string Load_status1=null;
-		string Load_status2=null;
-                   foreach (string tile in keyfile.get_groups ()){
-		   Load_status1 =  keyfile.get_string (tile, "load_status");
-		     if(Load_status1 == "0" ||Load_status1 == "1" ) n_th++;
-                          try {
-                             string image_id = keyfile.get_string (tile, "imageid");					
-                               if(parts[1] == image_id){
-                                        string uri = keyfile.get_string (tile, "uri");
-				  
-				    if(Load_status1 == "0" ||Load_status1 == "1" ){
-  				        keyfile.remove_group (tile);
- 				       break;
-				    }	  
-                                        foreach (string tile1 in keyfile.get_groups ()){
-                                                try {
-                                                            if(uri == keyfile.get_string (tile1, "uri"))n++;
-                                                 }
-                                               catch (KeyFileError error) { }
-                                       }
-										
-                                       string file_path = build_thumbnail_path (uri);
-                                       keyfile.remove_group (tile);
-                                        if(n==1)FileUtils.unlink (file_path);
-                                        break;
-                              }
-                         }		
-                        catch (KeyFileError error) { }
-                      }
-		 if (Load_status1 == "0" ){
-		 	Spec? spec1 = thumb_queue.nth_data (n_th-1);
-			 thumb_queue.remove (spec1);
-			 return;
-                 }
-		 if(Load_status1 == "1"){
-		   if (thumb_view == null)return;
-		   if(load_time<30){
-                      Source.remove(timer_id);
-		      Load_status = false;
-                      load_time = 30;
-                   }
-		   thumb_view.load_failed.disconnect (load_failed);
-                   thumb_view.load_changed.disconnect (load_changed);
-		   var offscreen = (thumb_view.parent as Gtk.OffscreenWindow);
-		   thumb_queue.remove (spec);
-                   offscreen.remove(thumb_view);
-                   thumb_view.destroy();
-                   thumb_view = new WebKit.WebView ();
-                   thumb_view.get_settings().set (
+            if (action == "delete") {
+               int n = 0;
+               int n_th = 0;
+               string Load_status1=null;
+               string Load_status2=null;
+               foreach (string tile in keyfile.get_groups ()){
+                  Load_status1 =  keyfile.get_string (tile, "load_status");
+                  if(Load_status1 == "0" ||Load_status1 == "1" ) n_th++;
+                  try {
+                     string image_id = keyfile.get_string (tile, "imageid");					
+                     if(parts[1] == image_id){
+                        string uri = keyfile.get_string (tile, "uri");
+                        if(Load_status1 == "0" ||Load_status1 == "1" ){
+                           keyfile.remove_group (tile);
+                           break;
+                        }	  
+                        foreach (string tile1 in keyfile.get_groups ()){
+                           try {
+                              if(uri == keyfile.get_string (tile1, "uri"))n++;
+                           }
+                           catch (KeyFileError error) { }
+                         }
+                         string file_path = build_thumbnail_path (uri);
+                         keyfile.remove_group (tile);
+                         if(n==1)FileUtils.unlink (file_path);
+                         break;
+                       }
+                    }		
+                    catch (KeyFileError error) { }
+               }
+              if(Load_status1 == null)return;
+              if (Load_status1 == "0" ){
+                 Spec? spec1 = thumb_queue.nth_data (n_th-1);
+                 thumb_queue.remove (spec1);
+                 return;
+              }
+              if(Load_status1 == "1"){
+                 if (thumb_view == null)return;
+                 if(load_time<30){
+                    Source.remove(timer_id);
+                    Load_status = false;
+                    load_time = 30;
+                  }
+                  thumb_view.load_failed.disconnect (load_failed);
+                  thumb_view.load_changed.disconnect (load_changed);
+                  var offscreen = (thumb_view.parent as Gtk.OffscreenWindow);
+                  thumb_queue.remove (spec);
+                  offscreen.remove(thumb_view);
+                  thumb_view.destroy();
+                  thumb_view = new WebKit.WebView ();
+                  thumb_view.get_settings().set (
                      "enable-javascript", true,
                      "enable-plugins", false,
                      "auto-load-images", true,
@@ -414,37 +418,88 @@ namespace Midori {
               }
               save();
               refresh1 ();
-             }
-                else if (action == "add") {
-                    if (parts[2] == null)
-                        throw new SpeedDialError.NO_URL ("No URL argument.");
-                    keyfile.set_string (dial_id, "uri", parts[2]);
-                    keyfile.set_string (dial_id, "title", parts[2]); //ZRL create default title.
-                    get_thumb (dial_id, parts[2]);
-                }
-                else if (action == "rename") {
-                    if (parts[2] == null)
-                        throw new SpeedDialError.NO_TITLE ("No title argument.");
-                    string title = parts[2];
-                    keyfile.set_string (dial_id, "title", title);
-                }
-                else if (action == "swap") {
-                    if (parts[2] == null)
-                        throw new SpeedDialError.NO_ID2 ("No ID2 argument.");
-                    string dial2_id = "Dial " + parts[2];
+            }
+            else if (action == "add") {
+               if (parts[2] == null)
+                  throw new SpeedDialError.NO_URL ("No URL argument.");
+               keyfile.set_string (dial_id, "uri", parts[2]);
+               keyfile.set_string (dial_id, "title", parts[2]); //ZRL create default title.
+               get_thumb (dial_id, parts[2]);
+            }
+            else if (action == "stop") {
+               uint length= thumb_queue.length ();
+               string view_adr1 = parts[1];
+               bool check_result = false;
+               if(length <= 0 || thumb_view == null)return;
+               foreach (string tile in keyfile.get_groups ()){
+                  string view_adr2 = keyfile.get_string (tile, "viewadr");
+                  if(view_adr1 == view_adr2 ){
+                     string uri1 = keyfile.get_string (tile, "uri");
+                     for(int i =0;i<length;i++){
+                        spec = thumb_queue.nth_data (i);
+                        if(spec.uri == uri1){
+                           thumb_queue.remove (spec);
+                           check_result = true;
+                           length--;
+                           i--;
+                        }
+                     }
+                  keyfile.remove_group (tile);
+                  }
+               }
+               if(check_result == false)return;
+               if(load_time<30){
+                  Source.remove(timer_id);
+                  Load_status = false;
+                  load_time = 30;
+               }
+               thumb_view.load_failed.disconnect (load_failed);
+               thumb_view.load_changed.disconnect (load_changed);
+               var offscreen = (thumb_view.parent as Gtk.OffscreenWindow);
+               offscreen.remove(thumb_view);
+               thumb_view.destroy();
+               thumb_view = new WebKit.WebView ();
+               thumb_view.get_settings().set (
+                  "enable-javascript", true,
+                  "enable-plugins", false,
+                  "auto-load-images", true,
+                  "enable-html5-database", false,
+                  "enable-html5-local-storage", false,
+                  "enable-java", false);
+               offscreen.add (thumb_view);
+               thumb_view.set_size_request (800, 600);
+               offscreen.show_all ();
+               if (thumb_queue.length () > 0){
+                  spec = thumb_queue.nth_data (0);
+                  thumb_view.load_changed.connect (load_changed);
+                  thumb_view.load_failed.connect (load_failed);
+                  timer_id =  GLib.Timeout.add(1000,check_load_status);
+                  thumb_view.load_uri (spec.uri);
+               }
+            }
+            else if (action == "rename") {
+               if (parts[2] == null)
+                  throw new SpeedDialError.NO_TITLE ("No title argument.");
+               string title = parts[2];
+               keyfile.set_string (dial_id, "title", title);
+            }
+            else if (action == "swap") {
+               if (parts[2] == null)
+                  throw new SpeedDialError.NO_ID2 ("No ID2 argument.");
+               string dial2_id = "Dial " + parts[2];
 
-                    string uri = keyfile.get_string (dial_id, "uri");
-                    string title = keyfile.get_string (dial_id, "title");
-                    string uri2 = keyfile.get_string (dial2_id, "uri");
-                    string title2 = keyfile.get_string (dial2_id, "title");
+               string uri = keyfile.get_string (dial_id, "uri");
+               string title = keyfile.get_string (dial_id, "title");
+               string uri2 = keyfile.get_string (dial2_id, "uri");
+               string title2 = keyfile.get_string (dial2_id, "title");
 
-                    keyfile.set_string (dial_id, "uri", uri2);
-                    keyfile.set_string (dial2_id, "uri", uri);
-                    keyfile.set_string (dial_id, "title", title2);
-                    keyfile.set_string (dial2_id, "title", title);
-                }
-                else
-                    throw new SpeedDialError.INVALID_ACTION ("Invalid action '%s'", action);
+               keyfile.set_string (dial_id, "uri", uri2);
+               keyfile.set_string (dial2_id, "uri", uri);
+               keyfile.set_string (dial_id, "title", title2);
+               keyfile.set_string (dial2_id, "title", title);
+            }
+            else
+              throw new SpeedDialError.INVALID_ACTION ("Invalid action '%s'", action);
         }
 
         void save () {

@@ -610,7 +610,7 @@ midori_view_set_title (MidoriView* view, const gchar* title)
     //ZRL 修复当uri为空时crash问题。
     if (uri == NULL)
         return;
-    if(g_str_has_prefix (uri, "file:")||g_str_has_prefix (uri, "about:"))
+    if(strstr (uri, "speeddial-head.html") ||g_str_has_prefix (uri, "about:"))
     {
        gchar*title_temp =  _("Speed Dial");
        katze_assign (view->title, g_strdup (midori_tab_get_display_title (title_temp, uri)));
@@ -3372,6 +3372,9 @@ printf("signal(console-message) callback start time = %lld\n",g_get_real_time())
    else if( !strncmp (message, "speeddial-add-", 14) ) 
    {
 	MidoriBrowser* browser = midori_browser_get_for_widget (GTK_WIDGET (midori_view_get_web_view(view)));
+        MidoriView*   view1 = MIDORI_VIEW (midori_browser_get_current_tab (browser));
+        gchar view_adr[30]={0};
+        g_sprintf(view_adr,"%d",view1);
 	MidoriSpeedDial* dial = katze_object_get_object (browser, "speed-dial");
 	gchar**part =  g_strsplit (message, "-", 4);
 	gchar id[25]={0};
@@ -3379,7 +3382,7 @@ printf("signal(console-message) callback start time = %lld\n",g_get_real_time())
 	strncpy(id,part[2],strlen(part[2]));
 	if(strlen(id) != 13)return FALSE;
 	for( i = 0;i<13;i++)if(id[i]<'0'||id[i]>'9')return FALSE; 
-  	midori_speed_dial_add(dial, part[3], id, NULL);
+  	midori_speed_dial_add(dial, part[3], id, view_adr);
    }
     else if(!strncmp (message, "cdosExtension", 13))
     {
