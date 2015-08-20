@@ -3043,6 +3043,36 @@ webkit_web_view_web_view_ready_cb (GtkWidget*  web_view,
     return TRUE;
 }
 
+//add by luyue 2015/8/20 start
+//解决链接获取德url为about:blank的问题
+static void
+midori_view_uri_changed_cb(WebKitWebView*  webView,
+                           GParamSpec*     pspec,
+                           MidoriView*     view)
+{
+   const char *destUri = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(webView));
+   MidoriView* new_view;
+
+   if(strcmp(destUri,"about:blank"))
+   {
+      if (view->open_new_pages_in == MIDORI_NEW_PAGE_CURRENT)
+      {
+         new_view = view;
+         midori_view_set_uri(MIDORI_VIEW (new_view), destUri);
+      }
+      else
+      {
+         KatzeItem* item = katze_item_new ();
+         item->uri = g_strdup (destUri);
+         new_view = (MidoriView*)midori_view_new_from_view (view, item, NULL);
+         g_object_set_data_full (G_OBJECT (new_view), "destination-uri", g_strdup (destUri), g_free);
+         webkit_web_view_web_view_ready_cb(new_view->web_view,view);
+      }
+      g_signal_handlers_disconnect_by_func (webView,midori_view_uri_changed_cb, view);
+   }
+}
+//add end
+
 /* ZRL 从navigationAction读取新uri，并为midori-view新建destination-uri属性，保存该uri。*/
 static GtkWidget*
 webkit_web_view_create_web_view_cb (GtkWidget*      web_view,
@@ -3053,20 +3083,33 @@ webkit_web_view_create_web_view_cb (GtkWidget*      web_view,
     WebKitURIRequest *naviationRequest = webkit_navigation_action_get_request(navigationAction);
     const gchar *destUri = webkit_uri_request_get_uri(naviationRequest);
 
-    const gchar* uri = webkit_web_view_get_uri (WEBKIT_WEB_VIEW (web_view));
-    if (view->open_new_pages_in == MIDORI_NEW_PAGE_CURRENT)
-        new_view = view;
+    //add by luyue 2015/8/20 start
+    //解决部分获取的destUri为about:blank的bug
+    //比如百度地图分享
+    if(strcmp(destUri,"about:blank"))
+    {
+       const gchar* uri = webkit_web_view_get_uri (WEBKIT_WEB_VIEW (web_view));
+       if (view->open_new_pages_in == MIDORI_NEW_PAGE_CURRENT)
+          new_view = view;
+       else
+       {
+          KatzeItem* item = katze_item_new ();
+          item->uri = g_strdup (uri);
+          new_view = (MidoriView*)midori_view_new_from_view (view, item, NULL);
+
+          g_signal_connect (new_view->web_view, "ready-to-show",
+                            G_CALLBACK (webkit_web_view_web_view_ready_cb), view);
+       }
+       g_object_set_data_full (G_OBJECT (new_view), "destination-uri", g_strdup (destUri), g_free);
+       return new_view->web_view;
+    }
     else
     {
-        KatzeItem* item = katze_item_new ();
-        item->uri = g_strdup (uri);
-        new_view = (MidoriView*)midori_view_new_from_view (view, item, NULL);
-
-        g_signal_connect (new_view->web_view, "ready-to-show",
-                          G_CALLBACK (webkit_web_view_web_view_ready_cb), view);
+       WebKitWebView *webView = WEBKIT_WEB_VIEW(webkit_web_view_new_with_related_view(web_view));
+       g_signal_connect (webView,"notify::uri",midori_view_uri_changed_cb, view);
+       return webView;
     }
-    g_object_set_data_full (G_OBJECT (new_view), "destination-uri", g_strdup (destUri), g_free);
-    return new_view->web_view;
+    //add end
 }
 
 //add by luyue 2015/7/8 start
