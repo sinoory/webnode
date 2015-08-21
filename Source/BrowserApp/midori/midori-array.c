@@ -386,15 +386,21 @@ katze_array_from_netscape_file (KatzeArray* array,
                     katze_array_add_item (folder, item);
                     item->name = katze_unescape_html (element[4]);
                     item->uri = katze_unescape_html (parts[1]);
+                    if(atoi(parts[9]))katze_item_set_meta_integer (item, "toolbar",1);
+                    else katze_item_set_meta_integer (item, "toolbar",0);
                     g_strfreev (parts);
                 }
                 /* item is folder */
                 if (!strncmp (element[3], "H3", 2))
                 {
+                    gchar** parts = g_strsplit (line, "\"", -1);
                     item = (KatzeItem*)katze_array_new (KATZE_TYPE_ARRAY);
                     katze_array_add_item (folder, item);
+                    if(atoi(parts[3]))katze_item_set_meta_integer (item, "toolbar",1);
+                    else katze_item_set_meta_integer (item, "toolbar",0);
                     folder = (KatzeArray*)item;
                     item->name = katze_unescape_html (element[4]);
+                    g_strfreev (parts);
                 }
             }
             /* item description */
@@ -784,8 +790,8 @@ string_append_netscape_item (GString*   string,
         KatzeItem* _item;
         KatzeArray* array = KATZE_ARRAY (item);
         GList* list;
-
-        g_string_append (string, "\t<DT><H3 FOLDED ADD_DATE=\"\">");
+        if(katze_item_get_meta_integer (item, "toolbar"))
+        g_string_append (string, "\t<DT><H3 FOLDED ADD_DATE=\"\" TOOL_BAR=\"1\">");
         string_append_escaped (string, katze_item_get_name (item));
         g_string_append (string, "</H3>\n");
         g_string_append (string, "\t<DL><P>\n");
@@ -802,7 +808,9 @@ string_append_netscape_item (GString*   string,
     {
         g_string_append (string, "\t<DT><A HREF=\"");
         string_append_escaped (string, katze_item_get_uri (item));
-        g_string_append (string, "\" ADD_DATE=\"\" LAST_VISIT=\"\" LAST_MODIFIED=\"\">");
+        if(katze_item_get_meta_integer (item, "toolbar"))
+        g_string_append (string, "\" ADD_DATE=\"\" LAST_VISIT=\"\" LAST_MODIFIED=\"\" TOOL_BAR=\"1\">");
+        else g_string_append (string, "\" ADD_DATE=\"\" LAST_VISIT=\"\" LAST_MODIFIED=\"\" TOOL_BAR=\"0\">");
         string_append_escaped (string, katze_item_get_name (item));
         g_string_append (string, "</A>\n");
 
