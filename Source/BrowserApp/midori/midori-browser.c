@@ -4116,7 +4116,8 @@ _action_location_secondary_icon_released (GtkAction*     action,
                                           MidoriBrowser* browser)
 {
     GtkWidget* view = midori_browser_get_current_tab (browser);
-    KatzeItem* bookmark = (KatzeItem*)katze_array_new (KATZE_TYPE_ARRAY);
+   // KatzeItem* bookmark = (KatzeItem*)katze_array_new (KATZE_TYPE_ARRAY);
+    KatzeItem* bookmark =  g_object_new (KATZE_TYPE_ITEM,NULL);
     katze_item_set_name (bookmark,
     midori_view_get_display_title (MIDORI_VIEW (view)));
     if(strlen(midori_view_get_display_uri (MIDORI_VIEW (view))) == 0)
