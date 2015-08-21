@@ -121,7 +121,6 @@ static const int firstDayOfMonth[2][12] = {
     {0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335}
 };
 
-#if !OS(WINCE)
 static inline void getLocalTime(const time_t* localTime, struct tm* localTM)
 {
 #if COMPILER(MINGW)
@@ -132,7 +131,6 @@ static inline void getLocalTime(const time_t* localTime, struct tm* localTM)
     localtime_r(localTime, localTM);
 #endif
 }
-#endif
 
 bool isLeapYear(int year)
 {
@@ -367,8 +365,16 @@ static int32_t calculateUTCOffset()
 {
 #if OS(WINDOWS)
     TIME_ZONE_INFORMATION timeZoneInformation;
-    GetTimeZoneInformation(&timeZoneInformation);
-    int32_t bias = timeZoneInformation.Bias + timeZoneInformation.StandardBias;
+    DWORD rc = ::GetTimeZoneInformation(&timeZoneInformation);
+    if (rc == TIME_ZONE_ID_INVALID)
+        return 0;
+
+    int32_t bias = 0;
+    if (rc == TIME_ZONE_ID_DAYLIGHT)
+        bias = timeZoneInformation.Bias + timeZoneInformation.DaylightBias;
+    else if (rc == TIME_ZONE_ID_STANDARD || rc == TIME_ZONE_ID_UNKNOWN)
+        bias = timeZoneInformation.Bias + timeZoneInformation.StandardBias;
+
     return -bias * 60 * 1000;
 #else
     time_t localTime = time(0);
@@ -424,16 +430,14 @@ static void UnixTimeToFileTime(time_t t, LPFILETIME pft)
  */
 static double calculateDSTOffset(time_t localTime, double utcOffset)
 {
-#if OS(WINCE)
-    UNUSED_PARAM(localTime);
-    UNUSED_PARAM(utcOffset);
-    return 0;
-#elif OS(WINDOWS)
+#if OS(WINDOWS)
     FILETIME utcFileTime;
     UnixTimeToFileTime(localTime, &utcFileTime);
     SYSTEMTIME utcSystemTime, localSystemTime;
-    FileTimeToSystemTime(&utcFileTime, &utcSystemTime);
-    SystemTimeToTzSpecificLocalTime(0, &utcSystemTime, &localSystemTime);
+    if (!::FileTimeToSystemTime(&utcFileTime, &utcSystemTime))
+        return 0;
+    if (!::SystemTimeToTzSpecificLocalTime(nullptr, &utcSystemTime, &localSystemTime))
+        return 0;
 
     double offsetTime = (localTime * msPerSecond) + utcOffset;
 

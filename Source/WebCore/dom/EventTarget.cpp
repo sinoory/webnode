@@ -35,6 +35,7 @@
 #include "EventException.h"
 #include "InspectorInstrumentation.h"
 #include "ScriptController.h"
+#include "WebKitAnimationEvent.h"
 #include "WebKitTransitionEvent.h"
 #include <wtf/MainThread.h>
 #include <wtf/Ref.h>
@@ -168,6 +169,15 @@ void EventTarget::uncaughtExceptionInEventHandler()
 
 static const AtomicString& legacyType(const Event* event)
 {
+    if (event->type() == eventNames().animationendEvent)
+        return eventNames().webkitAnimationEndEvent;
+
+    if (event->type() == eventNames().animationstartEvent)
+        return eventNames().webkitAnimationStartEvent;
+
+    if (event->type() == eventNames().animationiterationEvent)
+        return eventNames().webkitAnimationIterationEvent;
+
     if (event->type() == eventNames().transitionendEvent)
         return eventNames().webkitTransitionEndEvent;
 
@@ -222,9 +232,9 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
     ScriptExecutionContext* context = scriptExecutionContext();
     Document* document = nullptr;
     InspectorInstrumentationCookie willDispatchEventCookie;
-    if (context && context->isDocument()) {
-        document = toDocument(context);
-        willDispatchEventCookie = InspectorInstrumentation::willDispatchEvent(document, *event, size > 0);
+    if (is<Document>(context)) {
+        document = downcast<Document>(context);
+        willDispatchEventCookie = InspectorInstrumentation::willDispatchEvent(*document, *event, size > 0);
     }
 
     for (; i < size; ++i) {
@@ -239,7 +249,7 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
         if (event->immediatePropagationStopped())
             break;
 
-        InspectorInstrumentationCookie cookie = InspectorInstrumentation::willHandleEvent(context, event);
+        InspectorInstrumentationCookie cookie = InspectorInstrumentation::willHandleEvent(context, *event);
         // To match Mozilla, the AT_TARGET phase fires both capturing and bubbling
         // event listeners, even though that violates some versions of the DOM spec.
         registeredListener.listener->handleEvent(context, event);

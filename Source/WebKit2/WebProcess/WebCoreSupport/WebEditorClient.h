@@ -122,10 +122,6 @@ private:
     virtual void toggleAutomaticSpellingCorrection() override;
 #endif
 
-#if ENABLE(DELETION_UI)
-    virtual bool shouldShowDeleteInterface(WebCore::HTMLElement*) override;
-#endif
-
 #if PLATFORM(GTK)
     bool executePendingEditorCommands(WebCore::Frame*, const Vector<WTF::String>&, bool);
     void getEditorCommandsForKeyEvent(const WebCore::KeyboardEvent*, Vector<WTF::String>&);
@@ -168,11 +164,6 @@ private:
 #endif
 
     virtual bool supportsGlobalSelection() override;
-
-#if ENABLE(TELEPHONE_NUMBER_DETECTION) || ENABLE(SERVICE_CONTROLS)
-    virtual void selectedTelephoneNumberRangesChanged() override;
-    virtual void selectionRectsDidChange(const Vector<WebCore::LayoutRect>&, const Vector<WebCore::GapRects>&, bool isTextOnly) override;
-#endif
 
     WebPage* m_page;
 };

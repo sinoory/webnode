@@ -43,9 +43,10 @@ namespace API {
 class Array;
 }
 
+
 namespace WebKit {
 
-class WebContext;
+class WebProcessPool;
 class WebProcessProxy;
 
 typedef GenericCallback<API::Array*> ArrayCallback;
@@ -55,7 +56,7 @@ class WebCookieManagerProxy : public API::ObjectImpl<API::Object::Type::CookieMa
 public:
     static const char* supplementName();
 
-    static PassRefPtr<WebCookieManagerProxy> create(WebContext*);
+    static PassRefPtr<WebCookieManagerProxy> create(WebProcessPool*);
     virtual ~WebCookieManagerProxy();
 
     void initializeClient(const WKCookieManagerClientBase*);
@@ -64,7 +65,7 @@ public:
     void deleteCookiesForHostname(const String& hostname);
     void deleteAllCookies();
     void getCookiesWithUrl(const String& base_url);//add by luyue 2015/6/16
-    void deleteAllCookiesModifiedAfterDate(double);
+    void deleteAllCookiesModifiedSince(std::chrono::system_clock::time_point);
 
     void setHTTPCookieAcceptPolicy(HTTPCookieAcceptPolicy);
     void getHTTPCookieAcceptPolicy(std::function<void (HTTPCookieAcceptPolicy, CallbackBase::Error)>);
@@ -81,7 +82,7 @@ public:
     using API::Object::deref;
 
 private:
-    WebCookieManagerProxy(WebContext*);
+    WebCookieManagerProxy(WebProcessPool*);
 
     void didGetHostnamesWithCookies(const Vector<String>&, uint64_t callbackID);
     void didGetHTTPCookieAcceptPolicy(uint32_t policy, uint64_t callbackID);
@@ -89,7 +90,7 @@ private:
     void cookiesDidChange();
     void getCookies(String cookie);//add by luyue 2015/6/16
     // WebContextSupplement
-    virtual void contextDestroyed() override;
+    virtual void processPoolDestroyed() override;
     virtual void processDidClose(WebProcessProxy*) override;
     virtual void processDidClose(NetworkProcessProxy*) override;
     virtual bool shouldTerminate(WebProcessProxy*) const override;
@@ -97,7 +98,7 @@ private:
     virtual void derefWebContextSupplement() override;
 
     // IPC::MessageReceiver
-    virtual void didReceiveMessage(IPC::Connection*, IPC::MessageDecoder&) override;
+    virtual void didReceiveMessage(IPC::Connection&, IPC::MessageDecoder&) override;
 
 #if PLATFORM(COCOA)
     void persistHTTPCookieAcceptPolicy(HTTPCookieAcceptPolicy);

@@ -31,13 +31,12 @@
 #include "SVGForeignObjectElement.h"
 #include "SVGRenderingContext.h"
 #include "SVGResourcesCache.h"
-#include "SVGSVGElement.h"
 #include "TransformState.h"
 #include <wtf/StackStats.h>
 
 namespace WebCore {
 
-RenderSVGForeignObject::RenderSVGForeignObject(SVGForeignObjectElement& element, PassRef<RenderStyle> style)
+RenderSVGForeignObject::RenderSVGForeignObject(SVGForeignObjectElement& element, Ref<RenderStyle>&& style)
     : RenderSVGBlock(element, WTF::move(style))
     , m_needsTransformUpdate(true)
 {
@@ -49,7 +48,7 @@ RenderSVGForeignObject::~RenderSVGForeignObject()
 
 SVGForeignObjectElement& RenderSVGForeignObject::foreignObjectElement() const
 {
-    return toSVGForeignObjectElement(RenderSVGBlock::graphicsElement());
+    return downcast<SVGForeignObjectElement>(RenderSVGBlock::graphicsElement());
 }
 
 void RenderSVGForeignObject::paint(PaintInfo& paintInfo, const LayoutPoint&)
@@ -100,6 +99,13 @@ LayoutRect RenderSVGForeignObject::clippedOverflowRectForRepaint(const RenderLay
 void RenderSVGForeignObject::computeFloatRectForRepaint(const RenderLayerModelObject* repaintContainer, FloatRect& repaintRect, bool fixed) const
 {
     SVGRenderSupport::computeFloatRectForRepaint(*this, repaintContainer, repaintRect, fixed);
+}
+
+void RenderSVGForeignObject::computeRectForRepaint(const RenderLayerModelObject* repaintContainer, LayoutRect& repaintRect, bool fixed) const
+{
+    FloatRect floatRect(repaintRect);
+    computeFloatRectForRepaint(repaintContainer, floatRect, fixed);
+    repaintRect = enclosingLayoutRect(floatRect);
 }
 
 const AffineTransform& RenderSVGForeignObject::localToParentTransform() const

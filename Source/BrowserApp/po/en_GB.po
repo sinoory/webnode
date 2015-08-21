@@ -3551,6 +3551,15 @@ msgstr "OK"
 msgid "_Password:"
 msgstr "Password"
 
+msgid "Serif:"
+msgstr "Serif:"
+
+msgid "Sans-serif:"
+msgstr "Sans-serif:"
+
+msgid "Monospace:"
+msgstr "Monospace:"
+
 msgid "You must have administrator rights to complete this installation!"
 msgstr "You must have administrator rights to complete this installation!"
 

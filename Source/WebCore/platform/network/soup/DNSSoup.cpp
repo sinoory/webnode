@@ -48,7 +48,7 @@ bool DNSResolveQueue::platformProxyIsEnabledInSystemPreferences()
 
 static void resolvedCallback(SoupAddress*, guint, void*)
 {
-    DNSResolveQueue::shared().decrementRequestCount();
+    DNSResolveQueue::singleton().decrementRequestCount();
 }
 
 void DNSResolveQueue::platformResolve(const String& hostname)
@@ -64,7 +64,7 @@ void prefetchDNS(const String& hostname)
     if (hostname.isEmpty())
         return;
 
-    DNSResolveQueue::shared().add(hostname);
+    DNSResolveQueue::singleton().add(hostname);
 }
 
 }

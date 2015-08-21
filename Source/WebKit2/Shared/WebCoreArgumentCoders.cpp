@@ -59,6 +59,7 @@
 #include <WebCore/ScrollingCoordinator.h>
 #include <WebCore/SessionID.h>
 #include <WebCore/TextCheckerClient.h>
+#include <WebCore/TextIndicator.h>
 #include <WebCore/TimingFunction.h>
 #include <WebCore/TransformationMatrix.h>
 #include <WebCore/URL.h>
@@ -298,6 +299,16 @@ bool ArgumentCoder<FloatSize>::decode(ArgumentDecoder& decoder, FloatSize& float
 }
 
 
+void ArgumentCoder<FloatRoundedRect>::encode(ArgumentEncoder& encoder, const FloatRoundedRect& roundedRect)
+{
+    SimpleArgumentCoder<FloatRoundedRect>::encode(encoder, roundedRect);
+}
+
+bool ArgumentCoder<FloatRoundedRect>::decode(ArgumentDecoder& decoder, FloatRoundedRect& roundedRect)
+{
+    return SimpleArgumentCoder<FloatRoundedRect>::decode(decoder, roundedRect);
+}
+
 #if PLATFORM(IOS)
 void ArgumentCoder<FloatQuad>::encode(ArgumentEncoder& encoder, const FloatQuad& floatQuad)
 {
@@ -463,59 +474,6 @@ bool ArgumentCoder<PluginInfo>::decode(ArgumentDecoder& decoder, PluginInfo& plu
 
     return true;
 }
-
-
-void ArgumentCoder<HTTPHeaderMap>::encode(ArgumentEncoder& encoder, const HTTPHeaderMap& headerMap)
-{
-    encoder << static_cast<uint64_t>(headerMap.commonHeaders().size());
-    for (const auto& keyValuePair : headerMap.commonHeaders()) {
-        encoder.encodeEnum(keyValuePair.key);
-        encoder << keyValuePair.value;
-    }
-    encoder << static_cast<uint64_t>(headerMap.uncommonHeaders().size());
-    for (const auto& keyValuePair : headerMap.uncommonHeaders()) {
-        encoder << keyValuePair.key;
-        encoder << keyValuePair.value;
-    }
-}
-
-bool ArgumentCoder<HTTPHeaderMap>::decode(ArgumentDecoder& decoder, HTTPHeaderMap& headerMap)
-{
-    uint64_t commonHeadersSize;
-    if (!decoder.decode(commonHeadersSize))
-        return false;
-
-    for (size_t i = 0; i < commonHeadersSize; ++i) {
-        HTTPHeaderName name;
-        if (!decoder.decodeEnum(name))
-            return false;
-
-        String value;
-        if (!decoder.decode(value))
-            return false;
-
-        headerMap.commonHeaders().add(name, value);
-    }
-
-    uint64_t uncommonHeadersSize;
-    if (!decoder.decode(uncommonHeadersSize))
-        return false;
-
-    for (size_t i = 0; i < uncommonHeadersSize; ++i) {
-        String name;
-        if (!decoder.decode(name))
-            return false;
-
-        String value;
-        if (!decoder.decode(value))
-            return false;
-
-        headerMap.uncommonHeaders().add(name, value);
-    }
-
-    return true;
-}
-
 
 void ArgumentCoder<AuthenticationChallenge>::encode(ArgumentEncoder& encoder, const AuthenticationChallenge& challenge)
 {
@@ -728,9 +686,7 @@ void ArgumentCoder<ResourceRequest>::encode(ArgumentEncoder& encoder, const Reso
     encoder << resourceRequest.cachePartition();
 #endif
 
-#if ENABLE(INSPECTOR)
     encoder << resourceRequest.hiddenFromInspector();
-#endif
 
     if (resourceRequest.encodingRequiresPlatformData()) {
         encoder << true;
@@ -750,12 +706,10 @@ bool ArgumentCoder<ResourceRequest>::decode(ArgumentDecoder& decoder, ResourceRe
     resourceRequest.setCachePartition(cachePartition);
 #endif
 
-#if ENABLE(INSPECTOR)
     bool isHiddenFromInspector;
     if (!decoder.decode(isHiddenFromInspector))
         return false;
     resourceRequest.setHiddenFromInspector(isHiddenFromInspector);
-#endif
 
     bool hasPlatformData;
     if (!decoder.decode(hasPlatformData))
@@ -999,8 +953,6 @@ bool ArgumentCoder<Cookie>::decode(ArgumentDecoder& decoder, Cookie& cookie)
     return true;
 }
 
-
-#if ENABLE(SQL_DATABASE)
 void ArgumentCoder<DatabaseDetails>::encode(ArgumentEncoder& encoder, const DatabaseDetails& details)
 {
     encoder << details.name();
@@ -1040,8 +992,6 @@ bool ArgumentCoder<DatabaseDetails>::decode(ArgumentDecoder& decoder, DatabaseDe
     details = DatabaseDetails(name, displayName, expectedUsage, currentUsage, creationTime, modificationTime);
     return true;
 }
-
-#endif
 
 #if PLATFORM(IOS)
 
@@ -1559,26 +1509,26 @@ void ArgumentCoder<FilterOperation>::encode(ArgumentEncoder& encoder, const Filt
     case FilterOperation::SEPIA:
     case FilterOperation::SATURATE:
     case FilterOperation::HUE_ROTATE:
-        encoder << toBasicColorMatrixFilterOperation(filter).amount();
+        encoder << downcast<BasicColorMatrixFilterOperation>(filter).amount();
         break;
     case FilterOperation::INVERT:
     case FilterOperation::OPACITY:
     case FilterOperation::BRIGHTNESS:
     case FilterOperation::CONTRAST:
-        encoder << toBasicComponentTransferFilterOperation(filter).amount();
+        encoder << downcast<BasicComponentTransferFilterOperation>(filter).amount();
         break;
     case FilterOperation::BLUR:
-        encoder << toBlurFilterOperation(filter).stdDeviation();
+        encoder << downcast<BlurFilterOperation>(filter).stdDeviation();
         break;
     case FilterOperation::DROP_SHADOW: {
-        const auto& dropShadowFilter = toDropShadowFilterOperation(filter);
+        const auto& dropShadowFilter = downcast<DropShadowFilterOperation>(filter);
         encoder << dropShadowFilter.location();
         encoder << dropShadowFilter.stdDeviation();
         encoder << dropShadowFilter.color();
         break;
     }
     case FilterOperation::DEFAULT:
-        encoder.encodeEnum(toDefaultFilterOperation(filter).representedType());
+        encoder.encodeEnum(downcast<DefaultFilterOperation>(filter).representedType());
         break;
     case FilterOperation::PASSTHROUGH:
         break;
@@ -1999,6 +1949,57 @@ bool ArgumentCoder<BlobPart>::decode(ArgumentDecoder& decoder, BlobPart& blobPar
     default:
         return false;
     }
+
+    return true;
+}
+
+void ArgumentCoder<TextIndicatorData>::encode(ArgumentEncoder& encoder, const TextIndicatorData& textIndicatorData)
+{
+    encoder << textIndicatorData.selectionRectInRootViewCoordinates;
+    encoder << textIndicatorData.textBoundingRectInRootViewCoordinates;
+    encoder << textIndicatorData.textRectsInBoundingRectCoordinates;
+    encoder << textIndicatorData.contentImageScaleFactor;
+    encoder.encodeEnum(textIndicatorData.presentationTransition);
+
+    bool hasImage = textIndicatorData.contentImage;
+    encoder << hasImage;
+    if (hasImage)
+        encodeImage(encoder, textIndicatorData.contentImage.get());
+
+    bool hasImageWithHighlight = textIndicatorData.contentImageWithHighlight;
+    encoder << hasImageWithHighlight;
+    if (hasImageWithHighlight)
+        encodeImage(encoder, textIndicatorData.contentImageWithHighlight.get());
+}
+
+bool ArgumentCoder<TextIndicatorData>::decode(ArgumentDecoder& decoder, TextIndicatorData& textIndicatorData)
+{
+    if (!decoder.decode(textIndicatorData.selectionRectInRootViewCoordinates))
+        return false;
+
+    if (!decoder.decode(textIndicatorData.textBoundingRectInRootViewCoordinates))
+        return false;
+
+    if (!decoder.decode(textIndicatorData.textRectsInBoundingRectCoordinates))
+        return false;
+
+    if (!decoder.decode(textIndicatorData.contentImageScaleFactor))
+        return false;
+
+    if (!decoder.decodeEnum(textIndicatorData.presentationTransition))
+        return false;
+
+    bool hasImage;
+    if (!decoder.decode(hasImage))
+        return false;
+    if (hasImage && !decodeImage(decoder, textIndicatorData.contentImage))
+        return false;
+
+    bool hasImageWithHighlight;
+    if (!decoder.decode(hasImageWithHighlight))
+        return false;
+    if (hasImageWithHighlight && !decodeImage(decoder, textIndicatorData.contentImageWithHighlight))
+        return false;
 
     return true;
 }

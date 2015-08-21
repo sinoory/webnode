@@ -30,8 +30,8 @@
 
 #include "BitmapImage.h"
 #include "CachedImage.h"
-#include "Font.h"
 #include "FontCache.h"
+#include "FontCascade.h"
 #include "Frame.h"
 #include "FrameSelection.h"
 #include "GeometryUtilities.h"
@@ -118,7 +118,7 @@ void RenderImage::collectSelectionRects(Vector<SelectionRect>& rects, unsigned, 
 
 using namespace HTMLNames;
 
-RenderImage::RenderImage(Element& element, PassRef<RenderStyle> style, StyleImage* styleImage, const float imageDevicePixelRatio)
+RenderImage::RenderImage(Element& element, Ref<RenderStyle>&& style, StyleImage* styleImage, const float imageDevicePixelRatio)
     : RenderReplaced(element, WTF::move(style), IntSize())
     , m_imageResource(styleImage ? std::make_unique<RenderImageResourceStyleImage>(*styleImage) : std::make_unique<RenderImageResource>())
     , m_needsToSetSizeForAltText(false)
@@ -130,11 +130,11 @@ RenderImage::RenderImage(Element& element, PassRef<RenderStyle> style, StyleImag
     updateAltText();
     imageResource().initialize(this);
 
-    if (isHTMLImageElement(element))
-        m_hasShadowControls = toHTMLImageElement(element).hasShadowControls();
+    if (is<HTMLImageElement>(element))
+        m_hasShadowControls = downcast<HTMLImageElement>(element).hasShadowControls();
 }
 
-RenderImage::RenderImage(Document& document, PassRef<RenderStyle> style, StyleImage* styleImage)
+RenderImage::RenderImage(Document& document, Ref<RenderStyle>&& style, StyleImage* styleImage)
     : RenderReplaced(document, WTF::move(style), IntSize())
     , m_imageResource(styleImage ? std::make_unique<RenderImageResourceStyleImage>(*styleImage) : std::make_unique<RenderImageResource>())
     , m_needsToSetSizeForAltText(false)
@@ -192,9 +192,7 @@ bool RenderImage::setImageSizeForAltText(CachedImage* newImage /* = 0 */)
 
     // we have an alt and the user meant it (its not a text we invented)
     if (!m_altText.isEmpty()) {
-        FontCachePurgePreventer fontCachePurgePreventer;
-
-        const Font& font = style().font();
+        const FontCascade& font = style().fontCascade();
         IntSize paddedTextSize(paddingWidth + std::min(ceilf(font.width(RenderBlock::constructTextRun(this, font, m_altText, style()))), maxAltTextWidth), paddingHeight + std::min(font.fontMetrics().height(), maxAltTextHeight));
         imageSize = imageSize.expandedTo(paddedTextSize);
     }
@@ -279,8 +277,7 @@ bool RenderImage::updateIntrinsicSizeIfNeeded(const LayoutSize& newSize, bool im
 void RenderImage::updateInnerContentRect()
 {
     // Propagate container size to image resource.
-    LayoutRect paintRect = replacedContentRect(intrinsicSize());
-    IntSize containerSize(paintRect.width(), paintRect.height());
+    IntSize containerSize(replacedContentRect(intrinsicSize()).size());
     if (!containerSize.isEmpty())
         imageResource().setContainerSizeForRenderer(containerSize);
 }
@@ -446,7 +443,7 @@ void RenderImage::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOf
             if (!m_altText.isEmpty()) {
                 String text = document().displayStringModifiedByEncoding(m_altText);
                 context->setFillColor(style().visitedDependentColor(CSSPropertyColor), style().colorSpace());
-                const Font& font = style().font();
+                const FontCascade& font = style().fontCascade();
                 const FontMetrics& fontMetrics = font.fontMetrics();
                 LayoutUnit ascent = fontMetrics.ascent();
                 LayoutPoint altTextOffset = paintOffset;
@@ -471,21 +468,21 @@ void RenderImage::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOf
             return;
         }
 
-        LayoutRect contentRect = contentBoxRect();
-        contentRect.moveBy(paintOffset);
-        LayoutRect paintRect = replacedContentRect(intrinsicSize());
-        paintRect.moveBy(paintOffset);
-        bool clip = !contentRect.contains(paintRect);
+        LayoutRect contentBoxRect = this->contentBoxRect();
+        contentBoxRect.moveBy(paintOffset);
+        LayoutRect replacedContentRect = this->replacedContentRect(intrinsicSize());
+        replacedContentRect.moveBy(paintOffset);
+        bool clip = !contentBoxRect.contains(replacedContentRect);
         GraphicsContextStateSaver stateSaver(*context, clip);
         if (clip)
-            context->clip(contentRect);
+            context->clip(contentBoxRect);
 
-        paintIntoRect(context, snapRectToDevicePixels(paintRect, deviceScaleFactor));
+        paintIntoRect(context, snapRectToDevicePixels(replacedContentRect, deviceScaleFactor));
         
         if (cachedImage() && page && paintInfo.phase == PaintPhaseForeground) {
             // For now, count images as unpainted if they are still progressively loading. We may want 
             // to refine this in the future to account for the portion of the image that has painted.
-            LayoutRect visibleRect = intersection(paintRect, contentRect);
+            LayoutRect visibleRect = intersection(replacedContentRect, contentBoxRect);
             if (cachedImage()->isLoading())
                 page->addRelevantUnpaintedObject(this, visibleRect);
             else
@@ -514,23 +511,23 @@ void RenderImage::paintAreaElementFocusRing(PaintInfo& paintInfo)
         return;
 
     Element* focusedElement = document().focusedElement();
-    if (!focusedElement || !isHTMLAreaElement(focusedElement))
+    if (!is<HTMLAreaElement>(focusedElement))
         return;
 
-    HTMLAreaElement* areaElement = toHTMLAreaElement(focusedElement);
-    if (areaElement->imageElement() != element())
+    HTMLAreaElement& areaElement = downcast<HTMLAreaElement>(*focusedElement);
+    if (areaElement.imageElement() != element())
         return;
 
     // Even if the theme handles focus ring drawing for entire elements, it won't do it for
     // an area within an image, so we don't call RenderTheme::supportsFocusRing here.
 
-    Path path = areaElement->computePath(this);
+    Path path = areaElement.computePath(this);
     if (path.isEmpty())
         return;
 
     // FIXME: Do we need additional code to clip the path to the image's bounding box?
 
-    RenderStyle* areaElementStyle = areaElement->computedStyle();
+    RenderStyle* areaElementStyle = areaElement.computedStyle();
     unsigned short outlineWidth = areaElementStyle->outlineWidth();
     if (!outlineWidth)
         return;
@@ -560,8 +557,8 @@ void RenderImage::paintIntoRect(GraphicsContext* context, const FloatRect& rect)
     if (!img || img->isNull())
         return;
 
-    HTMLImageElement* imageElt = (element() && isHTMLImageElement(element())) ? toHTMLImageElement(element()) : 0;
-    CompositeOperator compositeOperator = imageElt ? imageElt->compositeOperator() : CompositeSourceOver;
+    HTMLImageElement* imageElement = is<HTMLImageElement>(element()) ? downcast<HTMLImageElement>(element()) : nullptr;
+    CompositeOperator compositeOperator = imageElement ? imageElement->compositeOperator() : CompositeSourceOver;
     Image* image = imageResource().image().get();
     bool useLowQualityScaling = shouldPaintAtLowQuality(context, image, image, LayoutSize(rect.size()));
     ImageOrientationDescription orientationDescription(shouldRespectImageOrientation());
@@ -622,8 +619,8 @@ LayoutUnit RenderImage::minimumReplacedHeight() const
 
 HTMLMapElement* RenderImage::imageMap() const
 {
-    HTMLImageElement* i = element() && isHTMLImageElement(element()) ? toHTMLImageElement(element()) : 0;
-    return i ? i->treeScope().getImageMap(i->fastGetAttribute(usemapAttr)) : 0;
+    HTMLImageElement* image = is<HTMLImageElement>(element()) ? downcast<HTMLImageElement>(element()) : nullptr;
+    return image ? image->treeScope().getImageMap(image->fastGetAttribute(usemapAttr)) : nullptr;
 }
 
 bool RenderImage::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
@@ -655,10 +652,10 @@ void RenderImage::updateAltText()
     if (!element())
         return;
 
-    if (isHTMLInputElement(element()))
-        m_altText = toHTMLInputElement(element())->altText();
-    else if (isHTMLImageElement(element()))
-        m_altText = toHTMLImageElement(element())->altText();
+    if (is<HTMLInputElement>(*element()))
+        m_altText = downcast<HTMLInputElement>(*element()).altText();
+    else if (is<HTMLImageElement>(*element()))
+        m_altText = downcast<HTMLImageElement>(*element()).altText();
 }
 
 bool RenderImage::canHaveChildren() const
@@ -685,7 +682,7 @@ void RenderImage::layout()
 
 void RenderImage::layoutShadowControls(const LayoutSize& oldSize)
 {
-    RenderBox* controlsRenderer = toRenderBox(firstChild());
+    auto* controlsRenderer = downcast<RenderBox>(firstChild());
     if (!controlsRenderer)
         return;
     
@@ -727,10 +724,10 @@ void RenderImage::computeIntrinsicRatioInformation(FloatSize& intrinsicSize, dou
     // Our intrinsicSize is empty if we're rendering generated images with relative width/height. Figure out the right intrinsic size to use.
     if (intrinsicSize.isEmpty() && (imageResource().imageHasRelativeWidth() || imageResource().imageHasRelativeHeight())) {
         RenderObject* containingBlock = isOutOfFlowPositioned() ? container() : this->containingBlock();
-        if (containingBlock->isBox()) {
-            RenderBox* box = toRenderBox(containingBlock);
-            intrinsicSize.setWidth(box->availableLogicalWidth());
-            intrinsicSize.setHeight(box->availableLogicalHeight(IncludeMarginBorderPadding));
+        if (is<RenderBox>(*containingBlock)) {
+            auto& box = downcast<RenderBox>(*containingBlock);
+            intrinsicSize.setWidth(box.availableLogicalWidth());
+            intrinsicSize.setHeight(box.availableLogicalHeight(IncludeMarginBorderPadding));
         }
     }
     // Don't compute an intrinsic ratio to preserve historical WebKit behavior if we're painting alt text and/or a broken image.
@@ -750,10 +747,10 @@ bool RenderImage::needsPreferredWidthsRecalculation() const
 RenderBox* RenderImage::embeddedContentBox() const
 {
     CachedImage* cachedImage = imageResource().cachedImage();
-    if (cachedImage && cachedImage->image() && cachedImage->image()->isSVGImage())
-        return static_cast<SVGImage*>(cachedImage->image())->embeddedContentBox();
+    if (cachedImage && is<SVGImage>(cachedImage->image()))
+        return downcast<SVGImage>(*cachedImage->image()).embeddedContentBox();
 
-    return 0;
+    return nullptr;
 }
 
 } // namespace WebCore

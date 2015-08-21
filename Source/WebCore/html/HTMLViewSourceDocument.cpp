@@ -48,14 +48,14 @@ HTMLViewSourceDocument::HTMLViewSourceDocument(Frame* frame, const URL& url, con
     : HTMLDocument(frame, url)
     , m_type(mimeType)
 {
-    styleSheetCollection().setUsesBeforeAfterRulesOverride(true);
+    //styleSheetCollection().setUsesBeforeAfterRulesOverride(true);
     setIsViewSource(true);
 
     setCompatibilityMode(DocumentCompatibilityMode::QuirksMode);
     lockCompatibilityMode();
 }
 
-PassRefPtr<DocumentParser> HTMLViewSourceDocument::createParser()
+Ref<DocumentParser> HTMLViewSourceDocument::createParser()
 {
     if (m_type == "text/html" || m_type == "application/xhtml+xml" || m_type == "image/svg+xml" || DOMImplementation::isXMLMIMEType(m_type))
         return HTMLViewSourceParser::create(*this);
@@ -139,17 +139,34 @@ void HTMLViewSourceDocument::processTagToken(const String& source, HTMLToken& to
         AtomicString name(iter->name);
         String value = StringImpl::create8BitIfPossible(iter->value);
 
+#if 0 // ZRL porting to WebKitGtk2.8.0
         index = addRange(source, index, iter->nameRange.start - token.startIndex(), "");
         index = addRange(source, index, iter->nameRange.end - token.startIndex(), "webkit-html-attribute-name");
+#else
+        index = addRange(source, index, iter->startOffset, "");
+        //index = addRange(source, index, iter->endOffset, "webkit-html-attribute-name");
+        index = addRange(source, index, iter->endOffset, "");
+#endif
 
+// ZRL TBD for future
+#if 0
         if (tagName == baseTag && name == hrefAttr)
             m_current = addBase(value);
 
+#if 0 // ZRL porting to WebKitGtk2.8.0
         index = addRange(source, index, iter->valueRange.start - token.startIndex(), "");
+#else
+        index = addRange(source, index, iter->startOffset, "");
+#endif
 
         bool isLink = name == srcAttr || name == hrefAttr;
+#if 0 // ZRL porting to WebKitGtk2.8.0
         index = addRange(source, index, iter->valueRange.end - token.startIndex(), "webkit-html-attribute-value", isLink, tagName == aTag, value);
+#else
+        index = addRange(source, index, iter->endOffset, "webkit-html-attribute-value", isLink, tagName == aTag, value);
+#endif
 
+#endif
         ++iter;
     }
     m_current = m_td;
@@ -260,7 +277,7 @@ int HTMLViewSourceDocument::addRange(const String& source, int start, int end, c
     }
     addText(text, className);
     if (!className.isEmpty() && m_current != m_tbody)
-        m_current = toElement(m_current->parentNode());
+        m_current = downcast<Element>(m_current->parentNode()); //toElement(m_current->parentNode());
     return end;
 }
 

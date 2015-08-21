@@ -185,7 +185,7 @@ public:
     void cancel(ResourceHandle* handle)
     {
         handle->cancel();
-        deleteFilesIfNeeded(); 
+        deleteFilesIfNeeded();
         m_download->didCancel(IPC::DataReference());
     }
 
@@ -234,6 +234,11 @@ void Download::startWithHandle(ResourceHandle* resourceHandle, const ResourceRes
     m_resourceHandle = resourceHandle;
     didStart();
     static_cast<DownloadClient*>(m_downloadClient.get())->handleResponseLater(response);
+}
+
+void Download::resume(const IPC::DataReference&, const String&, const SandboxExtension::Handle&)
+{
+    notImplemented();
 }
 
 void Download::cancel()

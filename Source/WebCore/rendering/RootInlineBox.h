@@ -187,9 +187,6 @@ public:
         return InlineFlowBox::logicalBottomLayoutOverflow(lineBottom());
     }
 
-    // Used to calculate the underline offset for TextUnderlinePositionUnder.
-    float maxLogicalTop() const;
-
     Node* getLogicalStartBoxWithNode(InlineBox*&) const;
     Node* getLogicalEndBoxWithNode(InlineBox*&) const;
 
@@ -231,18 +228,18 @@ private:
     std::unique_ptr<Vector<RenderBox*>> m_floats;
 };
 
-INLINE_BOX_OBJECT_TYPE_CASTS(RootInlineBox, isRootInlineBox())
-
 inline RootInlineBox* RootInlineBox::nextRootBox() const
 {
-    return toRootInlineBox(m_nextLineBox);
+    return downcast<RootInlineBox>(m_nextLineBox);
 }
 
 inline RootInlineBox* RootInlineBox::prevRootBox() const
 {
-    return toRootInlineBox(m_prevLineBox);
+    return downcast<RootInlineBox>(m_prevLineBox);
 }
 
 } // namespace WebCore
+
+SPECIALIZE_TYPE_TRAITS_INLINE_BOX(RootInlineBox, isRootInlineBox())
 
 #endif // RootInlineBox_h

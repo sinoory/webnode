@@ -36,7 +36,7 @@ class VM;
 JS_EXPORT_PRIVATE bool checkSyntax(VM&, const SourceCode&, ParserError&);
 JS_EXPORT_PRIVATE bool checkSyntax(ExecState*, const SourceCode&, JSValue* exception = 0);
 JS_EXPORT_PRIVATE JSValue evaluate(ExecState*, const SourceCode&, JSValue thisValue = JSValue(), JSValue* exception = 0);
-JS_EXPORT_PRIVATE void setObfuscateCodeSate(bool);
+JS_EXPORT_PRIVATE void setObfuscateCodeSate(bool); //Only for cdos browser
 
 } // namespace JSC
 

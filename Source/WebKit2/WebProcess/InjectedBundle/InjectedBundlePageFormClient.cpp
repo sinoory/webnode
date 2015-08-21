@@ -27,12 +27,12 @@
 #include "InjectedBundlePageFormClient.h"
 
 #include "APIArray.h"
-#include "ImmutableDictionary.h"
+#include "APIDictionary.h"
 #include "InjectedBundleNodeHandle.h"
 #include "WKAPICast.h"
 #include "WKBundleAPICast.h"
-#include "WebKitFrame.h"
-#include "WebKitWebPage.h"
+#include "WebFrame.h"
+#include "WebPage.h"
 #include <WebCore/HTMLFormElement.h>
 #include <WebCore/HTMLInputElement.h>
 #include <WebCore/HTMLTextAreaElement.h>
@@ -141,10 +141,10 @@ void InjectedBundlePageFormClient::willSendSubmitEvent(WebPage* page, HTMLFormEl
     RefPtr<InjectedBundleNodeHandle> nodeHandle = InjectedBundleNodeHandle::getOrCreate(formElement);
     WebKitDOMHTMLFormElement * form_node = WebKit::wrapHTMLFormElement(formElement);
 
-    ImmutableDictionary::MapType map;
+    API::Dictionary::MapType map;
     for (size_t i = 0; i < values.size(); ++i)
         map.set(values[i].first, API::String::create(values[i].second));
-    auto textFieldsMap = ImmutableDictionary::create(WTF::move(map));
+    auto textFieldsMap = API::Dictionary::create(WTF::move(map));
 
     m_client.willSendSubmitEvent(toAPI(page), form_node, toAPI(frame), toAPI(sourceFrame), toAPI(textFieldsMap.get()), m_client.base.clientInfo);
 }
@@ -157,10 +157,10 @@ void InjectedBundlePageFormClient::willSubmitForm(WebPage* page, HTMLFormElement
     RefPtr<InjectedBundleNodeHandle> nodeHandle = InjectedBundleNodeHandle::getOrCreate(formElement);
     WebKitDOMHTMLFormElement * form_node = WebKit::wrapHTMLFormElement(formElement);
 
-    ImmutableDictionary::MapType map;
+    API::Dictionary::MapType map;
     for (size_t i = 0; i < values.size(); ++i)
         map.set(values[i].first, API::String::create(values[i].second));
-    auto textFieldsMap = ImmutableDictionary::create(WTF::move(map));
+    auto textFieldsMap = API::Dictionary::create(WTF::move(map));
 
     WKTypeRef userDataToPass = 0;
     m_client.willSubmitForm(toAPI(page), form_node, toAPI(frame), toAPI(sourceFrame), toAPI(textFieldsMap.get()), &userDataToPass, m_client.base.clientInfo);

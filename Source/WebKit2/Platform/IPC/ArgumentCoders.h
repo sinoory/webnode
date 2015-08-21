@@ -23,8 +23,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SimpleArgumentCoder_h
-#define SimpleArgumentCoder_h
+#ifndef ArgumentCoders_h
+#define ArgumentCoders_h
 
 #include "ArgumentDecoder.h"
 #include "ArgumentEncoder.h"
@@ -34,6 +34,10 @@
 #include <wtf/HashSet.h>
 #include <wtf/Optional.h>
 #include <wtf/Vector.h>
+
+#if HAVE(DTRACE)
+#include <uuid/uuid.h>
+#endif
 
 namespace IPC {
 
@@ -278,6 +282,11 @@ template<typename KeyArg, typename HashArg, typename KeyTraitsArg> struct Argume
     }
 };
 
+template<> struct ArgumentCoder<std::chrono::system_clock::time_point> {
+    static void encode(ArgumentEncoder&, const std::chrono::system_clock::time_point&);
+    static bool decode(ArgumentDecoder&, std::chrono::system_clock::time_point&);
+};
+
 template<> struct ArgumentCoder<AtomicString> {
     static void encode(ArgumentEncoder&, const AtomicString&);
     static bool decode(ArgumentDecoder&, AtomicString&);
@@ -292,6 +301,13 @@ template<> struct ArgumentCoder<String> {
     static void encode(ArgumentEncoder&, const String&);
     static bool decode(ArgumentDecoder&, String&);
 };
+
+#if HAVE(DTRACE)
+template<> struct ArgumentCoder<uuid_t> {
+    static void encode(ArgumentEncoder&, const uuid_t&);
+    static bool decode(ArgumentDecoder&, uuid_t&);
+};
+#endif
 
 } // namespace IPC
 

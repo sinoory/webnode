@@ -147,7 +147,7 @@ static void cookiesDidChange(WKCookieManagerRef, const void* clientInfo)
 //add by luyue 2015/6/16 start
 static void getCookies(WKCookieManagerRef, const void* clientInfo,String cookie)
 {
-g_signal_emit(WEBKIT_COOKIE_MANAGER(clientInfo), signals[GET_COOKIE], 0,cookie.utf8().data());
+    g_signal_emit(WEBKIT_COOKIE_MANAGER(clientInfo), signals[GET_COOKIE], 0,cookie.utf8().data());
 }
 //add end
 

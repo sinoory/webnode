@@ -25,6 +25,7 @@
 
 #include "BrowserSettingsDialog.h"
 #include "midori-panel.h"
+#include "midori.h"
 #include "../midori/Certificate.h"
 #include "panels/midori-extensions.h"
 #include "../midori/password-manager.h"
@@ -862,7 +863,7 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
    gtk_combo_box_set_active(GTK_COMBO_BOX(button), index);
    g_signal_connect(G_OBJECT(button), "changed", G_CALLBACK(defaultFontsizeCallback), settings);
    gtk_grid_attach_next_to(grid, button, widget, GTK_POS_RIGHT, 1, 1);
-   widget = gtk_label_new("Serif：");  
+   widget = gtk_label_new(_("Serif:"));  
    gtk_grid_attach(grid, widget, 2, 3, 1, 1);
    button = gtk_combo_box_text_new();
    for(i = 0; i < FontNum; i++)
@@ -873,7 +874,7 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
    gtk_grid_attach_next_to(grid, button, widget, GTK_POS_RIGHT, 1, 1);
 
    //Sans-serif font
-   widget = gtk_label_new("Sans-serif：");
+   widget = gtk_label_new(_("Sans-serif:"));
    gtk_grid_attach(grid, widget, 2, 4, 1, 1);
    button = gtk_combo_box_text_new();
    for(i = 0; i < FontNum; i++)
@@ -884,7 +885,7 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
    gtk_grid_attach_next_to(grid, button, widget, GTK_POS_RIGHT, 1, 1);
 
    //Monospace font
-   widget = gtk_label_new("Monospace：");
+   widget = gtk_label_new(_("Monospace:"));
    gtk_grid_attach(grid, widget, 2, 5, 1, 1);
    button = gtk_combo_box_text_new();
    for(i = 0; i < FontNum; i++)

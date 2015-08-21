@@ -109,6 +109,7 @@ static bool hasDoubleValue(CSSPrimitiveValue::UnitTypes type)
     case CSSPrimitiveValue::CSS_DEG:
     case CSSPrimitiveValue::CSS_RAD:
     case CSSPrimitiveValue::CSS_GRAD:
+    case CSSPrimitiveValue::CSS_TURN:
     case CSSPrimitiveValue::CSS_MS:
     case CSSPrimitiveValue::CSS_S:
     case CSSPrimitiveValue::CSS_HZ:
@@ -124,6 +125,7 @@ static bool hasDoubleValue(CSSPrimitiveValue::UnitTypes type)
         return true;
     case CSSPrimitiveValue::CSS_UNKNOWN:
     case CSSPrimitiveValue::CSS_STRING:
+    case CSSPrimitiveValue::CSS_FONT_FAMILY:
     case CSSPrimitiveValue::CSS_URI:
     case CSSPrimitiveValue::CSS_IDENT:
     case CSSPrimitiveValue::CSS_ATTR:
@@ -135,7 +137,6 @@ static bool hasDoubleValue(CSSPrimitiveValue::UnitTypes type)
     case CSSPrimitiveValue::CSS_PARSER_OPERATOR:
     case CSSPrimitiveValue::CSS_PARSER_HEXCOLOR:
     case CSSPrimitiveValue::CSS_PARSER_IDENTIFIER:
-    case CSSPrimitiveValue::CSS_TURN:
     case CSSPrimitiveValue::CSS_COUNTER_NAME:
     case CSSPrimitiveValue::CSS_SHAPE:
     case CSSPrimitiveValue::CSS_QUAD:
@@ -197,7 +198,7 @@ double CSSCalcValue::computeLengthPx(const CSSToLengthConversionData& conversion
 class CSSCalcPrimitiveValue final : public CSSCalcExpressionNode {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassRef<CSSCalcPrimitiveValue> create(PassRefPtr<CSSPrimitiveValue> value, bool isInteger)
+    static Ref<CSSCalcPrimitiveValue> create(PassRefPtr<CSSPrimitiveValue> value, bool isInteger)
     {
         return adoptRef(*new CSSCalcPrimitiveValue(value, isInteger));
     }
@@ -604,11 +605,11 @@ private:
             return false;
 
         RefPtr<CSSValue> value = parserValue->createCSSValue();
-        if (!value || !value->isPrimitiveValue())
+        if (!is<CSSPrimitiveValue>(value.get()))
             return false;
 
-        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value.get());
-        result->value = CSSCalcPrimitiveValue::create(primitiveValue, parserValue->isInt);
+        CSSPrimitiveValue& primitiveValue = downcast<CSSPrimitiveValue>(*value);
+        result->value = CSSCalcPrimitiveValue::create(&primitiveValue, parserValue->isInt);
 
         ++*index;
         return true;

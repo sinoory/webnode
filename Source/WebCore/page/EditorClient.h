@@ -168,10 +168,6 @@ public:
     virtual void toggleAutomaticSpellingCorrection() = 0;
 #endif
     
-#if ENABLE(DELETION_UI)
-    virtual bool shouldShowDeleteInterface(HTMLElement*) = 0;
-#endif
-
 #if PLATFORM(GTK)
     virtual bool shouldShowUnicodeMenu() = 0;
 #endif
@@ -184,11 +180,6 @@ public:
     virtual bool spellingUIIsShowing() = 0;
     virtual void willSetInputMethodState() = 0;
     virtual void setInputMethodState(bool enabled) = 0;
-
-#if ENABLE(SERVICE_CONTROLS) || ENABLE(TELEPHONE_NUMBER_DETECTION)
-    virtual void selectedTelephoneNumberRangesChanged() { }
-    virtual void selectionRectsDidChange(const Vector<LayoutRect>&, const Vector<GapRects>&, bool) { }
-#endif
 
     // Support for global selections, used on platforms like the X Window System that treat
     // selection as a type of clipboard.

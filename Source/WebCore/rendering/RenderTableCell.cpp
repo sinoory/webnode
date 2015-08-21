@@ -54,7 +54,7 @@ struct SameSizeAsRenderTableCell : public RenderBlockFlow {
 COMPILE_ASSERT(sizeof(RenderTableCell) == sizeof(SameSizeAsRenderTableCell), RenderTableCell_should_stay_small);
 COMPILE_ASSERT(sizeof(CollapsedBorderValue) == 8, CollapsedBorderValue_should_stay_small);
 
-RenderTableCell::RenderTableCell(Element& element, PassRef<RenderStyle> style)
+RenderTableCell::RenderTableCell(Element& element, Ref<RenderStyle>&& style)
     : RenderBlockFlow(element, WTF::move(style))
     , m_column(unsetColumnIndex)
     , m_cellWidthChanged(false)
@@ -66,7 +66,7 @@ RenderTableCell::RenderTableCell(Element& element, PassRef<RenderStyle> style)
     updateColAndRowSpanFlags();
 }
 
-RenderTableCell::RenderTableCell(Document& document, PassRef<RenderStyle> style)
+RenderTableCell::RenderTableCell(Document& document, Ref<RenderStyle>&& style)
     : RenderBlockFlow(document, WTF::move(style))
     , m_column(unsetColumnIndex)
     , m_cellWidthChanged(false)
@@ -88,11 +88,11 @@ void RenderTableCell::willBeRemovedFromTree()
 unsigned RenderTableCell::parseColSpanFromDOM() const
 {
     ASSERT(element());
-    if (element()->hasTagName(tdTag) || element()->hasTagName(thTag))
-        return std::min<unsigned>(toHTMLTableCellElement(element())->colSpan(), maxColumnIndex);
+    if (is<HTMLTableCellElement>(*element()))
+        return std::min<unsigned>(downcast<HTMLTableCellElement>(*element()).colSpan(), maxColumnIndex);
 #if ENABLE(MATHML)
     if (element()->hasTagName(MathMLNames::mtdTag))
-        return std::min<unsigned>(toMathMLElement(element())->colSpan(), maxColumnIndex);
+        return std::min<unsigned>(downcast<MathMLElement>(*element()).colSpan(), maxColumnIndex);
 #endif
     return 1;
 }
@@ -100,11 +100,11 @@ unsigned RenderTableCell::parseColSpanFromDOM() const
 unsigned RenderTableCell::parseRowSpanFromDOM() const
 {
     ASSERT(element());
-    if (element()->hasTagName(tdTag) || element()->hasTagName(thTag))
-        return std::min<unsigned>(toHTMLTableCellElement(element())->rowSpan(), maxRowIndex);
+    if (is<HTMLTableCellElement>(*element()))
+        return std::min<unsigned>(downcast<HTMLTableCellElement>(*element()).rowSpan(), maxRowIndex);
 #if ENABLE(MATHML)
     if (element()->hasTagName(MathMLNames::mtdTag))
-        return std::min<unsigned>(toMathMLElement(element())->rowSpan(), maxRowIndex);
+        return std::min<unsigned>(downcast<MathMLElement>(*element()).rowSpan(), maxRowIndex);
 #endif
     return 1;
 }
@@ -319,11 +319,11 @@ void RenderTableCell::setOverrideLogicalContentHeightFromRowHeight(LayoutUnit ro
     setOverrideLogicalContentHeight(std::max<LayoutUnit>(0, rowHeight - borderAndPaddingLogicalHeight()));
 }
 
-LayoutSize RenderTableCell::offsetFromContainer(RenderObject* o, const LayoutPoint& point, bool* offsetDependsOnPoint) const
+LayoutSize RenderTableCell::offsetFromContainer(RenderElement& container, const LayoutPoint& point, bool* offsetDependsOnPoint) const
 {
-    ASSERT(o == container());
+    ASSERT(&container == this->container());
 
-    LayoutSize offset = RenderBlockFlow::offsetFromContainer(o, point, offsetDependsOnPoint);
+    LayoutSize offset = RenderBlockFlow::offsetFromContainer(container, point, offsetDependsOnPoint);
     if (parent())
         offset -= parentBox()->locationOffset();
 
@@ -932,44 +932,68 @@ inline RenderTableCell* RenderTableCell::cellAtBottom(const RenderStyle* styleFo
 
 LayoutUnit RenderTableCell::borderLeft() const
 {
-    return table()->collapseBorders() ? LayoutUnit::fromPixel(borderHalfLeft(false)) : RenderBlockFlow::borderLeft();
+    RenderTable* table = this->table();
+    if (!table)
+        return RenderBlockFlow::borderLeft();
+    return table->collapseBorders() ? LayoutUnit::fromPixel(borderHalfLeft(false)) : RenderBlockFlow::borderLeft();
 }
 
 LayoutUnit RenderTableCell::borderRight() const
 {
-    return table()->collapseBorders() ? LayoutUnit::fromPixel(borderHalfRight(false)) : RenderBlockFlow::borderRight();
+    RenderTable* table = this->table();
+    if (!table)
+        return RenderBlockFlow::borderRight();
+    return table->collapseBorders() ? LayoutUnit::fromPixel(borderHalfRight(false)) : RenderBlockFlow::borderRight();
 }
 
 LayoutUnit RenderTableCell::borderTop() const
 {
-    return table()->collapseBorders() ? LayoutUnit::fromPixel(borderHalfTop(false)) : RenderBlockFlow::borderTop();
+    RenderTable* table = this->table();
+    if (!table)
+        return RenderBlockFlow::borderTop();
+    return table->collapseBorders() ? LayoutUnit::fromPixel(borderHalfTop(false)) : RenderBlockFlow::borderTop();
 }
 
 LayoutUnit RenderTableCell::borderBottom() const
 {
-    return table()->collapseBorders() ? LayoutUnit::fromPixel(borderHalfBottom(false)) : RenderBlockFlow::borderBottom();
+    RenderTable* table = this->table();
+    if (!table)
+        return RenderBlockFlow::borderBottom();
+    return table->collapseBorders() ? LayoutUnit::fromPixel(borderHalfBottom(false)) : RenderBlockFlow::borderBottom();
 }
 
 // FIXME: https://bugs.webkit.org/show_bug.cgi?id=46191, make the collapsed border drawing
 // work with different block flow values instead of being hard-coded to top-to-bottom.
 LayoutUnit RenderTableCell::borderStart() const
 {
-    return table()->collapseBorders() ? LayoutUnit::fromPixel(borderHalfStart(false)) : RenderBlockFlow::borderStart();
+    RenderTable* table = this->table();
+    if (!table)
+        return RenderBlockFlow::borderStart();
+    return table->collapseBorders() ? LayoutUnit::fromPixel(borderHalfStart(false)) : RenderBlockFlow::borderStart();
 }
 
 LayoutUnit RenderTableCell::borderEnd() const
 {
-    return table()->collapseBorders() ? LayoutUnit::fromPixel(borderHalfEnd(false)) : RenderBlockFlow::borderEnd();
+    RenderTable* table = this->table();
+    if (!table)
+        return RenderBlockFlow::borderEnd();
+    return table->collapseBorders() ? LayoutUnit::fromPixel(borderHalfEnd(false)) : RenderBlockFlow::borderEnd();
 }
 
 LayoutUnit RenderTableCell::borderBefore() const
 {
-    return table()->collapseBorders() ? LayoutUnit::fromPixel(borderHalfBefore(false)) : RenderBlockFlow::borderBefore();
+    RenderTable* table = this->table();
+    if (!table)
+        return RenderBlockFlow::borderBefore();
+    return table->collapseBorders() ? LayoutUnit::fromPixel(borderHalfBefore(false)) : RenderBlockFlow::borderBefore();
 }
 
 LayoutUnit RenderTableCell::borderAfter() const
 {
-    return table()->collapseBorders() ? LayoutUnit::fromPixel(borderHalfAfter(false)) : RenderBlockFlow::borderAfter();
+    RenderTable* table = this->table();
+    if (!table)
+        return RenderBlockFlow::borderAfter();
+    return table->collapseBorders() ? LayoutUnit::fromPixel(borderHalfAfter(false)) : RenderBlockFlow::borderAfter();
 }
 
 int RenderTableCell::borderHalfLeft(bool outer) const

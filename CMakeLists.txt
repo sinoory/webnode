@@ -10,6 +10,7 @@ set(BROWSER_EXTENSION_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib/${BROWSER_PROJECT
 # -----------------------------------------------------------------------------
 # Default library type
 # -----------------------------------------------------------------------------
+set(BMALLOC_DIR "${CMAKE_SOURCE_DIR}/Source/bmalloc")
 set(WTF_DIR "${CMAKE_SOURCE_DIR}/Source/WTF")
 set(JAVASCRIPTCORE_DIR "${CMAKE_SOURCE_DIR}/Source/JavaScriptCore")
 set(WEBCORE_DIR "${CMAKE_SOURCE_DIR}/Source/WebCore")
@@ -75,7 +76,7 @@ find_package(Gperf 3.0.1 REQUIRED)
 # TODO Enforce version requirement for perl
 find_package(Perl 5.10.0 REQUIRED)
 
-find_package(PythonInterp 2.6.0 REQUIRED)
+find_package(PythonInterp 2.7.0 REQUIRED)
 find_package(Ruby 1.8.7)
 
 # -----------------------------------------------------------------------------

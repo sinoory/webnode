@@ -113,7 +113,7 @@ public:
         SVG_MARKER_ORIENT_ANGLE = SVGMarkerOrientAngle
     };
 
-    static PassRefPtr<SVGMarkerElement> create(const QualifiedName&, Document&);
+    static Ref<SVGMarkerElement> create(const QualifiedName&, Document&);
 
     AffineTransform viewBoxToViewTransform(float viewWidth, float viewHeight) const;
 
@@ -132,7 +132,7 @@ private:
     virtual void svgAttributeChanged(const QualifiedName&) override;
     virtual void childrenChanged(const ChildChange&) override;
 
-    virtual RenderPtr<RenderElement> createElementRenderer(PassRef<RenderStyle>) override;
+    virtual RenderPtr<RenderElement> createElementRenderer(Ref<RenderStyle>&&) override;
     virtual bool rendererIsNeeded(const RenderStyle&) override { return true; }
 
     virtual bool selfHasRelativeLengths() const override;
@@ -166,8 +166,6 @@ public:
 private:
     mutable SVGSynchronizableAnimatedProperty<SVGMarkerOrientType> m_orientType;
 };
-
-NODE_TYPE_CASTS(SVGMarkerElement)
 
 }
 

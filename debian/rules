@@ -68,7 +68,7 @@ ifeq ($(DEB_BUILD_ARCH_BITS),64)
 	cp -f $(SRC_DIR)/lib/libuci.so.0.8 $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
 	cp -f $(SRC_DIR)/lib/libaria2.so.0.0.0 $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
 	cp -f $(SRC_DIR)/lib/libaria2.so.0 $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
-        cp -f $(SRC_DIR)/lib/libsoup*.so* $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
+	cp -f $(SRC_DIR)/lib/libsoup*.so* $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
 	cp -f $(SRC_DIR)/bin/cdosbrowser_download $(INSTALL_DIR1)/
 endif
 

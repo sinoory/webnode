@@ -13,7 +13,7 @@
 #define __MIDORI_HISTORY_PANEL_H__
 
 #include <gtk/gtk.h>
-#include <katze/katze-array.h>
+
 G_BEGIN_DECLS
 
 #define MIDORI_TYPE_HISTORY \

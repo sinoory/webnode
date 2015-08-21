@@ -64,7 +64,7 @@ typedef struct WKCookieManagerClient {
     // Version 0.
     WKCookieManagerCookiesDidChangeCallback                             cookiesDidChange;
     WKCookieManagerGetCookiesCallback                                   getCookies;//add by luyue 2015/6/16
-} WKCookieManagerClient WK_DEPRECATED("Use an explicit versioned struct instead");
+} WKCookieManagerClient WK_C_DEPRECATED("Use an explicit versioned struct instead");
 
 WK_EXPORT WKTypeID WKCookieManagerGetTypeID();
 
@@ -75,6 +75,8 @@ WK_EXPORT void WKCookieManagerGetHostnamesWithCookies(WKCookieManagerRef cookieM
 
 WK_EXPORT void WKCookieManagerDeleteCookiesForHostname(WKCookieManagerRef cookieManager, WKStringRef hostname);
 WK_EXPORT void WKCookieManagerDeleteAllCookies(WKCookieManagerRef cookieManager);
+
+// The time here is relative to the Unix epoch.
 WK_EXPORT void WKCookieManagerDeleteAllCookiesModifiedAfterDate(WKCookieManagerRef cookieManager, double);
 
 WK_EXPORT void WKCookieManagerSetHTTPCookieAcceptPolicy(WKCookieManagerRef cookieManager, WKHTTPCookieAcceptPolicy policy);

@@ -32,7 +32,6 @@
 #include "PluginInfoStore.h"
 
 #include "NetscapePluginModule.h"
-#include "PluginDatabase.h"
 #include <WebCore/FileSystem.h>
 
 #if PLATFORM(GTK)
@@ -49,7 +48,6 @@ Vector<String> PluginInfoStore::pluginsDirectories()
 
     result.append(homeDirectoryPath() + "/.mozilla/plugins");
     result.append(homeDirectoryPath() + "/.netscape/plugins");
-//    result.append("/opt/java/jdk1.7.0_65/jre/lib/i386"); // Only for cdos browser
     result.append("/usr/lib/browser/plugins");
     result.append("/usr/local/lib/mozilla/plugins");
     result.append("/usr/lib/firefox/plugins");
@@ -104,11 +102,11 @@ Vector<String> PluginInfoStore::individualPluginPaths()
 bool PluginInfoStore::getPluginInfo(const String& pluginPath, PluginModuleInfo& plugin)
 {
 #if PLATFORM(GTK)
-    if (PluginInfoCache::shared().getPluginInfo(pluginPath, plugin))
+    if (PluginInfoCache::singleton().getPluginInfo(pluginPath, plugin))
         return true;
 
     if (NetscapePluginModule::getPluginInfo(pluginPath, plugin)) {
-        PluginInfoCache::shared().updatePluginInfo(pluginPath, plugin);
+        PluginInfoCache::singleton().updatePluginInfo(pluginPath, plugin);
         return true;
     }
     return false;

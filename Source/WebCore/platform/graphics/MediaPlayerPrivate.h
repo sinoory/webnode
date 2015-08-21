@@ -63,15 +63,17 @@ public:
     virtual String accessLog() const { return emptyString(); }
     virtual String errorLog() const { return emptyString(); }
 #endif
+    virtual long platformErrorCode() const { return 0; }
 
     virtual void play() = 0;
     virtual void pause() = 0;    
     virtual void setShouldBufferData(bool) { }
 
     virtual bool supportsFullscreen() const { return false; }
-    virtual bool supportsSave() const { return false; }
     virtual bool supportsScanning() const { return false; }
     virtual bool requiresImmediateCompositing() const { return false; }
+
+    virtual bool canSaveMediaData() const { return false; }
 
     virtual IntSize naturalSize() const = 0;
 
@@ -100,6 +102,7 @@ public:
 
     virtual void setRate(float) { }
     virtual void setRateDouble(double rate) { setRate(rate); }
+    virtual double rate() const { return 0; }
 
     virtual void setPreservesPitch(bool) { }
 
@@ -165,8 +168,6 @@ public:
 
     virtual bool wirelessVideoPlaybackDisabled() const { return false; }
     virtual void setWirelessVideoPlaybackDisabled(bool) { }
-
-    virtual void setHasPlaybackTargetAvailabilityListeners(bool) { }
 #endif
 
 #if USE(NATIVE_FULLSCREEN_VIDEO)
@@ -224,6 +225,7 @@ public:
 #if ENABLE(ENCRYPTED_MEDIA_V2)
     virtual std::unique_ptr<CDMSession> createSession(const String&) { return nullptr; }
     virtual void setCDMSession(CDMSession*) { }
+    virtual void keyAdded() { }
 #endif
 
 #if ENABLE(VIDEO_TRACK)

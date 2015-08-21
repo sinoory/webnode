@@ -37,7 +37,7 @@
 #include <CFNetwork/CFURLConnectionPriv.h>
 #endif
 
-#if USE(WININET) || (USE(CURL) && PLATFORM(WIN))
+#if USE(CURL) && PLATFORM(WIN)
 #include <winsock2.h>
 #include <windows.h>
 #endif
@@ -87,16 +87,6 @@ namespace WebCore {
 #if USE(CFNETWORK)
             , m_currentRequest(request)
 #endif
-#if USE(WININET)
-            , m_fileLoadTimer(loader, &ResourceHandle::fileLoadTimer)
-            , m_internetHandle(0)
-            , m_connectHandle(0)
-            , m_requestHandle(0)
-            , m_sentEndRequest(false)
-            , m_bytesRemainingToWrite(0)
-            , m_loadSynchronously(false)
-            , m_hasReceivedResponse(false)
-#endif
 #if USE(CURL)
             , m_handle(0)
             , m_url(0)
@@ -116,11 +106,10 @@ namespace WebCore {
 #endif
 #if PLATFORM(COCOA)
             , m_startWhenScheduled(false)
-            , m_needsSiteSpecificQuirks(false)
             , m_currentMacChallenge(nil)
 #endif
             , m_scheduledFailureType(ResourceHandle::NoFailure)
-            , m_failureTimer(loader, &ResourceHandle::failureTimerFired)
+            , m_failureTimer(*loader, &ResourceHandle::failureTimerFired)
         {
             const URL& url = m_firstRequest.url();
             m_user = url.user();
@@ -158,22 +147,9 @@ namespace WebCore {
 #endif
 #if PLATFORM(COCOA)
         bool m_startWhenScheduled;
-        bool m_needsSiteSpecificQuirks;
 #endif
 #if PLATFORM(COCOA) || USE(CFNETWORK)
         RetainPtr<CFURLStorageSessionRef> m_storageSession;
-#endif
-#if USE(WININET)
-        Timer<ResourceHandle> m_fileLoadTimer;
-        HINTERNET m_internetHandle;
-        HINTERNET m_connectHandle;
-        HINTERNET m_requestHandle;
-        bool m_sentEndRequest;
-        Vector<char> m_formData;
-        size_t m_bytesRemainingToWrite;
-        bool m_loadSynchronously;
-        bool m_hasReceivedResponse;
-        String m_redirectUrl;
 #endif
 #if USE(CURL)
         CURL* m_handle;
@@ -222,7 +198,7 @@ namespace WebCore {
 
         AuthenticationChallenge m_currentWebChallenge;
         ResourceHandle::FailureType m_scheduledFailureType;
-        Timer<ResourceHandle> m_failureTimer;
+        Timer m_failureTimer;
     };
 
 } // namespace WebCore

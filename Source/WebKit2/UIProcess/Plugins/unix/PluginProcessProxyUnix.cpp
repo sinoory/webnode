@@ -97,11 +97,6 @@ bool PluginProcessProxy::scanPlugin(const String& pluginPath, RawPluginMetaData&
 
     CString binaryPath = fileSystemRepresentation(pluginProcessPath);
     CString pluginPathCString = fileSystemRepresentation(pluginPath);
-
-//luyue add by 2015/1/15
- /*   if(memcmp(pluginPathCString.data(),"/opt/java",9) ==0 &&
-       strcmp(pluginPathCString.data(),"/opt/java/jdk1.7.0_65/jre/lib/i386/libnpjp2.so") !=0)
-      return false;*/
     char* argv[4];
     argv[0] = const_cast<char*>(binaryPath.data());
     argv[1] = const_cast<char*>("-scanPlugin");

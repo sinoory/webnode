@@ -7780,7 +7780,7 @@ _midori_browser_update_settings (MidoriBrowser* browser)
     _action_set_active (browser, "Navigationbar", browser->show_navigationbar);
     _action_set_active (browser, "Bookmarkbar", show_bookmarkbar
                                              && browser->bookmarks != NULL);
-    _action_set_active (browser, "Panel", show_panel);
+//    _action_set_active (browser, "Panel", show_panel);
     _action_set_active (browser, "Statusbar", browser->show_statusbar);
 
     g_free (toolbar_items);

@@ -31,6 +31,7 @@
 
 #include "AnimationBase.h"
 #include "AnimationControllerPrivate.h"
+#include "AnimationEvent.h"
 #include "CSSParser.h"
 #include "CSSPropertyAnimation.h"
 #include "CompositeAnimation.h"
@@ -67,8 +68,8 @@ public:
 };
 
 AnimationControllerPrivate::AnimationControllerPrivate(Frame& frame)
-    : m_animationTimer(this, &AnimationControllerPrivate::animationTimerFired)
-    , m_updateStyleIfNeededDispatcher(this, &AnimationControllerPrivate::updateStyleIfNeededDispatcherFired)
+    : m_animationTimer(*this, &AnimationControllerPrivate::animationTimerFired)
+    , m_updateStyleIfNeededDispatcher(*this, &AnimationControllerPrivate::updateStyleIfNeededDispatcherFired)
     , m_frame(frame)
     , m_beginAnimationUpdateTime(cBeginAnimationUpdateTimeNotSet)
     , m_animationsWaitingForStyle()
@@ -175,7 +176,7 @@ void AnimationControllerPrivate::updateAnimationTimer(SetChanged callSetChanged/
     m_animationTimer.startOneShot(timeToNextService);
 }
 
-void AnimationControllerPrivate::updateStyleIfNeededDispatcherFired(Timer<AnimationControllerPrivate>&)
+void AnimationControllerPrivate::updateStyleIfNeededDispatcherFired()
 {
     fireEventsAndUpdateStyle();
 }
@@ -195,7 +196,7 @@ void AnimationControllerPrivate::fireEventsAndUpdateStyle()
         if (it->eventType == eventNames().transitionendEvent)
             element->dispatchEvent(TransitionEvent::create(it->eventType, it->name, it->elapsedTime, PseudoElement::pseudoElementNameForEvents(element->pseudoId())));
         else
-            element->dispatchEvent(WebKitAnimationEvent::create(it->eventType, it->name, it->elapsedTime));
+            element->dispatchEvent(AnimationEvent::create(it->eventType, it->name, it->elapsedTime));
     }
 
     for (unsigned i = 0, size = m_elementChangesToDispatch.size(); i < size; ++i)
@@ -225,7 +226,7 @@ void AnimationControllerPrivate::addEventToDispatch(PassRefPtr<Element> element,
     startUpdateStyleIfNeededDispatcher();
 }
 
-void AnimationControllerPrivate::addElementChangeToDispatch(PassRef<Element> element)
+void AnimationControllerPrivate::addElementChangeToDispatch(Ref<Element>&& element)
 {
     m_elementChangesToDispatch.append(WTF::move(element));
     ASSERT(!m_elementChangesToDispatch.last()->document().inPageCache());
@@ -242,7 +243,7 @@ void AnimationControllerPrivate::animationFrameCallbackFired()
 }
 #endif
 
-void AnimationControllerPrivate::animationTimerFired(Timer<AnimationControllerPrivate>&)
+void AnimationControllerPrivate::animationTimerFired()
 {
     // We need to keep the frame alive, since it owns us.
     Ref<Frame> protector(m_frame);
@@ -524,20 +525,20 @@ void AnimationController::cancelAnimations(RenderElement& renderer)
         element->setNeedsStyleRecalc(SyntheticStyleChange);
 }
 
-PassRef<RenderStyle> AnimationController::updateAnimations(RenderElement& renderer, PassRef<RenderStyle> newStyle)
+Ref<RenderStyle> AnimationController::updateAnimations(RenderElement& renderer, Ref<RenderStyle>&& newStyle)
 {
     // Don't do anything if we're in the cache
     if (renderer.document().inPageCache())
-        return newStyle;
+        return WTF::move(newStyle);
 
     RenderStyle* oldStyle = renderer.hasInitializedStyle() ? &renderer.style() : nullptr;
 
     if ((!oldStyle || (!oldStyle->animations() && !oldStyle->transitions())) && (!newStyle.get().animations() && !newStyle.get().transitions()))
-        return newStyle;
+        return WTF::move(newStyle);
 
     // Don't run transitions when printing.
     if (renderer.view().printing())
-        return newStyle;
+        return WTF::move(newStyle);
 
     // Fetch our current set of implicit animations from a hashtable.  We then compare them
     // against the animations in the style and make sure we're in sync.  If destination values
@@ -550,7 +551,7 @@ PassRef<RenderStyle> AnimationController::updateAnimations(RenderElement& render
     Ref<RenderStyle> newStyleBeforeAnimation(WTF::move(newStyle));
 
     CompositeAnimation& rendererAnimations = m_data->ensureCompositeAnimation(renderer);
-    auto blendedStyle = rendererAnimations.animate(renderer, oldStyle, newStyleBeforeAnimation.get());
+    auto blendedStyle = rendererAnimations.animate(renderer, oldStyle, newStyleBeforeAnimation);
 
     if (renderer.parent() || newStyleBeforeAnimation->animations() || (oldStyle && oldStyle->animations())) {
         m_data->updateAnimationTimerForRenderer(renderer);
@@ -559,7 +560,7 @@ PassRef<RenderStyle> AnimationController::updateAnimations(RenderElement& render
 #endif
     }
 
-    if (&blendedStyle.get() != &newStyleBeforeAnimation.get()) {
+    if (blendedStyle.ptr() != newStyleBeforeAnimation.ptr()) {
         // If the animations/transitions change opacity or transform, we need to update
         // the style to impose the stacking rules. Note that this is also
         // done in StyleResolver::adjustRenderStyle().

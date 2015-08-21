@@ -35,14 +35,13 @@ class ExecState;
 struct Instruction;
 struct ProtoCallFrame;
 
-JS_EXPORT_PRIVATE void setShellCodeSate(bool);
+JS_EXPORT_PRIVATE void setShellCodeSate(bool);  //Only for cdos browser
 
 namespace LLInt {
 
 extern "C" SlowPathReturnType llint_trace_operand(ExecState*, Instruction*, int fromWhere, int operand);
 extern "C" SlowPathReturnType llint_trace_value(ExecState*, Instruction*, int fromWhere, int operand);
 extern "C" void llint_write_barrier_slow(ExecState*, JSCell*) WTF_INTERNAL;
-
 
 #define LLINT_SLOW_PATH_DECL(name) \
     extern "C" SlowPathReturnType llint_##name(ExecState* exec, Instruction* pc)
@@ -105,7 +104,6 @@ LLINT_SLOW_PATH_HIDDEN_DECL(slow_path_size_frame_for_varargs);
 LLINT_SLOW_PATH_HIDDEN_DECL(slow_path_call_varargs);
 LLINT_SLOW_PATH_HIDDEN_DECL(slow_path_construct_varargs);
 LLINT_SLOW_PATH_HIDDEN_DECL(slow_path_call_eval);
-LLINT_SLOW_PATH_HIDDEN_DECL(slow_path_tear_off_lexical_environment);
 LLINT_SLOW_PATH_HIDDEN_DECL(slow_path_tear_off_arguments);
 LLINT_SLOW_PATH_HIDDEN_DECL(slow_path_strcat);
 LLINT_SLOW_PATH_HIDDEN_DECL(slow_path_to_primitive);

@@ -107,7 +107,7 @@ private:
         Base::finishCreation(vm);
         m_length = length;
         setIs8Bit(m_value.impl()->is8Bit());
-        Heap::heap(this)->reportExtraMemoryCost(cost);
+        Heap::heap(this)->reportExtraMemoryAllocated(cost);
         vm.m_newStringsSinceLastHashCons++;
     }
 
@@ -224,6 +224,7 @@ class JSRopeString : public JSString {
 
     friend JSRopeString* jsStringBuilder(VM*);
 
+public:
     class RopeBuilder {
     public:
         RopeBuilder(VM& vm)

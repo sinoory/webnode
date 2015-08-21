@@ -32,9 +32,9 @@ namespace WebCore {
 
 class TextViewSourceParser final : public HTMLViewSourceParser {
 public:
-    static PassRefPtr<TextViewSourceParser> create(HTMLViewSourceDocument& document)
+    static Ref<TextViewSourceParser> create(HTMLViewSourceDocument& document)
     {
-        return adoptRef(new TextViewSourceParser(document));
+        return adoptRef(*new TextViewSourceParser(document));
     }
     virtual ~TextViewSourceParser();
 

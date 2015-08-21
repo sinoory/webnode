@@ -35,11 +35,6 @@
 #include "Location.h"
 #include "ScheduledAction.h"
 #include "Settings.h"
-#include "SharedWorkerRepository.h"
-
-#if ENABLE(SHARED_WORKERS)
-#include "JSSharedWorker.h"
-#endif
 
 #if ENABLE(IOS_TOUCH_EVENTS)
 #include "JSTouchConstructorIOS.h"
@@ -79,20 +74,19 @@ static EncodedJSValue namedItemGetter(ExecState* exec, JSObject* slotBase, Encod
     Document* document = thisObj->impl().frame()->document();
 
     ASSERT(BindingSecurity::shouldAllowAccessToDOMWindow(exec, thisObj->impl()));
-    ASSERT(document);
-    ASSERT(document->isHTMLDocument());
+    ASSERT(is<HTMLDocument>(document));
 
     AtomicStringImpl* atomicPropertyName = propertyName.publicName();
-    if (!atomicPropertyName || !toHTMLDocument(document)->hasWindowNamedItem(*atomicPropertyName))
+    if (!atomicPropertyName || !downcast<HTMLDocument>(*document).hasWindowNamedItem(*atomicPropertyName))
         return JSValue::encode(jsUndefined());
 
-    if (UNLIKELY(toHTMLDocument(document)->windowNamedItemContainsMultipleElements(*atomicPropertyName))) {
-        RefPtr<HTMLCollection> collection = document->windowNamedItems(atomicPropertyName);
+    if (UNLIKELY(downcast<HTMLDocument>(*document).windowNamedItemContainsMultipleElements(*atomicPropertyName))) {
+        Ref<HTMLCollection> collection = document->windowNamedItems(atomicPropertyName);
         ASSERT(collection->length() > 1);
         return JSValue::encode(toJS(exec, thisObj->globalObject(), WTF::getPtr(collection)));
     }
 
-    return JSValue::encode(toJS(exec, thisObj->globalObject(), toHTMLDocument(document)->windowNamedItem(*atomicPropertyName)));
+    return JSValue::encode(toJS(exec, thisObj->globalObject(), downcast<HTMLDocument>(*document).windowNamedItem(*atomicPropertyName)));
 }
 
 #if ENABLE(USER_MESSAGE_HANDLERS)
@@ -150,25 +144,17 @@ bool JSDOMWindow::getOwnPropertySlot(JSObject* object, ExecState* exec, Property
     // Also, it's important to get the implementation straight out of the DOMWindow prototype regardless of
     // what prototype is actually set on this object.
     if (propertyName == exec->propertyNames().blur) {
-        if (!allowsAccess) {
-            slot.setCustom(thisObject, ReadOnly | DontDelete | DontEnum, nonCachingStaticFunctionGetter<jsDOMWindowPrototypeFunctionBlur, 0>);
-            return true;
-        }
+        slot.setCustom(thisObject, ReadOnly | DontDelete | DontEnum, nonCachingStaticFunctionGetter<jsDOMWindowPrototypeFunctionBlur, 0>);
+        return true;
     } else if (propertyName == exec->propertyNames().close) {
-        if (!allowsAccess) {
-            slot.setCustom(thisObject, ReadOnly | DontDelete | DontEnum, nonCachingStaticFunctionGetter<jsDOMWindowPrototypeFunctionClose, 0>);
-            return true;
-        }
+        slot.setCustom(thisObject, ReadOnly | DontDelete | DontEnum, nonCachingStaticFunctionGetter<jsDOMWindowPrototypeFunctionClose, 0>);
+        return true;
     } else if (propertyName == exec->propertyNames().focus) {
-        if (!allowsAccess) {
-            slot.setCustom(thisObject, ReadOnly | DontDelete | DontEnum, nonCachingStaticFunctionGetter<jsDOMWindowPrototypeFunctionFocus, 0>);
-            return true;
-        }
+        slot.setCustom(thisObject, ReadOnly | DontDelete | DontEnum, nonCachingStaticFunctionGetter<jsDOMWindowPrototypeFunctionFocus, 0>);
+        return true;
     } else if (propertyName == exec->propertyNames().postMessage) {
-        if (!allowsAccess) {
-            slot.setCustom(thisObject, ReadOnly | DontDelete | DontEnum, nonCachingStaticFunctionGetter<jsDOMWindowPrototypeFunctionPostMessage, 2>);
-            return true;
-        }
+        slot.setCustom(thisObject, ReadOnly | DontDelete | DontEnum, nonCachingStaticFunctionGetter<jsDOMWindowPrototypeFunctionPostMessage, 2>);
+        return true;
     } else if (propertyName == exec->propertyNames().showModalDialog) {
         if (!DOMWindow::canShowModalDialog(thisObject->impl().frame())) {
             slot.setUndefined();
@@ -244,9 +230,9 @@ bool JSDOMWindow::getOwnPropertySlot(JSObject* object, ExecState* exec, Property
 
     // Allow shortcuts like 'Image1' instead of document.images.Image1
     Document* document = thisObject->impl().frame()->document();
-    if (document->isHTMLDocument()) {
+    if (is<HTMLDocument>(*document)) {
         AtomicStringImpl* atomicPropertyName = propertyName.publicName();
-        if (atomicPropertyName && toHTMLDocument(document)->hasWindowNamedItem(*atomicPropertyName)) {
+        if (atomicPropertyName && downcast<HTMLDocument>(*document).hasWindowNamedItem(*atomicPropertyName)) {
             slot.setCustom(thisObject, ReadOnly | DontDelete | DontEnum, namedItemGetter);
             return true;
         }
@@ -321,9 +307,9 @@ bool JSDOMWindow::getOwnPropertySlotByIndex(JSObject* object, ExecState* exec, u
 
     // Allow shortcuts like 'Image1' instead of document.images.Image1
     Document* document = thisObject->impl().frame()->document();
-    if (document->isHTMLDocument()) {
+    if (is<HTMLDocument>(*document)) {
         AtomicStringImpl* atomicPropertyName = propertyName.publicName();
-        if (atomicPropertyName && toHTMLDocument(document)->hasWindowNamedItem(*atomicPropertyName)) {
+        if (atomicPropertyName && downcast<HTMLDocument>(*document).hasWindowNamedItem(*atomicPropertyName)) {
             slot.setCustom(thisObject, ReadOnly | DontDelete | DontEnum, namedItemGetter);
             return true;
         }
@@ -666,7 +652,7 @@ JSValue JSDOMWindow::addEventListener(ExecState* exec)
     if (!listener.isObject())
         return jsUndefined();
 
-    impl().addEventListener(exec->argument(0).toString(exec)->value(exec), JSEventListener::create(asObject(listener), this, false, globalObject()->world()), exec->argument(2).toBoolean(exec));
+    impl().addEventListener(exec->argument(0).toString(exec)->toAtomicString(exec), JSEventListener::create(asObject(listener), this, false, globalObject()->world()), exec->argument(2).toBoolean(exec));
     return jsUndefined();
 }
 
@@ -680,11 +666,11 @@ JSValue JSDOMWindow::removeEventListener(ExecState* exec)
     if (!listener.isObject())
         return jsUndefined();
 
-    impl().removeEventListener(exec->argument(0).toString(exec)->value(exec), JSEventListener::create(asObject(listener), this, false, globalObject()->world()).get(), exec->argument(2).toBoolean(exec));
+    impl().removeEventListener(exec->argument(0).toString(exec)->toAtomicString(exec), JSEventListener::create(asObject(listener), this, false, globalObject()->world()).ptr(), exec->argument(2).toBoolean(exec));
     return jsUndefined();
 }
 
-DOMWindow* toDOMWindow(JSValue value)
+DOMWindow* JSDOMWindow::toWrapped(JSValue value)
 {
     if (!value.isObject())
         return 0;

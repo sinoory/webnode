@@ -42,4 +42,3 @@ gchar* convertToUTF8String(WebCore::URL const& s)
     return convertToUTF8String(s.string());
 }
 
-

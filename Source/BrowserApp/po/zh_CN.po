@@ -3662,6 +3662,15 @@ msgstr "确认"
 msgid "_Password:"
 msgstr "密码："
 
+msgid "Serif:"
+msgstr "衬线字体:"
+
+msgid "Sans-serif:"
+msgstr "无衬线字体:"
+
+msgid "Monospace:"
+msgstr "等宽字体:"
+
 msgid "You must have administrator rights to complete this installation!"
 msgstr "您需要获取管理员权限来完成安装！"
 

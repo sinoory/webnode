@@ -39,10 +39,8 @@
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/WTFString.h>
 #include <wtf/unicode/CharacterNames.h>
-#include <wtf/text/Base64.h>
-#include "TextEncoding.h"
-
-
+#include <wtf/text/Base64.h> //Only for cdos browser
+#include "TextEncoding.h"     //Only for cdos browser
 
 using namespace WTF;
 
@@ -288,29 +286,10 @@ String filenameFromHTTPContentDisposition(const String& value)
             TextEncoding codesetEncoding(codeset);
             value = codesetEncoding.decode(suggestedNameAsUTF8.data(), suggestedNameAsUTF8.size());
         }
-
-        /*
-        if(value[0] == '=' && value[1] == '?') {
-            return String();
-
-            
-            g_print("\t\t\t testing mail base64\n");
-            if(memcmp(g_ascii_strup(value.utf8().data() + 2, 4), "UTF8", 4) == 0) {
-                if(value[2 + 4 + 1] == 'B') {
-                    value = value.substring(2 + 4 + 1 + 2, value.length() - 2 - 4 - 1 - 2 - 2);
-
-                    Vector<char> out;
-                    if (base64Decode(value, out, Base64IgnoreWhitespace) && out.size() > 0)
-                        return String::fromUTF8WithLatin1Fallback(out.data(), out.size());
-                }
-            }
-            return String();
-            
-        }
-        */
         
         return value;
     }
+
     return String();
 }
 

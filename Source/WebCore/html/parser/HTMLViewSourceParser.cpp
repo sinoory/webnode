@@ -28,6 +28,7 @@
 
 #include "HTMLDocumentParser.h"
 #include "HTMLNames.h"
+#include "AtomicHTMLToken.h" //Only for cdos browser
 
 namespace WebCore {
 
@@ -49,14 +50,18 @@ void HTMLViewSourceParser::insert(const SegmentedString&)
 void HTMLViewSourceParser::pumpTokenizer()
 {
     while (true) {
-        m_sourceTracker.start(m_input.current(), m_tokenizer.get(), m_token);
-        if (!m_tokenizer->nextToken(m_input.current(), m_token))
+        m_sourceTracker.startToken(m_input.current(), *(m_tokenizer.get()));
+        auto rawToken = m_tokenizer->nextToken(m_input.current());
+        if (!rawToken)
             break;
-        m_sourceTracker.end(m_input.current(), m_tokenizer.get(), m_token);
 
-        document()->addSource(sourceForToken(), m_token);
-        updateTokenizerState();
+        m_sourceTracker.endToken(m_input.current(), *(m_tokenizer.get()));
+
+        AtomicHTMLToken token(*rawToken);
+        document()->addSource(sourceForToken(token), *rawToken);
+        updateTokenizerState(token);
         m_token.clear();
+        rawToken->clear();
     }
 }
 
@@ -66,17 +71,17 @@ void HTMLViewSourceParser::append(PassRefPtr<StringImpl> input)
     pumpTokenizer();
 }
 
-String HTMLViewSourceParser::sourceForToken()
+String HTMLViewSourceParser::sourceForToken(AtomicHTMLToken& token)
 {
-    return m_sourceTracker.sourceForToken(m_token);
+    return m_sourceTracker.source(token);
 }
 
-void HTMLViewSourceParser::updateTokenizerState()
+void HTMLViewSourceParser::updateTokenizerState(AtomicHTMLToken& token)
 {
     // FIXME: The tokenizer should do this work for us.
-    if (m_token.type() != HTMLToken::StartTag)
+    if (token.type() != HTMLToken::StartTag)
         return;
-    m_tokenizer->updateStateFor(AtomicString(m_token.name()));
+    m_tokenizer->updateStateFor(AtomicString(token.name()));
 }
 
 void HTMLViewSourceParser::finish()

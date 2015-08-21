@@ -35,6 +35,7 @@
 #include "SettingsMacros.h"
 #include "Timer.h"
 #include <chrono>
+#include <runtime/RuntimeFlags.h>
 #include <unicode/uscript.h>
 #include <wtf/HashMap.h>
 #include <wtf/RefCounted.h>
@@ -59,6 +60,13 @@ enum TextDirectionSubmenuInclusionBehavior {
     TextDirectionSubmenuAutomaticallyIncluded,
     TextDirectionSubmenuAlwaysIncluded
 };
+
+enum DebugOverlayRegionFlags {
+    NonFastScrollableRegion = 1 << 0,
+    WheelEventHandlerRegion = 1 << 1,
+};
+
+typedef unsigned DebugOverlayRegions;
 
 class Settings : public RefCounted<Settings> {
     WTF_MAKE_NONCOPYABLE(Settings); WTF_MAKE_FAST_ALLOCATED;
@@ -117,9 +125,6 @@ public:
     WEBCORE_EXPORT void setScriptEnabled(bool);
 
     SETTINGS_GETTERS_AND_SETTERS
-
-    WEBCORE_EXPORT void setScreenFontSubstitutionEnabled(bool);
-    bool screenFontSubstitutionEnabled() const { return m_screenFontSubstitutionEnabled; }
 
     WEBCORE_EXPORT void setJavaEnabled(bool);
     bool isJavaEnabled() const { return m_isJavaEnabled; }
@@ -267,11 +272,15 @@ public:
     static bool shouldManageAudioSessionCategory() { return gManageAudioSession; }
 #endif
 
+#if ENABLE(ENCRYPTED_MEDIA_V2)
+    void setMediaKeysStorageDirectory(const String& directory) { m_mediaKeysStorageDirectory = directory; }
+    const String& mediaKeysStorageDirectory() const { return m_mediaKeysStorageDirectory; }
+#endif
+
 private:
     explicit Settings(Page*);
 
     void initializeDefaultFontFamilies();
-    static bool shouldEnableScreenFontSubstitutionByDefault();
 
     Page* m_page;
 
@@ -288,7 +297,6 @@ private:
 
     SETTINGS_MEMBER_VARIABLES
 
-    bool m_screenFontSubstitutionEnabled : 1;
     bool m_isJavaEnabled : 1;
     bool m_isJavaEnabledForLocalFiles : 1;
     bool m_loadsImagesAutomatically : 1;
@@ -309,8 +317,8 @@ private:
 
     double m_timeWithoutMouseMovementBeforeHidingControls;
 
-    Timer<Settings> m_setImageLoadingSettingsTimer;
-    void imageLoadingSettingsTimerFired(Timer<Settings>*);
+    Timer m_setImageLoadingSettingsTimer;
+    void imageLoadingSettingsTimerFired();
 
 #if ENABLE(HIDDEN_PAGE_DOM_TIMER_THROTTLING)
     bool m_hiddenPageDOMTimerThrottlingEnabled : 1;
@@ -344,6 +352,10 @@ private:
     WEBCORE_EXPORT static bool gAVKitEnabled;
     WEBCORE_EXPORT static bool gShouldOptOutOfNetworkStateObservation;
     WEBCORE_EXPORT static bool gManageAudioSession;
+#endif
+
+#if ENABLE(ENCRYPTED_MEDIA_V2)
+    String m_mediaKeysStorageDirectory;
 #endif
 
     static double gHiddenPageDOMTimerAlignmentInterval;

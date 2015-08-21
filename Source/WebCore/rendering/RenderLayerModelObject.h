@@ -52,8 +52,8 @@ public:
     virtual bool isScrollableOrRubberbandableBox() const { return false; }
 
 protected:
-    RenderLayerModelObject(Element&, PassRef<RenderStyle>, unsigned baseTypeFlags);
-    RenderLayerModelObject(Document&, PassRef<RenderStyle>, unsigned baseTypeFlags);
+    RenderLayerModelObject(Element&, Ref<RenderStyle>&&, unsigned baseTypeFlags);
+    RenderLayerModelObject(Document&, Ref<RenderStyle>&&, unsigned baseTypeFlags);
 
     void createLayer();
 
@@ -67,8 +67,8 @@ private:
     static bool s_layerWasSelfPainting;
 };
 
-RENDER_OBJECT_TYPE_CASTS(RenderLayerModelObject, isRenderLayerModelObject())
-
 } // namespace WebCore
+
+SPECIALIZE_TYPE_TRAITS_RENDER_OBJECT(RenderLayerModelObject, isRenderLayerModelObject())
 
 #endif // RenderLayerModelObject_h

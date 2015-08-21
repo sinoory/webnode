@@ -38,14 +38,14 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-RenderTableRow::RenderTableRow(Element& element, PassRef<RenderStyle> style)
+RenderTableRow::RenderTableRow(Element& element, Ref<RenderStyle>&& style)
     : RenderBox(element, WTF::move(style), 0)
     , m_rowIndex(unsetRowIndex)
 {
     setInline(false);
 }
 
-RenderTableRow::RenderTableRow(Document& document, PassRef<RenderStyle> style)
+RenderTableRow::RenderTableRow(Document& document, Ref<RenderStyle>&& style)
     : RenderBox(document, WTF::move(style), 0)
     , m_rowIndex(unsetRowIndex)
 {
@@ -78,12 +78,11 @@ void RenderTableRow::styleDidChange(StyleDifference diff, const RenderStyle* old
         section()->rowLogicalHeightChanged(rowIndex());
 
     // If border was changed, notify table.
-    if (parent()) {
-        RenderTable* table = this->table();
-        if (table && !table->selfNeedsLayout() && !table->normalChildNeedsLayout() && oldStyle && oldStyle->border() != style().border())
+    if (RenderTable* table = this->table()) {
+        if (!table->selfNeedsLayout() && !table->normalChildNeedsLayout() && oldStyle && oldStyle->border() != style().border())
             table->invalidateCollapsedBorders();
         
-        if (table && oldStyle && diff == StyleDifferenceLayout && needsLayout() && table->collapseBorders() && borderWidthChanged(oldStyle, &style())) {
+        if (oldStyle && diff == StyleDifferenceLayout && needsLayout() && table->collapseBorders() && borderWidthChanged(oldStyle, &style())) {
             // If the border width changes on a row, we need to make sure the cells in the row know to lay out again.
             // This only happens when borders are collapsed, since they end up affecting the border sides of the cell
             // itself.
@@ -109,28 +108,28 @@ const BorderValue& RenderTableRow::borderAdjoiningEndCell(const RenderTableCell*
 
 void RenderTableRow::addChild(RenderObject* child, RenderObject* beforeChild)
 {
-    if (!child->isTableCell()) {
+    if (!is<RenderTableCell>(*child)) {
         RenderObject* last = beforeChild;
         if (!last)
             last = lastCell();
-        if (last && last->isAnonymous() && last->isTableCell() && !last->isBeforeOrAfterContent()) {
-            RenderTableCell* cell = toRenderTableCell(last);
-            if (beforeChild == cell)
-                beforeChild = cell->firstChild();
-            cell->addChild(child, beforeChild);
+        if (last && last->isAnonymous() && is<RenderTableCell>(*last) && !last->isBeforeOrAfterContent()) {
+            RenderTableCell& cell = downcast<RenderTableCell>(*last);
+            if (beforeChild == &cell)
+                beforeChild = cell.firstChild();
+            cell.addChild(child, beforeChild);
             return;
         }
 
         if (beforeChild && !beforeChild->isAnonymous() && beforeChild->parent() == this) {
             RenderObject* cell = beforeChild->previousSibling();
-            if (cell && cell->isTableCell() && cell->isAnonymous()) {
-                toRenderTableCell(cell)->addChild(child);
+            if (is<RenderTableCell>(cell) && cell->isAnonymous()) {
+                downcast<RenderTableCell>(*cell).addChild(child);
                 return;
             }
         }
 
         // If beforeChild is inside an anonymous cell, insert into the cell.
-        if (last && !last->isTableCell() && last->parent() && last->parent()->isAnonymous() && !last->parent()->isBeforeOrAfterContent()) {
+        if (last && !is<RenderTableCell>(*last) && last->parent() && last->parent()->isAnonymous() && !last->parent()->isBeforeOrAfterContent()) {
             last->parent()->addChild(child, beforeChild);
             return;
         }
@@ -144,14 +143,14 @@ void RenderTableRow::addChild(RenderObject* child, RenderObject* beforeChild)
     if (beforeChild && beforeChild->parent() != this)
         beforeChild = splitAnonymousBoxesAroundChild(beforeChild);    
 
-    RenderTableCell* cell = toRenderTableCell(child);
+    RenderTableCell& cell = downcast<RenderTableCell>(*child);
 
     // Generated content can result in us having a null section so make sure to null check our parent.
-    if (parent())
-        section()->addCell(cell, this);
+    if (RenderTableSection* section = this->section())
+        section->addCell(&cell, this);
 
-    ASSERT(!beforeChild || beforeChild->isTableCell());
-    RenderBox::addChild(cell, beforeChild);
+    ASSERT(!beforeChild || is<RenderTableCell>(*beforeChild));
+    RenderBox::addChild(&cell, beforeChild);
 
     if (beforeChild || nextRow())
         section()->setNeedsCellRecalc();
@@ -168,7 +167,7 @@ void RenderTableRow::layout()
     bool paginated = view().layoutState()->isPaginated();
                 
     for (RenderTableCell* cell = firstCell(); cell; cell = cell->nextCell()) {
-        if (!cell->needsLayout() && paginated && view().layoutState()->pageLogicalHeight() && view().layoutState()->pageLogicalOffset(cell, cell->logicalTop()) != cell->pageLogicalOffset())
+        if (!cell->needsLayout() && paginated && (view().layoutState()->pageLogicalHeightChanged() || (view().layoutState()->pageLogicalHeight() && view().layoutState()->pageLogicalOffset(cell, cell->logicalTop()) != cell->pageLogicalOffset())))
             cell->setChildNeedsLayout(MarkOnlyThis);
 
         if (cell->needsLayout()) {

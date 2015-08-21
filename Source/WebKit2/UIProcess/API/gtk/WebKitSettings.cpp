@@ -54,15 +54,19 @@ struct _WebKitSettingsPrivate {
     _WebKitSettingsPrivate()
         : preferences(WebPreferences::create(String(), "WebKit2.", "WebKit2."))
     {
-        defaultFontFamily = preferences->standardFontFamily().utf8();   
+        defaultFontFamily = preferences->standardFontFamily().utf8();
         monospaceFontFamily = preferences->fixedFontFamily().utf8();
         serifFontFamily = preferences->serifFontFamily().utf8();
         sansSerifFontFamily = preferences->sansSerifFontFamily().utf8();
         cursiveFontFamily = preferences->cursiveFontFamily().utf8();
-        fantasyFontFamily = preferences->fantasyFontFamily().utf8(); 
+        fantasyFontFamily = preferences->fantasyFontFamily().utf8();
         pictographFontFamily = preferences->pictographFontFamily().utf8();
         defaultCharset = preferences->defaultTextEncodingName().utf8();
         IsStartState = true;
+		
+#if USE(COORDINATED_GRAPHICS_THREADED)
+        preferences->setForceCompositingMode(true);
+#endif
     }
 
     RefPtr<WebPreferences> preferences;
@@ -1795,17 +1799,12 @@ gboolean webkit_settings_get_enable_javascript(WebKitSettings* settings)
 void webkit_settings_set_enable_javascript(WebKitSettings* settings, gboolean enabled)
 {
     g_return_if_fail(WEBKIT_IS_SETTINGS(settings));
+
     WebKitSettingsPrivate* priv = settings->priv;
     bool currentValue = priv->preferences->javaScriptEnabled();
     if (currentValue == enabled)
         return;
-/*     
-    if(!priv->IsStartState) { 
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_ENABLE_JAVASCRIPT], bvalue.release());  //Update new preference value.
-    } 
-*/
-   
+
     priv->preferences->setJavaScriptEnabled(enabled);
     g_object_notify(G_OBJECT(settings), "enable-javascript");
 }
@@ -1840,12 +1839,7 @@ void webkit_settings_set_auto_load_images(WebKitSettings* settings, gboolean ena
     bool currentValue = priv->preferences->loadsImagesAutomatically();
     if (currentValue == enabled)
         return;
-/*   
-     if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_AUTO_LOAD_IMAGES], bvalue.release());  //Update new preference value.
-    } 
-*/
+
     priv->preferences->setLoadsImagesAutomatically(enabled);
     g_object_notify(G_OBJECT(settings), "auto-load-images");
 }
@@ -1881,11 +1875,6 @@ void webkit_settings_set_load_icons_ignoring_image_load_setting(WebKitSettings* 
     if (currentValue == enabled)
         return;
 
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_LOAD_ICONS_IGNORING_IMAGE_LOAD_SETTING], bvalue.release());  //Update new preference value.
-    } */
-
     priv->preferences->setLoadsSiteIconsIgnoringImageLoadingPreference(enabled);
     g_object_notify(G_OBJECT(settings), "load-icons-ignoring-image-load-setting");
 }
@@ -1915,15 +1904,11 @@ gboolean webkit_settings_get_enable_offline_web_application_cache(WebKitSettings
 void webkit_settings_set_enable_offline_web_application_cache(WebKitSettings* settings, gboolean enabled)
 {
     g_return_if_fail(WEBKIT_IS_SETTINGS(settings));
+
     WebKitSettingsPrivate* priv = settings->priv;
     bool currentValue = priv->preferences->offlineWebApplicationCacheEnabled();
     if (currentValue == enabled)
         return;
-
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_ENABLE_OFFLINE_WEB_APPLICATION_CACHE], bvalue.release());  //Update new preference value.
-    } */
 
     priv->preferences->setOfflineWebApplicationCacheEnabled(enabled);
     g_object_notify(G_OBJECT(settings), "enable-offline-web-application-cache");
@@ -1954,15 +1939,11 @@ gboolean webkit_settings_get_enable_html5_local_storage(WebKitSettings* settings
 void webkit_settings_set_enable_html5_local_storage(WebKitSettings* settings, gboolean enabled)
 {
     g_return_if_fail(WEBKIT_IS_SETTINGS(settings));
+
     WebKitSettingsPrivate* priv = settings->priv;
     bool currentValue = priv->preferences->localStorageEnabled();
     if (currentValue == enabled)
         return;
-
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_ENABLE_HTML5_LOCAL_STORAGE], bvalue.release());  //Update new preference value.
-    } */
 
     priv->preferences->setLocalStorageEnabled(enabled);
     g_object_notify(G_OBJECT(settings), "enable-html5-local-storage");
@@ -1999,11 +1980,6 @@ void webkit_settings_set_enable_html5_database(WebKitSettings* settings, gboolea
     if (currentValue == enabled)
         return;
 
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_ENABLE_HTML5_DATABASE], bvalue.release());  //Update new preference value.
-    } */
-
     priv->preferences->setDatabasesEnabled(enabled);
     g_object_notify(G_OBJECT(settings), "enable-html5-database");
 }
@@ -2038,10 +2014,6 @@ void webkit_settings_set_enable_xss_auditor(WebKitSettings* settings, gboolean e
     bool currentValue = priv->preferences->xssAuditorEnabled();
     if (currentValue == enabled)
         return;
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_ENABLE_XSS_AUDITOR], bvalue.release());  //Update new preference value.
-    } */
 
     priv->preferences->setXSSAuditorEnabled(enabled);
     g_object_notify(G_OBJECT(settings), "enable-xss-auditor");
@@ -2079,11 +2051,6 @@ void webkit_settings_set_enable_frame_flattening(WebKitSettings* settings, gbool
     if (currentValue == enabled)
         return;
 
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_ENABLE_FRAME_FLATTENING], bvalue.release());  //Update new preference value.
-    } */
-
     priv->preferences->setFrameFlatteningEnabled(enabled);
     g_object_notify(G_OBJECT(settings), "enable-frame-flattening");
 }
@@ -2118,11 +2085,6 @@ void webkit_settings_set_enable_plugins(WebKitSettings* settings, gboolean enabl
     bool currentValue = priv->preferences->pluginsEnabled();
     if (currentValue == enabled)
         return;
-
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_ENABLE_PLUGINS], bvalue.release());  //Update new preference value.
-    } */
 
     priv->preferences->setPluginsEnabled(enabled);
     g_object_notify(G_OBJECT(settings), "enable-plugins");
@@ -2159,11 +2121,6 @@ void webkit_settings_set_enable_java(WebKitSettings* settings, gboolean enabled)
     if (currentValue == enabled)
         return;
 
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_ENABLE_JAVA], bvalue.release());  //Update new preference value.
-    } */
- 
     priv->preferences->setJavaEnabled(enabled);
     g_object_notify(G_OBJECT(settings), "enable-java");
 }
@@ -2198,11 +2155,6 @@ void webkit_settings_set_javascript_can_open_windows_automatically(WebKitSetting
     bool currentValue = priv->preferences->javaScriptCanOpenWindowsAutomatically();
     if (currentValue == enabled)
         return;
-
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_JAVASCRIPT_CAN_OPEN_WINDOWS_AUTOMATICALLY], bvalue.release()); //Update new preference value.
-    } */
 
     priv->preferences->setJavaScriptCanOpenWindowsAutomatically(enabled);
     g_object_notify(G_OBJECT(settings), "javascript-can-open-windows-automatically");
@@ -2239,11 +2191,6 @@ void webkit_settings_set_enable_hyperlink_auditing(WebKitSettings* settings, gbo
     if (currentValue == enabled)
         return;
 
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_ENABLE_HYPERLINK_AUDITING], bvalue.release());  //Update new preference value.
-    } */
-
     priv->preferences->setHyperlinkAuditingEnabled(enabled);
     g_object_notify(G_OBJECT(settings), "enable-hyperlink-auditing");
 }
@@ -2278,13 +2225,6 @@ void webkit_settings_set_default_font_family(WebKitSettings* settings, const gch
     WebKitSettingsPrivate* priv = settings->priv;
     if (!g_strcmp0(priv->defaultFontFamily.data(), defaultFontFamily))
         return;
-/*lxx add
-    if(!priv->IsStartState) {
-      std::string strval(defaultFontFamily);
-      scoped_ptr<base::StringValue> strvalue(new base::StringValue(strval));
-      priv->user_pref_store_->SetValue(key[PROP_DEFAULT_FONT_FAMILY], strvalue.release()); //Update new preference value.
-    }
-*/
 
     String standardFontFamily = String::fromUTF8(defaultFontFamily);
     priv->preferences->setStandardFontFamily(standardFontFamily);
@@ -2323,12 +2263,6 @@ void webkit_settings_set_monospace_font_family(WebKitSettings* settings, const g
     if (!g_strcmp0(priv->monospaceFontFamily.data(), monospaceFontFamily))
         return;
 
-    /* if(!priv->IsStartState) {
-      std::string strval(monospaceFontFamily);
-      scoped_ptr<base::StringValue> strvalue(new base::StringValue(strval));
-      priv->user_pref_store_->SetValue(key[PROP_MONOSPACE_FONT_FAMILY], strvalue.release()); //Update new preference value.
-    } */
-
     String fixedFontFamily = String::fromUTF8(monospaceFontFamily);
     priv->preferences->setFixedFontFamily(fixedFontFamily);
     priv->monospaceFontFamily = fixedFontFamily.utf8();
@@ -2365,12 +2299,6 @@ void webkit_settings_set_serif_font_family(WebKitSettings* settings, const gchar
     WebKitSettingsPrivate* priv = settings->priv;
     if (!g_strcmp0(priv->serifFontFamily.data(), serifFontFamily))
         return;
-
-    /* if(!priv->IsStartState) {
-      std::string strval(serifFontFamily);
-      scoped_ptr<base::StringValue> strvalue(new base::StringValue(strval));
-      priv->user_pref_store_->SetValue(key[PROP_SERIF_FONT_FAMILY], strvalue.release()); //Update new preference value.
-    } */
 
     String serifFontFamilyString = String::fromUTF8(serifFontFamily);
     priv->preferences->setSerifFontFamily(serifFontFamilyString);
@@ -2409,12 +2337,6 @@ void webkit_settings_set_sans_serif_font_family(WebKitSettings* settings, const 
     if (!g_strcmp0(priv->sansSerifFontFamily.data(), sansSerifFontFamily))
         return;
 
-    /* if(!priv->IsStartState) {
-      std::string strval(sansSerifFontFamily);
-      scoped_ptr<base::StringValue> strvalue(new base::StringValue(strval));
-      priv->user_pref_store_->SetValue(key[PROP_SANS_SERIF_FONT_FAMILY], strvalue.release()); //Update new preference value.
-    } */
-
     String sansSerifFontFamilyString = String::fromUTF8(sansSerifFontFamily);
     priv->preferences->setSansSerifFontFamily(sansSerifFontFamilyString);
     priv->sansSerifFontFamily = sansSerifFontFamilyString.utf8();
@@ -2451,12 +2373,6 @@ void webkit_settings_set_cursive_font_family(WebKitSettings* settings, const gch
     WebKitSettingsPrivate* priv = settings->priv;
     if (!g_strcmp0(priv->cursiveFontFamily.data(), cursiveFontFamily))
         return;
-
-    /* if(!priv->IsStartState) {
-      std::string strval(cursiveFontFamily);
-      scoped_ptr<base::StringValue> strvalue(new base::StringValue(strval));
-      priv->user_pref_store_->SetValue(key[PROP_CURSIVE_FONT_FAMILY], strvalue.release()); //Update new preference value.
-    } */
 
     String cursiveFontFamilyString = String::fromUTF8(cursiveFontFamily);
     priv->preferences->setCursiveFontFamily(cursiveFontFamilyString);
@@ -2495,12 +2411,6 @@ void webkit_settings_set_fantasy_font_family(WebKitSettings* settings, const gch
     if (!g_strcmp0(priv->fantasyFontFamily.data(), fantasyFontFamily))
         return;
 
-    /* if(!priv->IsStartState) {
-      std::string strval(fantasyFontFamily);
-      scoped_ptr<base::StringValue> strvalue(new base::StringValue(strval));
-      priv->user_pref_store_->SetValue(key[PROP_FANTASY_FONT_FAMILY], strvalue.release()); //Update new preference value.
-    } */
-
     String fantasyFontFamilyString = String::fromUTF8(fantasyFontFamily);
     priv->preferences->setFantasyFontFamily(fantasyFontFamilyString);
     priv->fantasyFontFamily = fantasyFontFamilyString.utf8();
@@ -2538,12 +2448,6 @@ void webkit_settings_set_pictograph_font_family(WebKitSettings* settings, const 
     if (!g_strcmp0(priv->pictographFontFamily.data(), pictographFontFamily))
         return;
 
-    /* if(!priv->IsStartState) {
-      std::string strval(pictographFontFamily);
-      scoped_ptr<base::StringValue> strvalue(new base::StringValue(strval));
-      priv->user_pref_store_->SetValue(key[PROP_PICTOGRAPH_FONT_FAMILY], strvalue.release()); //Update new preference value.
-    } */
-
     String pictographFontFamilyString = String::fromUTF8(pictographFontFamily);
     priv->preferences->setPictographFontFamily(pictographFontFamilyString);
     priv->pictographFontFamily = pictographFontFamilyString.utf8();
@@ -2580,13 +2484,7 @@ void webkit_settings_set_default_font_size(WebKitSettings* settings, guint32 fon
     uint32_t currentSize = priv->preferences->defaultFontSize();
     if (currentSize == fontSize)
         return;
-/*lxx add
-     if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> ivalue(new base::FundamentalValue((int)fontSize));
-      priv->user_pref_store_->SetValue(key[PROP_DEFAULT_FONT_SIZE], ivalue.release()); //Update new preference value.
-    } 
-*/
- 
+
     priv->preferences->setDefaultFontSize(fontSize);
     g_object_notify(G_OBJECT(settings), "default-font-size");
 }
@@ -2621,11 +2519,6 @@ void webkit_settings_set_default_monospace_font_size(WebKitSettings* settings, g
     uint32_t currentSize = priv->preferences->defaultFixedFontSize();
     if (currentSize == fontSize)
         return;
-
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> ivalue(new base::FundamentalValue((int)fontSize));
-      priv->user_pref_store_->SetValue(key[PROP_DEFAULT_MONOSPACE_FONT_SIZE], ivalue.release()); //Update new preference value.
-    } */
 
     priv->preferences->setDefaultFixedFontSize(fontSize);
     g_object_notify(G_OBJECT(settings), "default-monospace-font-size");
@@ -2662,11 +2555,6 @@ void webkit_settings_set_minimum_font_size(WebKitSettings* settings, guint32 fon
     if (currentSize == fontSize)
         return;
 
-    /* if(!priv->IsStartState) {
-       scoped_ptr<base::FundamentalValue> ivalue(new base::FundamentalValue((int)fontSize));
-       priv->user_pref_store_->SetValue(key[PROP_MINIMUM_FONT_SIZE], ivalue.release()); //Update new preference value.
-     } */
-
     priv->preferences->setMinimumFontSize(fontSize);
     g_object_notify(G_OBJECT(settings), "minimum-font-size");
 }
@@ -2701,12 +2589,6 @@ void webkit_settings_set_default_charset(WebKitSettings* settings, const gchar* 
     WebKitSettingsPrivate* priv = settings->priv;
     if (!g_strcmp0(priv->defaultCharset.data(), defaultCharset))
         return;
-
-    /* if(!priv->IsStartState) {
-      std::string strval(defaultCharset);
-      scoped_ptr<base::StringValue> strvalue(new base::StringValue(strval));
-      priv->user_pref_store_->SetValue(key[PROP_DEFAULT_CHARSET], strvalue.release()); //Update new preference value.
-    } */
 
     String defaultCharsetString = String::fromUTF8(defaultCharset);
     priv->preferences->setDefaultTextEncodingName(defaultCharsetString);
@@ -2745,11 +2627,6 @@ void webkit_settings_set_enable_private_browsing(WebKitSettings* settings, gbool
     if (currentValue == enabled)
         return;
 
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_ENABLE_PRIVATE_BROWSING], bvalue.release()); //Update new preference value.
-    } */
-
     priv->preferences->setPrivateBrowsingEnabled(enabled);
     g_object_notify(G_OBJECT(settings), "enable-private-browsing");
 }
@@ -2784,11 +2661,6 @@ void webkit_settings_set_enable_developer_extras(WebKitSettings* settings, gbool
     bool currentValue = priv->preferences->developerExtrasEnabled();
     if (currentValue == enabled)
         return;
-
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_ENABLE_DEVELOPER_EXTRAS], bvalue.release()); //Update new preference value.
-    } */
 
     priv->preferences->setDeveloperExtrasEnabled(enabled);
     g_object_notify(G_OBJECT(settings), "enable-developer-extras");
@@ -2825,11 +2697,6 @@ void webkit_settings_set_enable_resizable_text_areas(WebKitSettings* settings, g
     if (currentValue == enabled)
         return;
 
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_ENABLE_RESIZABLE_TEXT_AREAS], bvalue.release()); //Update new preference value.
-    } */
-
     priv->preferences->setTextAreasAreResizable(enabled);
     g_object_notify(G_OBJECT(settings), "enable-resizable-text-areas");
 }
@@ -2864,11 +2731,6 @@ void webkit_settings_set_enable_tabs_to_links(WebKitSettings* settings, gboolean
     bool currentValue = priv->preferences->tabsToLinks();
     if (currentValue == enabled)
         return;
-
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_ENABLE_TABS_TO_LINKS], bvalue.release()); //Update new preference value.
-    } */
 
     priv->preferences->setTabsToLinks(enabled);
     g_object_notify(G_OBJECT(settings), "enable-tabs-to-links");
@@ -2905,11 +2767,6 @@ void webkit_settings_set_enable_dns_prefetching(WebKitSettings* settings, gboole
     if (currentValue == enabled)
         return;
 
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_ENABLE_DNS_PREFETCHING], bvalue.release()); //Update new preference value.
-    } */
-
     priv->preferences->setDNSPrefetchingEnabled(enabled);
     g_object_notify(G_OBJECT(settings), "enable-dns-prefetching");
 }
@@ -2944,11 +2801,6 @@ void webkit_settings_set_enable_caret_browsing(WebKitSettings* settings, gboolea
     bool currentValue = priv->preferences->caretBrowsingEnabled();
     if (currentValue == enabled)
         return;
-
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_ENABLE_CARET_BROWSING], bvalue.release()); //Update new preference value.
-    } */
 
     priv->preferences->setCaretBrowsingEnabled(enabled);
     g_object_notify(G_OBJECT(settings), "enable-caret-browsing");
@@ -2985,11 +2837,6 @@ void webkit_settings_set_enable_fullscreen(WebKitSettings* settings, gboolean en
     if (currentValue == enabled)
         return;
 
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_ENABLE_FULLSCREEN], bvalue.release()); //Update new preference value.
-    } */
-
     priv->preferences->setFullScreenEnabled(enabled);
     g_object_notify(G_OBJECT(settings), "enable-fullscreen");
 }
@@ -3024,11 +2871,6 @@ void webkit_settings_set_print_backgrounds(WebKitSettings* settings, gboolean pr
     bool currentValue = priv->preferences->shouldPrintBackgrounds();
     if (currentValue == printBackgrounds)
         return;
-
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)printBackgrounds));
-      priv->user_pref_store_->SetValue(key[PROP_PRINT_BACKGROUNDS], bvalue.release()); //Update new preference value.
-    } */
 
     priv->preferences->setShouldPrintBackgrounds(printBackgrounds);
     g_object_notify(G_OBJECT(settings), "print-backgrounds");
@@ -3065,11 +2907,6 @@ void webkit_settings_set_enable_webaudio(WebKitSettings* settings, gboolean enab
     if (currentValue == enabled)
         return;
 
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_ENABLE_WEBAUDIO], bvalue.release()); //Update new preference value.
-    } */
-
     priv->preferences->setWebAudioEnabled(enabled);
     g_object_notify(G_OBJECT(settings), "enable-webaudio");
 }
@@ -3105,11 +2942,6 @@ void webkit_settings_set_enable_webgl(WebKitSettings* settings, gboolean enabled
     if (currentValue == enabled)
         return;
 
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_ENABLE_WEBGL], bvalue.release()); //Update new preference value.
-    } */
-
     priv->preferences->setWebGLEnabled(enabled);
     g_object_notify(G_OBJECT(settings), "enable-webgl");
 }
@@ -3142,11 +2974,6 @@ void webkit_settings_set_allow_modal_dialogs(WebKitSettings* settings, gboolean 
     WebKitSettingsPrivate* priv = settings->priv;
     if (priv->allowModalDialogs == allowed)
         return;
-
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)allowed));
-      priv->user_pref_store_->SetValue(key[PROP_ALLOW_MODAL_DIALOGS], bvalue.release()); //Update new preference value.
-    } */
 
     priv->allowModalDialogs = allowed;
     g_object_notify(G_OBJECT(settings), "allow-modal-dialogs");
@@ -3182,12 +3009,7 @@ void webkit_settings_set_zoom_text_only(WebKitSettings* settings, gboolean zoomT
     WebKitSettingsPrivate* priv = settings->priv;
     if (priv->zoomTextOnly == zoomTextOnly)
         return;
-/* lxx add
-    if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)zoomTextOnly));
-      priv->user_pref_store_->SetValue(key[PROP_ZOOM_TEXT_ONLY], bvalue.release()); //Update new preference value.
-    } 
-*/
+
     priv->zoomTextOnly = zoomTextOnly;
     g_object_notify(G_OBJECT(settings), "zoom-text-only");
 }
@@ -3223,11 +3045,6 @@ void webkit_settings_set_javascript_can_access_clipboard(WebKitSettings* setting
     bool currentValue = priv->preferences->javaScriptCanAccessClipboard() && priv->preferences->domPasteAllowed();
     if (currentValue == enabled)
         return;
-
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_JAVASCRIPT_CAN_ACCESS_CLIPBOARD], bvalue.release()); //Update new preference value.
-    } */
 
     priv->preferences->setJavaScriptCanAccessClipboard(enabled);
     priv->preferences->setDOMPasteAllowed(enabled);
@@ -3266,11 +3083,6 @@ void webkit_settings_set_media_playback_requires_user_gesture(WebKitSettings* se
     if (currentValue == enabled)
         return;
 
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_MEDIA_PLAYBACK_REQUIRES_USER_GESTURE], bvalue.release()); //Update new preference value.
-    } */
-
     priv->preferences->setMediaPlaybackRequiresUserGesture(enabled);
     g_object_notify(G_OBJECT(settings), "media-playback-requires-user-gesture");
 }
@@ -3307,11 +3119,6 @@ void webkit_settings_set_media_playback_allows_inline(WebKitSettings* settings, 
     if (currentValue == enabled)
         return;
 
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_MEDIA_PLAYBACK_ALLOWS_INLINE], bvalue.release()); //Update new preference value.
-    } */
-
     priv->preferences->setMediaPlaybackAllowsInline(enabled);
     g_object_notify(G_OBJECT(settings), "media-playback-allows-inline");
 }
@@ -3346,11 +3153,6 @@ void webkit_settings_set_draw_compositing_indicators(WebKitSettings* settings, g
     if (priv->preferences->compositingBordersVisible() == enabled
         && priv->preferences->compositingRepaintCountersVisible() == enabled)
         return;
-
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_DRAW_COMPOSITING_INDICATORS], bvalue.release()); //Update new preference value.
-    } */
 
     priv->preferences->setCompositingBordersVisible(enabled);
     priv->preferences->setCompositingRepaintCountersVisible(enabled);
@@ -3388,11 +3190,6 @@ void webkit_settings_set_enable_site_specific_quirks(WebKitSettings* settings, g
     if (currentValue == enabled)
         return;
 
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_ENABLE_SITE_SPECIFIC_QUIRKS], bvalue.release()); //Update new preference value.
-    } */
-
     priv->preferences->setNeedsSiteSpecificQuirks(enabled);
     g_object_notify(G_OBJECT(settings), "enable-site-specific-quirks");
 }
@@ -3427,11 +3224,6 @@ void webkit_settings_set_enable_page_cache(WebKitSettings* settings, gboolean en
     bool currentValue = priv->preferences->usesPageCache();
     if (currentValue == enabled)
         return;
-
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_ENABLE_PAGE_CACHE], bvalue.release()); //Update new preference value.
-    } */
 
     priv->preferences->setUsesPageCache(enabled);
     g_object_notify(G_OBJECT(settings), "enable-page-cache");
@@ -3469,12 +3261,6 @@ void webkit_settings_set_user_agent(WebKitSettings* settings, const char* userAg
     CString newUserAgent = (!userAgent || !strlen(userAgent)) ? WebCore::standardUserAgent("").utf8() : userAgent;
     if (newUserAgent == priv->userAgent)
         return;
-
-    /* if(!priv->IsStartState) {
-      std::string strval(userAgent);
-      scoped_ptr<base::StringValue> strvalue(new base::StringValue(strval));
-      priv->user_pref_store_->SetValue(key[PROP_USER_AGENT], strvalue.release()); //Update new preference value.
-    } */
 
     priv->userAgent = newUserAgent;
     g_object_notify(G_OBJECT(settings), "user-agent");
@@ -3529,11 +3315,6 @@ void webkit_settings_set_enable_smooth_scrolling(WebKitSettings* settings, gbool
     if (currentValue == enabled)
         return;
 
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_ENABLE_SMOOTH_SCROLLING], bvalue.release()); //Update new preference value.
-    } */
-
     priv->preferences->setScrollAnimatorEnabled(enabled);
     g_object_notify(G_OBJECT(settings), "enable-smooth-scrolling");
 }
@@ -3571,11 +3352,6 @@ void webkit_settings_set_enable_accelerated_2d_canvas(WebKitSettings* settings, 
     WebKitSettingsPrivate* priv = settings->priv;
     if (priv->preferences->accelerated2dCanvasEnabled() == enabled)
         return;
-
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_ENABLE_ACCELERATED_2D_CANVAS], bvalue.release()); //Update new preference value.
-    } */
 
     priv->preferences->setAccelerated2dCanvasEnabled(enabled);
     g_object_notify(G_OBJECT(settings), "enable-accelerated-2d-canvas");
@@ -3617,11 +3393,6 @@ void webkit_settings_set_enable_write_console_messages_to_stdout(WebKitSettings*
     if (currentValue == enabled)
         return;
 
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_ENABLE_WRITE_CONSOLE_MESSAGES_TO_STDOUT], bvalue.release()); //Update new preference value.
-    } */
-
     priv->preferences->setLogsPageMessagesToSystemConsoleEnabled(enabled);
     g_object_notify(G_OBJECT(settings), "enable-write-console-messages-to-stdout");
 }
@@ -3661,11 +3432,6 @@ void webkit_settings_set_enable_media_stream(WebKitSettings* settings, gboolean 
     if (currentValue == enabled)
         return;
 
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_ENABLE_MEDIA_STREAM], bvalue.release()); //Update new preference value.
-    } */
-
     priv->preferences->setMediaStreamEnabled(enabled);
     g_object_notify(G_OBJECT(settings), "enable-media-stream");
 }
@@ -3685,13 +3451,9 @@ void webkit_settings_set_enable_spatial_navigation(WebKitSettings* settings, gbo
 
     WebKitSettingsPrivate* priv = settings->priv;
     bool currentValue = priv->preferences->spatialNavigationEnabled();
+
     if (currentValue == enabled)
         return;
-
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_ENABLE_SPATIAL_NAVIGATION], bvalue.release()); //Update new preference value.
-    } */
 
     priv->preferences->setSpatialNavigationEnabled(enabled);
     g_object_notify(G_OBJECT(settings), "enable-spatial-navigation");
@@ -3749,11 +3511,6 @@ void webkit_settings_set_enable_mediasource(WebKitSettings* settings, gboolean e
     bool currentValue = priv->preferences->mediaSourceEnabled();
     if (currentValue == enabled)
         return;
-
-    /* if(!priv->IsStartState) {
-      scoped_ptr<base::FundamentalValue> bvalue(new base::FundamentalValue((bool)enabled));
-      priv->user_pref_store_->SetValue(key[PROP_ENABLE_MEDIASOURCE], bvalue.release()); //Update new preference value.
-    } */
 
     priv->preferences->setMediaSourceEnabled(enabled);
     g_object_notify(G_OBJECT(settings), "enable-mediasource");

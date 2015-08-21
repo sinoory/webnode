@@ -27,6 +27,7 @@
 #ifndef WebKitWebViewPrivate_h
 #define WebKitWebViewPrivate_h
 
+#include "WebContextMenuItemData.h"
 #include "WebHitTestResult.h"
 #include "WebImage.h"
 #include "WebKitWebView.h"
@@ -53,13 +54,16 @@ void webKitWebViewDidReceiveSnapshot(WebKitWebView*, uint64_t callbackID, WebKit
 void webkitWebViewRemoveLoadingWebResource(WebKitWebView*, uint64_t resourceIdentifier);
 bool webkitWebViewEnterFullScreen(WebKitWebView*);
 bool webkitWebViewLeaveFullScreen(WebKitWebView*);
-void webkitWebViewPopulateContextMenu(WebKitWebView*, API::Array* proposedMenu, WebKit::WebHitTestResult*);
+void webkitWebViewPopulateContextMenu(WebKitWebView*, const Vector<WebKit::WebContextMenuItemData>& proposedMenu, const WebKit::WebHitTestResult::Data&, GVariant*);
 void webkitWebViewSubmitFormRequest(WebKitWebView*, WebKitFormSubmissionRequest*);
 void webkitWebViewHandleAuthenticationChallenge(WebKitWebView*, WebKit::AuthenticationChallengeProxy*);
 void webkitWebViewInsecureContentDetected(WebKitWebView*, WebKitInsecureContentEvent);
+bool webkitWebViewEmitShowNotification(WebKitWebView*, WebKitNotification*);
+bool webkitWebViewEmitRunColorChooser(WebKitWebView*, WebKitColorChooserRequest*);
 void webkitWebViewDocumentLoadFinish(WebKitWebView*);//add by luyue 2015/7/20
 void webkitWebViewFinishProgress(WebKitWebView*);//add by luyue 2015/6/11
 void webkitWebViewWebProcessCrashed(WebKitWebView*);
+void webkitWebViewIsPlayingAudioChanged(WebKitWebView*);
 
 // ZRL create a new function for console.log
 void webkitWebViewAddMessageToConsole(WebKitWebView*, const CString& message, unsigned lineNumber, const CString& sourceID);

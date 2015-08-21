@@ -33,7 +33,7 @@
 #include "DOMTimer.h"
 #include "Database.h"
 #include "Document.h"
-#include "Font.h"
+#include "FontCascade.h"
 #include "FontGenericFamilies.h"
 #include "FrameTree.h"
 #include "FrameView.h"
@@ -57,8 +57,8 @@ static void setImageLoadingSettings(Page* page)
         return;
 
     for (Frame* frame = &page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
-        frame->document()->cachedResourceLoader()->setImagesEnabled(page->settings().areImagesEnabled());
-        frame->document()->cachedResourceLoader()->setAutoLoadImages(page->settings().loadsImagesAutomatically());
+        frame->document()->cachedResourceLoader().setImagesEnabled(page->settings().areImagesEnabled());
+        frame->document()->cachedResourceLoader().setAutoLoadImages(page->settings().loadsImagesAutomatically());
     }
 }
 
@@ -104,7 +104,7 @@ bool Settings::gManageAudioSession = false;
 
 // NOTEs
 //  1) EditingMacBehavior comprises Tiger, Leopard, SnowLeopard and iOS builds, as well as QtWebKit when built on Mac;
-//  2) EditingWindowsBehavior comprises Win32 and WinCE builds, as well as QtWebKit and Chromium when built on Windows;
+//  2) EditingWindowsBehavior comprises Win32 build;
 //  3) EditingUnixBehavior comprises all unix-based systems, but Darwin/MacOS (and then abusing the terminology);
 // 99) MacEditingBehavior is used as a fallback.
 static EditingBehaviorType editingBehaviorTypeForPlatform()
@@ -145,6 +145,8 @@ static const bool defaultImageSubsamplingEnabled = false;
 static const bool defaultScrollingTreeIncludesFrames = false;
 #endif
 
+static const bool defaultAllowsAlternateFullscreen = true;
+
 static const double defaultIncrementalRenderingSuppressionTimeoutInSeconds = 5;
 #if USE(UNIFIED_TEXT_CHECKING)
 static const bool defaultUnifiedTextCheckerEnabled = true;
@@ -175,7 +177,6 @@ Settings::Settings(Page* page)
 #endif
 #endif
     SETTINGS_INITIALIZER_LIST
-    , m_screenFontSubstitutionEnabled(shouldEnableScreenFontSubstitutionByDefault())
     , m_isJavaEnabled(false)
     , m_isJavaEnabledForLocalFiles(true)
     , m_loadsImagesAutomatically(false)
@@ -193,7 +194,7 @@ Settings::Settings(Page* page)
 #endif
     , m_scrollingPerformanceLoggingEnabled(false)
     , m_timeWithoutMouseMovementBeforeHidingControls(3)
-    , m_setImageLoadingSettingsTimer(this, &Settings::imageLoadingSettingsTimerFired)
+    , m_setImageLoadingSettingsTimer(*this, &Settings::imageLoadingSettingsTimerFired)
 #if ENABLE(HIDDEN_PAGE_DOM_TIMER_THROTTLING)
     , m_hiddenPageDOMTimerThrottlingEnabled(false)
 #endif
@@ -227,13 +228,6 @@ double Settings::hiddenPageDOMTimerAlignmentInterval()
 {
     return gHiddenPageDOMTimerAlignmentInterval;
 }
-
-#if !PLATFORM(COCOA)
-bool Settings::shouldEnableScreenFontSubstitutionByDefault()
-{
-    return true;
-}
-#endif
 
 #if !PLATFORM(COCOA)
 void Settings::initializeDefaultFontFamilies()
@@ -394,7 +388,7 @@ void Settings::setLoadsImagesAutomatically(bool loadsImagesAutomatically)
     m_setImageLoadingSettingsTimer.startOneShot(0);
 }
 
-void Settings::imageLoadingSettingsTimerFired(Timer<Settings>*)
+void Settings::imageLoadingSettingsTimerFired()
 {
     setImageLoadingSettings(m_page);
 }
@@ -412,7 +406,7 @@ void Settings::setScriptEnabled(bool isScriptEnabled)
 #if PLATFORM(IOS)
     m_page->setNeedsRecalcStyleInAllFrames();
 #endif
-    InspectorInstrumentation::scriptsEnabled(m_page, m_isScriptEnabled);
+    InspectorInstrumentation::scriptsEnabled(*m_page, m_isScriptEnabled);
 }
 
 void Settings::setJavaEnabled(bool isJavaEnabled)
@@ -517,22 +511,8 @@ void Settings::setUsesPageCache(bool usesPageCache)
     if (!m_page)
         return;
 
-    if (!m_usesPageCache) {
-        int first = -m_page->backForward().backCount();
-        int last = m_page->backForward().forwardCount();
-        for (int i = first; i <= last; i++)
-            pageCache()->remove(m_page->backForward().itemAtIndex(i));
-    }
-}
-
-void Settings::setScreenFontSubstitutionEnabled(bool enabled)
-{
-    if (m_screenFontSubstitutionEnabled == enabled)
-        return;
-    m_screenFontSubstitutionEnabled = enabled;
-
-    if (m_page)
-        m_page->setNeedsRecalcStyleInAllFrames();
+    if (!m_usesPageCache)
+        PageCache::singleton().pruneToSizeNow(0, PruningReason::None);
 }
 
 void Settings::setFontRenderingMode(FontRenderingMode mode)

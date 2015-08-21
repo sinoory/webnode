@@ -45,11 +45,6 @@ void SharedBuffer::clearPlatformData()
     m_soupBuffer.reset();
 }
 
-void SharedBuffer::tryReplaceContentsWithPlatformBuffer(SharedBuffer*)
-{
-    ASSERT_NOT_REACHED();
-}
-
 void SharedBuffer::maybeTransferPlatformData()
 {
     if (!m_soupBuffer)

@@ -40,8 +40,8 @@ struct SameSizeAsInlineBox {
     virtual ~SameSizeAsInlineBox() { }
     void* a[4];
     FloatPoint b;
-    float c;
-    uint32_t d : 32;
+    float c[2];
+    unsigned d : 20;
 #if !ASSERT_WITH_SECURITY_IMPLICATION_DISABLED
     unsigned s;
     bool f;
@@ -129,8 +129,8 @@ float InlineBox::logicalHeight() const
     const RenderStyle& lineStyle = this->lineStyle();
     if (renderer().isTextOrLineBreak())
         return behavesLikeText() ? lineStyle.fontMetrics().height() : 0;
-    if (renderer().isBox() && parent())
-        return isHorizontal() ? toRenderBox(renderer()).height() : toRenderBox(renderer()).width();
+    if (is<RenderBox>(renderer()) && parent())
+        return isHorizontal() ? downcast<RenderBox>(renderer()).height() : downcast<RenderBox>(renderer()).width();
 
     ASSERT(isInlineFlowBox());
     RenderBoxModelObject* flowObject = boxModelObject();
@@ -180,23 +180,21 @@ void InlineBox::adjustPosition(float dx, float dy)
         return;
 
     if (m_renderer.isReplaced())
-        toRenderBox(renderer()).move(dx, dy);
+        downcast<RenderBox>(renderer()).move(dx, dy);
 }
 
 const RootInlineBox& InlineBox::root() const
 { 
     if (parent())
         return parent()->root();
-    ASSERT_WITH_SECURITY_IMPLICATION(isRootInlineBox());
-    return toRootInlineBox(*this);
+    return downcast<RootInlineBox>(*this);
 }
 
 RootInlineBox& InlineBox::root()
 { 
     if (parent())
         return parent()->root();
-    ASSERT_WITH_SECURITY_IMPLICATION(isRootInlineBox());
-    return toRootInlineBox(*this);
+    return downcast<RootInlineBox>(*this);
 }
 
 bool InlineBox::nextOnLineExists() const
@@ -225,9 +223,9 @@ bool InlineBox::previousOnLineExists() const
 
 InlineBox* InlineBox::nextLeafChild() const
 {
-    InlineBox* leaf = 0;
+    InlineBox* leaf = nullptr;
     for (InlineBox* box = nextOnLine(); box && !leaf; box = box->nextOnLine())
-        leaf = box->isLeaf() ? box : toInlineFlowBox(box)->firstLeafChild();
+        leaf = box->isLeaf() ? box : downcast<InlineFlowBox>(*box).firstLeafChild();
     if (!leaf && parent())
         leaf = parent()->nextLeafChild();
     return leaf;
@@ -235,9 +233,9 @@ InlineBox* InlineBox::nextLeafChild() const
     
 InlineBox* InlineBox::prevLeafChild() const
 {
-    InlineBox* leaf = 0;
+    InlineBox* leaf = nullptr;
     for (InlineBox* box = prevOnLine(); box && !leaf; box = box->prevOnLine())
-        leaf = box->isLeaf() ? box : toInlineFlowBox(box)->lastLeafChild();
+        leaf = box->isLeaf() ? box : downcast<InlineFlowBox>(*box).lastLeafChild();
     if (!leaf && parent())
         leaf = parent()->prevLeafChild();
     return leaf;
@@ -247,7 +245,7 @@ InlineBox* InlineBox::nextLeafChildIgnoringLineBreak() const
 {
     InlineBox* leaf = nextLeafChild();
     if (leaf && leaf->isLineBreak())
-        return 0;
+        return nullptr;
     return leaf;
 }
 

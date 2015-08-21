@@ -137,27 +137,27 @@ MacroAssemblerCodeRef linkConstructThatPreservesRegsThunkGenerator(VM* vm)
     return linkForThunkGenerator(vm, CodeForConstruct, MustPreserveRegisters);
 }
 
-static MacroAssemblerCodeRef linkClosureCallForThunkGenerator(
+static MacroAssemblerCodeRef linkPolymorphicCallForThunkGenerator(
     VM* vm, RegisterPreservationMode registers)
 {
     CCallHelpers jit(vm);
     
-    slowPathFor(jit, vm, operationLinkClosureCallFor(registers));
+    slowPathFor(jit, vm, operationLinkPolymorphicCallFor(registers));
     
     LinkBuffer patchBuffer(*vm, jit, GLOBAL_THUNK_ID);
-    return FINALIZE_CODE(patchBuffer, ("Link closure call %s slow path thunk", registers == MustPreserveRegisters ? " that preserves registers" : ""));
+    return FINALIZE_CODE(patchBuffer, ("Link polymorphic call %s slow path thunk", registers == MustPreserveRegisters ? " that preserves registers" : ""));
 }
 
 // For closure optimizations, we only include calls, since if you're using closures for
 // object construction then you're going to lose big time anyway.
-MacroAssemblerCodeRef linkClosureCallThunkGenerator(VM* vm)
+MacroAssemblerCodeRef linkPolymorphicCallThunkGenerator(VM* vm)
 {
-    return linkClosureCallForThunkGenerator(vm, RegisterPreservationNotRequired);
+    return linkPolymorphicCallForThunkGenerator(vm, RegisterPreservationNotRequired);
 }
 
-MacroAssemblerCodeRef linkClosureCallThatPreservesRegsThunkGenerator(VM* vm)
+MacroAssemblerCodeRef linkPolymorphicCallThatPreservesRegsThunkGenerator(VM* vm)
 {
-    return linkClosureCallForThunkGenerator(vm, MustPreserveRegisters);
+    return linkPolymorphicCallForThunkGenerator(vm, MustPreserveRegisters);
 }
 
 static MacroAssemblerCodeRef virtualForThunkGenerator(
@@ -214,17 +214,6 @@ static MacroAssemblerCodeRef virtualForThunkGenerator(
     // Now we know that we have a CodeBlock, and we're committed to making a fast
     // call.
     
-    jit.loadPtr(
-        CCallHelpers::Address(GPRInfo::regT0, JSFunction::offsetOfScopeChain()),
-        GPRInfo::regT1);
-#if USE(JSVALUE64)
-    jit.emitPutToCallFrameHeaderBeforePrologue(GPRInfo::regT1, JSStack::ScopeChain);
-#else
-    jit.emitPutPayloadToCallFrameHeaderBeforePrologue(GPRInfo::regT1, JSStack::ScopeChain);
-    jit.emitPutTagToCallFrameHeaderBeforePrologue(CCallHelpers::TrustedImm32(JSValue::CellTag),
-        JSStack::ScopeChain);
-#endif
-    
     // Make a tail call. This will return back to JIT code.
     emitPointerValidation(jit, GPRInfo::regT4);
     jit.jump(GPRInfo::regT4);
@@ -276,12 +265,6 @@ static MacroAssemblerCodeRef nativeForGenerator(VM* vm, CodeSpecializationKind k
     jit.storePtr(JSInterfaceJIT::callFrameRegister, &vm->topCallFrame);
 
 #if CPU(X86)
-    // Load caller frame's scope chain into this callframe so that whatever we call can
-    // get to its global data.
-    jit.emitGetCallerFrameFromCallFrameHeaderPtr(JSInterfaceJIT::regT0);
-    jit.emitGetFromCallFrameHeaderPtr(JSStack::ScopeChain, JSInterfaceJIT::regT1, JSInterfaceJIT::regT0);
-    jit.emitPutCellToCallFrameHeader(JSInterfaceJIT::regT1, JSStack::ScopeChain);
-
     // Calling convention:      f(ecx, edx, ...);
     // Host function signature: f(ExecState*);
     jit.move(JSInterfaceJIT::callFrameRegister, X86Registers::ecx);
@@ -296,11 +279,6 @@ static MacroAssemblerCodeRef nativeForGenerator(VM* vm, CodeSpecializationKind k
     jit.addPtr(JSInterfaceJIT::TrustedImm32(8), JSInterfaceJIT::stackPointerRegister);
 
 #elif CPU(X86_64)
-    // Load caller frame's scope chain into this callframe so that whatever we call can
-    // get to its global data.
-    jit.emitGetCallerFrameFromCallFrameHeaderPtr(JSInterfaceJIT::regT0);
-    jit.emitGetFromCallFrameHeaderPtr(JSStack::ScopeChain, JSInterfaceJIT::regT1, JSInterfaceJIT::regT0);
-    jit.emitPutCellToCallFrameHeader(JSInterfaceJIT::regT1, JSStack::ScopeChain);
 #if !OS(WINDOWS)
     // Calling convention:      f(edi, esi, edx, ecx, ...);
     // Host function signature: f(ExecState*);
@@ -333,12 +311,6 @@ static MacroAssemblerCodeRef nativeForGenerator(VM* vm, CodeSpecializationKind k
     COMPILE_ASSERT(ARM64Registers::x1 != JSInterfaceJIT::regT3, T3_not_trampled_by_arg_1);
     COMPILE_ASSERT(ARM64Registers::x2 != JSInterfaceJIT::regT3, T3_not_trampled_by_arg_2);
 
-    // Load caller frame's scope chain into this callframe so that whatever we call can
-    // get to its global data.
-    jit.emitGetCallerFrameFromCallFrameHeaderPtr(ARM64Registers::x3);
-    jit.emitGetFromCallFrameHeaderPtr(JSStack::ScopeChain, JSInterfaceJIT::regT1, ARM64Registers::x3);
-    jit.emitPutCellToCallFrameHeader(JSInterfaceJIT::regT1, JSStack::ScopeChain);
-
     // Host function signature: f(ExecState*);
     jit.move(JSInterfaceJIT::callFrameRegister, ARM64Registers::x0);
 
@@ -346,11 +318,6 @@ static MacroAssemblerCodeRef nativeForGenerator(VM* vm, CodeSpecializationKind k
     jit.loadPtr(JSInterfaceJIT::Address(ARM64Registers::x1, JSFunction::offsetOfExecutable()), ARM64Registers::x2);
     jit.call(JSInterfaceJIT::Address(ARM64Registers::x2, executableOffsetToFunction));
 #elif CPU(ARM) || CPU(SH4) || CPU(MIPS)
-    // Load caller frame's scope chain into this callframe so that whatever we call can get to its global data.
-    jit.emitGetCallerFrameFromCallFrameHeaderPtr(JSInterfaceJIT::regT2);
-    jit.emitGetFromCallFrameHeaderPtr(JSStack::ScopeChain, JSInterfaceJIT::regT1, JSInterfaceJIT::regT2);
-    jit.emitPutCellToCallFrameHeader(JSInterfaceJIT::regT1, JSStack::ScopeChain);
-
 #if CPU(MIPS)
     // Allocate stack space for (unused) 16 bytes (8-byte aligned) for 4 arguments.
     jit.subPtr(JSInterfaceJIT::TrustedImm32(16), JSInterfaceJIT::stackPointerRegister);
@@ -805,6 +772,31 @@ double jsRound(double d)
     ); \
     extern "C" { \
         MathThunkCallingConvention function##Thunk(MathThunkCallingConvention); \
+    } \
+    static MathThunk UnaryDoubleOpWrapper(function) = &function##Thunk;
+
+#elif CPU(X86) && COMPILER(MSVC) && OS(WINDOWS)
+
+// MSVC does not accept floor, etc, to be called directly from inline assembly, so we need to wrap these functions.
+static double (_cdecl *floorFunction)(double) = floor;
+static double (_cdecl *ceilFunction)(double) = ceil;
+static double (_cdecl *expFunction)(double) = exp;
+static double (_cdecl *logFunction)(double) = log;
+static double (_cdecl *jsRoundFunction)(double) = jsRound;
+
+#define defineUnaryDoubleOpWrapper(function) \
+    extern "C" __declspec(naked) MathThunkCallingConvention function##Thunk(MathThunkCallingConvention) \
+    { \
+        __asm \
+        { \
+        __asm sub esp, 20 \
+        __asm movsd mmword ptr [esp], xmm0  \
+        __asm call function##Function \
+        __asm fstp qword ptr [esp] \
+        __asm movsd xmm0, mmword ptr [esp] \
+        __asm add esp, 20 \
+        __asm ret \
+        } \
     } \
     static MathThunk UnaryDoubleOpWrapper(function) = &function##Thunk;
 

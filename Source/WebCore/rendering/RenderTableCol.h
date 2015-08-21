@@ -35,8 +35,8 @@ class RenderTableCell;
 
 class RenderTableCol final : public RenderBox {
 public:
-    RenderTableCol(Element&, PassRef<RenderStyle>);
-    Element& element() const { return toElement(nodeForNonAnonymous()); }
+    RenderTableCol(Element&, Ref<RenderStyle>&&);
+    Element& element() const { return downcast<Element>(nodeForNonAnonymous()); }
 
     void clearPreferredLogicalWidthsDirtyBits();
 
@@ -75,11 +75,11 @@ public:
     virtual LayoutUnit offsetTop() const override;
     virtual LayoutUnit offsetWidth() const override;
     virtual LayoutUnit offsetHeight() const override;
+    virtual void updateFromElement() override;
 
 private:
     virtual const char* renderName() const override { return "RenderTableCol"; }
     virtual bool isRenderTableCol() const override { return true; }
-    virtual void updateFromElement() override;
     virtual void computePreferredLogicalWidths() override { ASSERT_NOT_REACHED(); }
 
     virtual void insertedIntoTree() override;
@@ -100,8 +100,8 @@ private:
     unsigned m_span;
 };
 
-RENDER_OBJECT_TYPE_CASTS(RenderTableCol, isRenderTableCol())
+} // namespace WebCore
 
-}
+SPECIALIZE_TYPE_TRAITS_RENDER_OBJECT(RenderTableCol, isRenderTableCol())
 
-#endif
+#endif // RenderTableCol_h

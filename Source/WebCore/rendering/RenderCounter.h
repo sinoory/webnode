@@ -43,9 +43,9 @@ public:
     void updateCounter();
 
 private:
-    virtual const char* renderName() const;
-    virtual bool isCounter() const;
-    virtual String originalText() const;
+    virtual const char* renderName() const override;
+    virtual bool isCounter() const override;
+    virtual String originalText() const override;
     
     virtual void computePreferredLogicalWidths(float leadWidth) override;
 
@@ -59,9 +59,9 @@ private:
     friend class CounterNode;
 };
 
-RENDER_OBJECT_TYPE_CASTS(RenderCounter, isCounter())
-
 } // namespace WebCore
+
+SPECIALIZE_TYPE_TRAITS_RENDER_OBJECT(RenderCounter, isCounter())
 
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.

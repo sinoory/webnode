@@ -34,8 +34,8 @@ static const unsigned maxRowIndex = 0x7FFFFFFE; // 2,147,483,646
 
 class RenderTableRow final : public RenderBox {
 public:
-    RenderTableRow(Element&, PassRef<RenderStyle>);
-    RenderTableRow(Document&, PassRef<RenderStyle>);
+    RenderTableRow(Element&, Ref<RenderStyle>&&);
+    RenderTableRow(Document&, Ref<RenderStyle>&&);
 
     RenderTableRow* nextRow() const;
     RenderTableRow* previousRow() const;
@@ -43,8 +43,7 @@ public:
     RenderTableCell* firstCell() const;
     RenderTableCell* lastCell() const;
 
-    RenderTableSection* section() const { return toRenderTableSection(parent()); }
-    RenderTable* table() const { return toRenderTable(parent()->parent()); }
+    RenderTable* table() const;
 
     void paintOutlineForRowIfNeeded(PaintInfo&, const LayoutPoint&);
 
@@ -71,7 +70,8 @@ public:
 
     const BorderValue& borderAdjoiningTableStart() const
     {
-        if (section()->hasSameDirectionAs(table()))
+        RenderTableSection* section = this->section();
+        if (section && section->hasSameDirectionAs(table()))
             return style().borderStart();
 
         return style().borderEnd();
@@ -79,7 +79,8 @@ public:
 
     const BorderValue& borderAdjoiningTableEnd() const
     {
-        if (section()->hasSameDirectionAs(table()))
+        RenderTableSection* section = this->section();
+        if (section && section->hasSameDirectionAs(table()))
             return style().borderEnd();
 
         return style().borderStart();
@@ -103,13 +104,15 @@ private:
     virtual void layout() override;
     virtual LayoutRect clippedOverflowRectForRepaint(const RenderLayerModelObject* repaintContainer) const override;
 
-    virtual bool requiresLayer() const override { return hasOverflowClip() || hasTransform() || hasHiddenBackface() || hasClipPath() || createsGroup() || isStickyPositioned(); }
+    virtual bool requiresLayer() const override { return hasOverflowClip() || hasTransformRelatedProperty() || hasHiddenBackface() || hasClipPath() || createsGroup() || isStickyPositioned(); }
 
     virtual void paint(PaintInfo&, const LayoutPoint&) override;
 
     virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) override;
 
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
+
+    RenderTableSection* section() const { return downcast<RenderTableSection>(parent()); }
 
     void firstChild() const = delete;
     void lastChild() const = delete;
@@ -119,28 +122,36 @@ private:
     unsigned m_rowIndex : 31;
 };
 
-RENDER_OBJECT_TYPE_CASTS(RenderTableRow, isTableRow())
+inline RenderTable* RenderTableRow::table() const
+{
+    RenderTableSection* section = this->section();
+    if (!section)
+        return nullptr;
+    return downcast<RenderTable>(section->parent());
+}
 
 inline RenderTableRow* RenderTableSection::firstRow() const
 {
-    return toRenderTableRow(RenderBox::firstChild());
+    return downcast<RenderTableRow>(RenderBox::firstChild());
 }
 
 inline RenderTableRow* RenderTableSection::lastRow() const
 {
-    return toRenderTableRow(RenderBox::lastChild());
+    return downcast<RenderTableRow>(RenderBox::lastChild());
 }
 
 inline RenderTableRow* RenderTableRow::nextRow() const
 {
-    return toRenderTableRow(RenderBox::nextSibling());
+    return downcast<RenderTableRow>(RenderBox::nextSibling());
 }
 
 inline RenderTableRow* RenderTableRow::previousRow() const
 {
-    return toRenderTableRow(RenderBox::previousSibling());
+    return downcast<RenderTableRow>(RenderBox::previousSibling());
 }
 
 } // namespace WebCore
+
+SPECIALIZE_TYPE_TRAITS_RENDER_OBJECT(RenderTableRow, isTableRow())
 
 #endif // RenderTableRow_h

@@ -61,7 +61,7 @@ fi
 
 if [ $INSTALL_DEP -eq 1 ];then
 	# ZRL install dependencies.
-	sudo apt-get install debhelper autoconf automake autopoint autotools-dev bison cmake flex gawk gnome-common gperf intltool itstool libatk1.0-dev libenchant-dev libfaad-dev libgeoclue-dev libgirepository1.0-dev libgl1-mesa-dev libgl1-mesa-glx libgnutls28-dev libcairo2-dev libgtk2.0-dev libgtk-3-dev libgudev-1.0-dev libharfbuzz-dev libicu-dev libgdk-pixbuf2.0-dev libjpeg8-dev libmpg123-dev libopus-dev libpango1.0-dev libpng12-dev libpulse-dev librsvg2-dev libsecret-1-dev libsoup2.4-dev libsqlite3-dev libtheora-dev libtool libvorbis-dev libwebp-dev libxcomposite-dev libxslt1-dev libxt-dev libxtst-dev ruby xfonts-utils git gobject-introspection icon-naming-utils libcroco3-dev libegl1-mesa-dev libp11-kit-dev libpciaccess-dev libffi-dev libxcb-xfixes0-dev libxfont-dev libxkbfile-dev llvm llvm-dev python-dev ragel x11proto-bigreqs-dev x11proto-composite-dev x11proto-gl-dev x11proto-input-dev x11proto-randr-dev x11proto-resource-dev x11proto-scrnsaver-dev x11proto-video-dev x11proto-xcmisc-dev x11proto-xf86dri-dev xfonts-utils xtrans-dev xutils-dev git-svn subversion ninja-build valac-0.20 librsvg2-bin libgcr-3-dev libnotify-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-0 libgstreamer1.0-0 libgstreamer-plugins-bad1.0-dev libgstreamer-plugins-good1.0-dev libgstreamer-plugins-good1.0-0 libgstreamer-plugins-bad1.0-0 libgstreamer-plugins-base1.0-dev libsoup-gnome2.4-dev libuchardet0 qtcreator qt-sdk libjson-c-dev gtk-doc-tools
+	sudo apt-get install debhelper autoconf automake autopoint autotools-dev bison cmake flex gawk gnome-common gperf intltool itstool libatk1.0-dev libenchant-dev libfaad-dev libgeoclue-dev libgirepository1.0-dev libgl1-mesa-dev libgl1-mesa-glx libgnutls28-dev libcairo2-dev libgtk2.0-dev libgtk-3-dev libgudev-1.0-dev libharfbuzz-dev libicu-dev libgdk-pixbuf2.0-dev libjpeg8-dev libmpg123-dev libopus-dev libpango1.0-dev libpng12-dev libpulse-dev librsvg2-dev libsecret-1-dev libsoup2.4-dev libsqlite3-dev libtheora-dev libtool libvorbis-dev libwebp-dev libxcomposite-dev libxslt1-dev libxt-dev libxtst-dev ruby xfonts-utils git gobject-introspection icon-naming-utils libcroco3-dev libegl1-mesa-dev libp11-kit-dev libpciaccess-dev libffi-dev libxcb-xfixes0-dev libxfont-dev libxkbfile-dev llvm llvm-dev python-dev ragel x11proto-bigreqs-dev x11proto-composite-dev x11proto-gl-dev x11proto-input-dev x11proto-randr-dev x11proto-resource-dev x11proto-scrnsaver-dev x11proto-video-dev x11proto-xcmisc-dev x11proto-xf86dri-dev xfonts-utils xtrans-dev xutils-dev git-svn subversion ninja-build valac-0.20 librsvg2-bin libgcr-3-dev libnotify-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-0 libgstreamer1.0-0 libgstreamer-plugins-bad1.0-dev libgstreamer-plugins-good1.0-dev libgstreamer-plugins-good1.0-0 libgstreamer-plugins-bad1.0-0 libgstreamer-plugins-base1.0-dev libsoup-gnome2.4-dev libuchardet0 qtcreator qt-sdk libssl-dev libtinfo5 libtinfo-dev libjson-c-dev gtk-doc-tools
 fi
 
 pushd $BUILD_PATH
@@ -95,10 +95,12 @@ if [ ${USE_32BITS} -eq 1 ]; then
 else
 #compile project on 64bits Linux machine
 	echo "-----------build 64 bits"
+	mkdir -p bin 
+
 	cd $ThirdParty_DIR
 	tar -zxvf openssl-1.0.0d.tar.gz && cd openssl-1.0.0d
 	./config shared && make && cd ../../../
-	mkdir lib 
+	mkdir -p lib 
 	cp -rf $ThirdParty_DIR/openssl-1.0.0d/lib*.so* ./lib
 	
 	cd $ThirdParty_DIR
@@ -106,6 +108,7 @@ else
 	cmake . && make && cd ../
 	cp -rf ./uchardet/src/lib*.so* ../../lib
 
+ 
 	tar -xvf libsoup-2.51.3.tar.xz && cd libsoup-2.51.3
 	./autogen.sh && make && cd ../
 	cp -rf ./libsoup-2.51.3/libsoup/.libs/lib*.so* ../../lib
@@ -118,8 +121,11 @@ else
 	tar -zxvf aria2-1.18.9.tar.gz && cd aria2-1.18.9
 	chmod +x configure && ./configure --enable-libaria2 && make
 	cp -rf ./src/.libs/libaria2.so* ../../../lib
-	make clean && cd ../../../
+	make clean && cd ../
 
+	tar -xvf llvm-3.6.1.src.tar.xz && mkdir -p llvmbuild && cd llvmbuild && cmake ../llvm-3.6.1.src && cmake --build .
+	cp -rf lib/lib*.a ../../../lib && cp -rf bin/llvm-config ../../../bin && cd ../../../
+     
 	cd ./Source && tar -zxvf Download.tar.gz && cd ../
 	cd $Download_DIR
 	cd ./client/wjson && make

@@ -7,7 +7,10 @@
 #  LLVM_INCLUDE_DIRS - include directories for the llvm headers.
 #  LLVM_STATIC_LIBRARIES - list of paths for the static llvm libraries.
 
-find_program(LLVM_CONFIG_EXE NAMES "llvm-config")
+# ZRL customizing for refering to internal llvm version
+
+#find_program(LLVM_CONFIG_EXE NAMES "llvm-config")
+set(LLVM_CONFIG_EXE "${CMAKE_SOURCE_DIR}/bin/llvm-config")
 
 execute_process(COMMAND ${LLVM_CONFIG_EXE} --version OUTPUT_VARIABLE LLVM_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND ${LLVM_CONFIG_EXE} --includedir OUTPUT_VARIABLE LLVM_INCLUDE_DIRS OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -16,8 +19,9 @@ execute_process(COMMAND ${LLVM_CONFIG_EXE} --libfiles OUTPUT_VARIABLE LLVM_STATI
 # convert the list of paths into a cmake list
 separate_arguments(LLVM_STATIC_LIBRARIES)
 
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(LLVM DEFAULT_MSG
-                                  LLVM_VERSION LLVM_INCLUDE_DIRS LLVM_STATIC_LIBRARIES)
+#include(FindPackageHandleStandardArgs)
+#find_package_handle_standard_args(LLVM DEFAULT_MSG
+#                                  LLVM_VERSION LLVM_INCLUDE_DIRS LLVM_STATIC_LIBRARIES)
+set(LLVM_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/Source/ThirdParty/llvm-3.6.1.src/include")
 
 mark_as_advanced(LLVM_VERSION LLVM_INCLUDE_DIRS LLVM_STATIC_LIBRARIES)

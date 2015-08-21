@@ -115,6 +115,7 @@ String ResourceResponse::platformSuggestedFilename() const
 {
     String contentDisposition(httpHeaderField(HTTPHeaderName::ContentDisposition));
     
+	//Only for cdos browser
     unsigned len = contentDisposition.length();
     const gchar* charset;
 
@@ -145,7 +146,6 @@ String ResourceResponse::platformSuggestedFilename() const
     
     return filenameFromHTTPContentDisposition(String::fromUTF8WithLatin1Fallback(contentDisposition.characters8(), contentDisposition.length()));
 }
-
 
 }
 

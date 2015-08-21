@@ -35,8 +35,8 @@ class HTMLMapElement;
 
 class RenderImage : public RenderReplaced {
 public:
-    RenderImage(Element&, PassRef<RenderStyle>, StyleImage* = nullptr, const float = 1.0f);
-    RenderImage(Document&, PassRef<RenderStyle>, StyleImage* = nullptr);
+    RenderImage(Element&, Ref<RenderStyle>&&, StyleImage* = nullptr, const float = 1.0f);
+    RenderImage(Document&, Ref<RenderStyle>&&, StyleImage* = nullptr);
     virtual ~RenderImage();
 
     RenderImageResource& imageResource() { return *m_imageResource; }
@@ -128,8 +128,8 @@ private:
     friend class RenderImageScaleObserver;
 };
 
-RENDER_OBJECT_TYPE_CASTS(RenderImage, isRenderImage())
-
 } // namespace WebCore
+
+SPECIALIZE_TYPE_TRAITS_RENDER_OBJECT(RenderImage, isRenderImage())
 
 #endif // RenderImage_h

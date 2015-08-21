@@ -33,10 +33,11 @@
 #include "Parser.h"
 #include <wtf/WTFThreadData.h>
 
-bool m_ObfuscateCodeSate=false;
+bool m_ObfuscateCodeSate=false;  //Only for cdos browser
 
 namespace JSC {
 
+//Only for cdos browser
 void setObfuscateCodeSate(bool obfuscateCodeSate)
 {
    m_ObfuscateCodeSate = obfuscateCodeSate;
@@ -62,8 +63,7 @@ bool checkSyntax(VM& vm, const SourceCode& source, ParserError& error)
 {
     JSLockHolder lock(vm);
     RELEASE_ASSERT(vm.atomicStringTable() == wtfThreadData().atomicStringTable());
-    RefPtr<ProgramNode> programNode = parse<ProgramNode>(&vm, source, 0, Identifier(), JSParseNormal, JSParseProgramCode, error);
-    return programNode;
+    return !!parse<ProgramNode>(&vm, source, 0, Identifier(), JSParseNormal, JSParseProgramCode, error);
 }
 
 JSValue evaluate(ExecState* exec, const SourceCode& source, JSValue thisValue, JSValue* returnedException)
