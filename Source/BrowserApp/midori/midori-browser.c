@@ -2922,6 +2922,7 @@ _action_open_activate (GtkAction*     action,
         GTK_WINDOW (browser), GTK_FILE_CHOOSER_ACTION_OPEN);
 
      /* base the start folder on the current view's uri if it is local */
+    /*
      view = midori_browser_get_current_tab (browser);
      if ((uri = (gchar*)midori_view_get_display_uri (MIDORI_VIEW (view))))
      {
@@ -2941,11 +2942,11 @@ _action_open_activate (GtkAction*     action,
              g_free (filename);
          }
      }
-
-     #if !GTK_CHECK_VERSION (3, 1, 10)
-     if (!folder_set && last_dir && *last_dir)
-         gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (dialog), last_dir);
-     #endif
+     */
+     //#if !GTK_CHECK_VERSION (3, 1, 10)
+     //if (!folder_set && last_dir && *last_dir)
+         gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (dialog), getenv("HOME"));
+     //#endif
 
      if (midori_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK)
      {
