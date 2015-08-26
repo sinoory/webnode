@@ -463,7 +463,7 @@
                     var imgSrc=it.find("img").attr("src");
                     if(imgSrc=="./loading.gif"){
                         var id=it.data("id");
-                        var newImg="./cdosbrowser-logo.png"
+                        var newImg="./loading.gif"
                         Storage.update("navItems",{key:"id",value:id},{photo:newImg},false);
                         it.find("img").attr("src",newImg);
                     }
