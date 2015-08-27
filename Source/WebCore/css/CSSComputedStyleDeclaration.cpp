@@ -1554,12 +1554,16 @@ static Ref<CSSPrimitiveValue> fontWeightFromStyle(RenderStyle* style)
         return cssValuePool().createIdentifierValue(CSSValue300);
     case FontWeightNormal:
         return cssValuePool().createIdentifierValue(CSSValueNormal);
-    case FontWeight500:
+    //add by luyue 2015/8/27 start
+//    case FontWeight500:
+//        return cssValuePool().createIdentifierValue(CSSValue500);
+    case FontWeightBold:
         return cssValuePool().createIdentifierValue(CSSValue500);
+    //add end
     case FontWeight600:
         return cssValuePool().createIdentifierValue(CSSValue600);
-    case FontWeightBold:
-        return cssValuePool().createIdentifierValue(CSSValueBold);
+    case FontWeight700:
+        return cssValuePool().createIdentifierValue(CSSValue700);
     case FontWeight800:
         return cssValuePool().createIdentifierValue(CSSValue800);
     case FontWeight900:

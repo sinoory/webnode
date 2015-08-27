@@ -55,7 +55,7 @@ enum FontWeight {
     FontWeight800,
     FontWeight900,
     FontWeightNormal = FontWeight400,
-    FontWeightBold = FontWeight700
+    FontWeightBold = FontWeight500
 };
 
 enum FontItalic {
