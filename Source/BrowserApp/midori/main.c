@@ -163,14 +163,6 @@ printf("main start time = %lld\n",g_get_real_time());
         webkit_web_context_set_process_model(context, WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_PROCESSES);
     }
 
-    //add by luyue 2015/8/13 start
-    //清空history.db-wal文件
-    //地址栏输入时，会crash.所以这里将临时文件删除。该文件如果不存在，会通过history.db生成
-    gchar* home = getenv("HOME");
-    gchar history_db_wal[2048];
-    g_sprintf(history_db_wal, "/bin/rm -rf %s/.config/cdosbrowser/history.db-wal", home);
-    system(history_db_wal);
-    
     if (debug)
     {
         gchar* gdb = g_find_program_in_path ("gdb");
