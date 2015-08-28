@@ -4121,7 +4121,7 @@ _action_location_secondary_icon_released (GtkAction*     action,
     KatzeItem* bookmark =  g_object_new (KATZE_TYPE_ITEM,NULL);
     katze_item_set_name (bookmark,
     midori_view_get_display_title (MIDORI_VIEW (view)));
-    if(strlen(midori_view_get_display_uri (MIDORI_VIEW (view))) == 0)
+    if(strstr (midori_view_get_display_uri (MIDORI_VIEW (view)), "speeddial-head.html"))
        katze_item_set_uri (bookmark,"about:dial");
     else
        katze_item_set_uri (bookmark, 
