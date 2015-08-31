@@ -1345,7 +1345,7 @@ midori_browser_edit_bookmark_dialog_new (MidoriBrowser* browser,
                 gtk_entry_get_text (GTK_ENTRY (entry_uri)));
         //add by luyue 2015/4/29 start
         //创建目录时，第一级目录不能重名
-        if(is_folder)
+        if(new_bookmark && is_folder)
         {
            GtkTreeModel* model = gtk_combo_box_get_model (GTK_COMBO_BOX (combo_folder));
            GtkTreeIter iter;
