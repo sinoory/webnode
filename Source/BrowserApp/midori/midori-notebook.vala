@@ -285,6 +285,7 @@ namespace Midori {
         public int have_arrow = 1;//-1 represents no arrows, 0 represents have arrows, 1 represents unknowned
         public bool  btn_end  = false;//false represents that button  is placed at the end,ture  first 
         public int size_width = 0;
+        Gtk.Widget box;
 #if !HAVE_GTK3
         static const string style_fixup = """
             style "midori-close-button-style"
@@ -370,9 +371,12 @@ namespace Midori {
             add_tab_btn.show_all ();
            // notebook.set_action_widget (add_tab_btn, Gtk.PackType.START);//modified by wangyl in 2015.5.18
            //modified by wangyl in 2015.5.18 start
-            notebook.add(add_tab_btn);
-	         Gtk.Widget  page = notebook.get_nth_page(-1);
-	         notebook.set_tab_label(page, add_tab_btn);
+            //notebook.add(add_tab_btn);
+	    //Gtk.Widget  page = notebook.get_nth_page(-1);
+	    //notebook.set_tab_label(page, add_tab_btn);
+            box =  new Gtk.HBox(false,0);
+            notebook.append_page(box, add_tab_btn);
+            box.show_all(); 
           //modified by wangyl in 2015.5.18  end
             add_tab_btn.clicked.connect (()=>{
                 new_tab ();
@@ -806,9 +810,10 @@ int  is_arrrow_appear(Gtk.Allocation allocation,int page_n)
 	   }
            if(have_arrow == -1){
             notebook.set_action_widget(null, Gtk.PackType.END);
-            notebook.add(add_tab_btn);
-            Gtk.Widget last_page = notebook.get_nth_page(-1);
-            notebook.set_tab_label(last_page, add_tab_btn);
+            //notebook.add(add_tab_btn);
+            //Gtk.Widget last_page = notebook.get_nth_page(-1);
+            //notebook.set_tab_label(last_page, add_tab_btn);
+            notebook.append_page(box, add_tab_btn);
             btn_end  = false;         
                    		} 
  //modified by wangyl in 2015.5.18 end 
@@ -826,7 +831,7 @@ int  is_arrrow_appear(Gtk.Allocation allocation,int page_n)
 #endif 
             var n_page = notebook.get_n_pages();  	 
 	    if(n_page == 1)return;
-	    if(new_index + 1 ==n_page)new_tab_s  =   notebook.get_nth_page((int)new_index - 1); 
+	    if(new_index + 1 ==n_page && btn_end == false)new_tab_s = notebook.get_nth_page((int)new_index - 1); 
             tab_switched (previous, new_tab_s as Tab);
             previous = (Midori.Tab)new_tab_s;
             notify["index"].disconnect (index_changed);
@@ -849,9 +854,10 @@ int  is_arrrow_appear(Gtk.Allocation allocation,int page_n)
           
             if(page_n == new_index + 1 && btn_end == false) {
                 notebook.remove_page(page_n - 2);
-                notebook.add(add_tab_btn);
-                Gtk.Widget page = notebook.get_nth_page(-1);
-                notebook.set_tab_label(page, add_tab_btn);
+                //notebook.add(add_tab_btn);
+                //Gtk.Widget page = notebook.get_nth_page(-1);
+                //notebook.set_tab_label(page, add_tab_btn);
+                notebook.append_page(box, add_tab_btn);
             }
  //modified by wangyl in 2015.5.18 end 
         }
