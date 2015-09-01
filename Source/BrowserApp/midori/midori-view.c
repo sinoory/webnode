@@ -2178,12 +2178,43 @@ midori_view_apply_scroll_position (MidoriView* view)
     }
 }
 
+
+DIR *dir = NULL;
+struct dirent *ptr=NULL;
+char cavas_path[512]={0};
+
 static void
 midori_view_load_finished (MidoriView* view)
 {
     midori_view_apply_scroll_position (view);
     midori_tab_set_progress (MIDORI_TAB (view), 1.0);
     midori_view_update_load_status (view, MIDORI_LOAD_FINISHED);
+
+    gchar* home = getenv("HOME");
+    gchar tmp_file[2048];
+    g_sprintf(tmp_file, "%s/.config/cdosbrowser/tmp.txt", home);
+    if(g_access(tmp_file, F_OK))
+       return;
+    char *path;
+    if(strlen(cavas_path)==0)
+    {
+       strcpy(cavas_path,midori_paths_get_res_dir());
+       strcat(cavas_path,"/bitmap_html/");
+    }
+    if(dir ==NULL)
+       dir=opendir(cavas_path);
+    while((ptr=readdir(dir))!=NULL)
+    {
+       if((strcmp(ptr->d_name,".")==0) || (strcmp(ptr->d_name,"..")==0))
+          continue;
+       path=(char *)malloc(strlen(ptr->d_name)+strlen(cavas_path)+1);
+       strcpy(path,cavas_path);
+       strcat(path,ptr->d_name);
+       midori_view_set_uri(view,path);
+       free(path);
+       path=NULL;
+       break;
+    }
 }
 
 static void
