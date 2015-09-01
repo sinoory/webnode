@@ -128,7 +128,6 @@ set(WebCore_INCLUDE_DIRECTORIES
     "${CMAKE_SOURCE_DIR}/Source"
     "${CMAKE_BINARY_DIR}"
     "${THIRDPARTY_DIR}"
-    "${THIRDPARTY_DIR}/uchardet"
 )
 
 set(WebCore_IDL_INCLUDES
@@ -3490,13 +3489,6 @@ endif ()
 add_library(WebCoreTestSupport ${WebCoreTestSupport_LIBRARY_TYPE} ${WebCoreTestSupport_SOURCES})
 target_link_libraries(WebCoreTestSupport ${WebCoreTestSupport_LIBRARIES})
 set_target_properties(WebCoreTestSupport PROPERTIES FOLDER "WebCore")
-
-#target_link_libraries(WebCore "-Wl,--whole-archive ../../lib/libuchardet.so.0.0.0 -Wl,--no-whole-archive")
-if(USE_64BITS)
-    target_link_libraries(WebCore "-Wl,--whole-archive ../../lib/libuchardet.so.0.0.0 -Wl,--no-whole-archive")
-else()
-    target_link_libraries(WebCore "-Wl,--whole-archive ../../lib/libuchardet.a -Wl,--no-whole-archive")
-endif()
 
 if (WebCoreTestSupport_OUTPUT_NAME)
     set_target_properties(WebCoreTestSupport PROPERTIES OUTPUT_NAME ${WebCoreTestSupport_OUTPUT_NAME})

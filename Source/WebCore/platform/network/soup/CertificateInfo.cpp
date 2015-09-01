@@ -31,8 +31,7 @@
 
 #include <ResourceError.h>
 #include <ResourceResponse.h>
-//#include <libsoup/soup.h>
-#include "libsoup/soup.h"
+#include <libsoup/soup.h>
 namespace WebCore {
 
 CertificateInfo::CertificateInfo()

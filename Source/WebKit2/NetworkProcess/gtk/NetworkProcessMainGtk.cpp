@@ -32,8 +32,7 @@
 #include "ChildProcessMain.h"
 #include "NetworkProcess.h"
 #include <WebCore/SoupNetworkSession.h>
-//#include <libsoup/soup.h>
-#include "libsoup/soup.h"
+#include <libsoup/soup.h>
 
 using namespace WebCore;
 

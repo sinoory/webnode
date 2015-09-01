@@ -84,11 +84,6 @@ if [ ${USE_32BITS} -eq 1 ]; then
 	mkdir lib 
 	cp -rf $ThirdParty_DIR/openssl-1.0.0d/lib*.a ./lib
 
-	cd $ThirdParty_DIR
-	tar -zxvf uchardet.tar.gz && cd uchardet
-	cmake . && make && cd ../../../
-	mkdir -p lib 
-	cp -rf $ThirdParty_DIR/uchardet/src/lib*.a ./lib
 	
 	echo "build release version start..." && sleep 3
 	cmake -DUSE_32BITS=1 -DPORT=GTK -DAPP_DEBUG=ON -DDEVELOPER_MODE=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_SKIP_BUILD_RPATH=FALSE -DCMAKE_BUILD_WITH_INSTALL_RPATH=FALSE -DCOMPILE_MODE=OFF -DENABLE_MIDORI=$BUILD_MIDORI && make -j${CPU_NUM} && echo ******build release SUCCESS********
@@ -104,15 +99,6 @@ else
 	cp -rf $ThirdParty_DIR/openssl-1.0.0d/lib*.so* ./lib
 	
 	cd $ThirdParty_DIR
-	tar -zxvf uchardet.tar.gz && cd uchardet
-	cmake . && make && cd ../
-	cp -rf ./uchardet/src/lib*.so* ../../lib
-
- 
-	tar -xvf libsoup-2.51.3.tar.xz && cd libsoup-2.51.3
-	./autogen.sh && make && cd ../
-	cp -rf ./libsoup-2.51.3/libsoup/.libs/lib*.so* ../../lib
-
 	tar -zxvf uci.tar.gz && cd uci
 	make
 	cp -rf ./libuci.so* ../../../lib

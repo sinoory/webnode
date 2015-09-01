@@ -36,8 +36,7 @@
 #include <WebCore/NotImplemented.h>
 #include <WebCore/ResourceHandle.h>
 #include <WebCore/SoupNetworkSession.h>
-//#include <libsoup/soup.h>
-#include "libsoup/soup.h"
+#include <libsoup/soup.h>
 #include <wtf/gobject/GRefPtr.h>
 #include <wtf/gobject/GUniquePtr.h>
 

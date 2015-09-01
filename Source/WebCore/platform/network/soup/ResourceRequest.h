@@ -29,8 +29,7 @@
 
 #include "GUniquePtrSoup.h"
 #include "ResourceRequestBase.h"
-//#include <libsoup/soup.h>
-#include "libsoup/soup.h"
+#include <libsoup/soup.h>
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

@@ -22,8 +22,7 @@
 
 #include "CustomProtocolManagerImpl.h"
 #include <glib-object.h>
-//#include <libsoup/soup.h>
-#include "libsoup/soup.h"
+#include <libsoup/soup.h>
 
 G_BEGIN_DECLS
 
