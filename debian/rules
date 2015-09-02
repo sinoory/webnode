@@ -64,7 +64,7 @@ install: build
 ifeq ($(DEB_BUILD_ARCH_BITS),64)
 	cp -f $(SRC_DIR)/lib/libssl.so* $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
 	cp -f $(SRC_DIR)/lib/libcrypto.so* $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
-        cp -f $(SRC_DIR)/lib/libcurl.so* $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
+	cp -f $(SRC_DIR)/lib/libcurl.so* $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
 	cp -f $(SRC_DIR)/lib/libuci.so* $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
 	cp -f $(SRC_DIR)/lib/libaria2.so* $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
 	cp -f $(SRC_DIR)/bin/cdosbrowser_download $(INSTALL_DIR1)/
