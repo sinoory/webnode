@@ -28,9 +28,9 @@ build: build-stamp
 
 build_thirdparty:
 ifeq ($(DEB_BUILD_ARCH_BITS),32)
-	echo "------------Build $(DEB_BUILD_ARCH_BITS) bits" && mkdir -p $(SRC_DIR)/lib && cd $(ThirdParty_DIR) && tar -zxvf openssl-1.0.0d.tar.gz && cd $(ThirdParty_DIR)/openssl-1.0.0d && ./config && make && cd $(SRC_DIR) && cp -rf $(ThirdParty_DIR)/openssl-1.0.0d/lib*.a $(SRC_DIR)/lib
+	echo "------------Build $(DEB_BUILD_ARCH_BITS) bits" && mkdir -p $(SRC_DIR)/lib && cd $(ThirdParty_DIR) && tar -zxvf gyyssl-0.1.0.tar.gz && cd gyyssl-0.1.0 && ./configure --libdir=/usr/local/lib/cdosbrowser/ && make && cd $(SRC_DIR) && cp -rf $(ThirdParty_DIR)/gyyssl-0.1.0/ssl/.libs/lib*.a $(SRC_DIR)/lib && cp -rf $(ThirdParty_DIR)/gyyssl-0.1.0/crypto/.libs/lib*.a $(SRC_DIR)/lib
 else
-	echo "------------Build $(DEB_BUILD_ARCH_BITS) bits" && mkdir -p $(SRC_DIR)/lib && cd $(ThirdParty_DIR) && tar -zxvf openssl-1.0.0d.tar.gz && cd $(ThirdParty_DIR)/openssl-1.0.0d && ./config shared && make && cd $(SRC_DIR) && cp $(ThirdParty_DIR)/openssl-1.0.0d/libcrypto.so.1.0.0 $(SRC_DIR)/lib && cp $(ThirdParty_DIR)/openssl-1.0.0d/libssl.so.1.0.0 $(SRC_DIR)/lib && cd $(ThirdParty_DIR) && tar -zxvf uci.tar.gz && cd $(ThirdParty_DIR)/uci && make && cd $(SRC_DIR) && cp -rf $(ThirdParty_DIR)/uci/libuci.so* $(SRC_DIR)/lib && cd $(ThirdParty_DIR) && tar -zxvf aria2-1.18.9.tar.gz && cd $(ThirdParty_DIR)/aria2-1.18.9 && chmod +x configure && ./configure --enable-libaria2 && make && cd $(SRC_DIR) && cp -rf $(ThirdParty_DIR)/aria2-1.18.9/src/.libs/libaria2.so* $(SRC_DIR)/lib && cd $(ThirdParty_DIR) && tar -xvf llvm-3.6.1.src.tar.xz && mkdir -p llvmbuild && cd llvmbuild && cmake ../llvm-3.6.1.src && cmake --build .&& cd $(SRC_DIR) && mkdir -p $(SRC_DIR)/bin && cp -rf $(ThirdParty_DIR)/llvmbuild/lib/lib*.a $(SRC_DIR)/lib && cp -rf $(ThirdParty_DIR)/llvmbuild/bin/llvm-config $(SRC_DIR)/bin && cd ./Source && tar -zxvf Download.tar.gz && cd $(SRC_DIR) && cd $(Download_DIR)/client/wjson && make && cd $(SRC_DIR) && cd $(Download_DIR)/client/ && make && cd $(SRC_DIR) && cp -rf $(Download_DIR)/client/*.a $(SRC_DIR)/lib && cd $(Download_DIR)/release/ && make && make clean && cd $(SRC_DIR) && cp -rf $(Download_DIR)/release/cdosbrowser_download $(SRC_DIR)/bin
+	echo "------------Build $(DEB_BUILD_ARCH_BITS) bits" && mkdir -p $(SRC_DIR)/lib && cd $(ThirdParty_DIR) && tar -zxvf gyyssl-0.1.0.tar.gz && cd gyyssl-0.1.0 && ./configure --libdir=/usr/local/lib/cdosbrowser/ && make && cd $(SRC_DIR) && cp -rf $(ThirdParty_DIR)/gyyssl-0.1.0/ssl/.libs/lib*.so* $(SRC_DIR)/lib && cp -rf $(ThirdParty_DIR)/gyyssl-0.1.0/crypto/.libs/lib*.so* $(SRC_DIR)/lib && cd $(ThirdParty_DIR) && tar -zxvf curl-7.44.0.tar.gz && cd curl-7.44.0 && cmake . && make && cd $(SRC_DIR) && cp -rf $(ThirdParty_DIR)/curl-7.44.0/.libs/lib*.so* $(SRC_DIR)/lib && cd $(ThirdParty_DIR) && tar -zxvf uci.tar.gz && cd uci && make && cd $(SRC_DIR) && cp -rf $(ThirdParty_DIR)/uci/libuci.so* $(SRC_DIR)/lib && cd $(ThirdParty_DIR) && tar -zxvf aria2-1.18.9.tar.gz && cd aria2-1.18.9 && chmod +x configure && ./configure --enable-libaria2 && make && cd $(SRC_DIR) && cp -rf $(ThirdParty_DIR)/aria2-1.18.9/src/.libs/libaria2.so* $(SRC_DIR)/lib && cd $(ThirdParty_DIR) && tar -xvf llvm-3.6.1.src.tar.xz && mkdir -p llvmbuild && cd llvmbuild && cmake ../llvm-3.6.1.src && cmake --build .&& cd $(SRC_DIR) && mkdir -p $(SRC_DIR)/bin && cp -rf $(ThirdParty_DIR)/llvmbuild/lib/lib*.a $(SRC_DIR)/lib && cp -rf $(ThirdParty_DIR)/llvmbuild/bin/llvm-config $(SRC_DIR)/bin && cd ./Source && tar -zxvf Download.tar.gz && cd $(SRC_DIR) && cd $(Download_DIR)/client/wjson && make && cd ../ && make && cd $(SRC_DIR) && cp -rf $(Download_DIR)/client/*.a $(SRC_DIR)/lib && cd $(Download_DIR)/release/ && make && make clean && cd $(SRC_DIR) && cp -rf $(Download_DIR)/release/cdosbrowser_download $(SRC_DIR)/bin
 endif
 
 # cmake config for webkit project
@@ -62,13 +62,11 @@ install: build
 	dh_clean -k 
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp
 ifeq ($(DEB_BUILD_ARCH_BITS),64)
-#	cp -f $(SRC_DIR)/lib/libssl.so.1.0.0 $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
-#	cp -f $(SRC_DIR)/lib/libcrypto.so.1.0.0 $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
-#	cp -f $(SRC_DIR)/lib/libuchardet.so.0.0.0 $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
-	cp -f $(SRC_DIR)/lib/libuci.so.0.8 $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
-	cp -f $(SRC_DIR)/lib/libaria2.so.0.0.0 $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
-	cp -f $(SRC_DIR)/lib/libaria2.so.0 $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
-#	cp -f $(SRC_DIR)/lib/libsoup*.so* $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
+	cp -f $(SRC_DIR)/lib/libssl.so* $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
+	cp -f $(SRC_DIR)/lib/libcrypto.so* $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
+        cp -f $(SRC_DIR)/lib/libcurl.so* $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
+	cp -f $(SRC_DIR)/lib/libuci.so* $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
+	cp -f $(SRC_DIR)/lib/libaria2.so* $(INSTALL_DIR)/lib/$(DEBIAN_NAME)/
 	cp -f $(SRC_DIR)/bin/cdosbrowser_download $(INSTALL_DIR1)/
 endif
 

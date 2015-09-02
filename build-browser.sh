@@ -61,7 +61,7 @@ fi
 
 if [ $INSTALL_DEP -eq 1 ];then
 	# ZRL install dependencies.
-	sudo apt-get install debhelper autoconf automake autopoint autotools-dev bison cmake flex gawk gnome-common gperf intltool itstool libatk1.0-dev libenchant-dev libfaad-dev libgeoclue-dev libgirepository1.0-dev libgl1-mesa-dev libgl1-mesa-glx libgnutls28-dev libcairo2-dev libgtk2.0-dev libgtk-3-dev libgudev-1.0-dev libharfbuzz-dev libicu-dev libgdk-pixbuf2.0-dev libjpeg8-dev libmpg123-dev libopus-dev libpango1.0-dev libpng12-dev libpulse-dev librsvg2-dev libsecret-1-dev libsoup2.4-dev libsqlite3-dev libtheora-dev libtool libvorbis-dev libwebp-dev libxcomposite-dev libxslt1-dev libxt-dev libxtst-dev ruby xfonts-utils git gobject-introspection icon-naming-utils libcroco3-dev libegl1-mesa-dev libp11-kit-dev libpciaccess-dev libffi-dev libxcb-xfixes0-dev libxfont-dev libxkbfile-dev llvm llvm-dev python-dev ragel x11proto-bigreqs-dev x11proto-composite-dev x11proto-gl-dev x11proto-input-dev x11proto-randr-dev x11proto-resource-dev x11proto-scrnsaver-dev x11proto-video-dev x11proto-xcmisc-dev x11proto-xf86dri-dev xfonts-utils xtrans-dev xutils-dev git-svn subversion ninja-build valac-0.20 librsvg2-bin libgcr-3-dev libnotify-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-0 libgstreamer1.0-0 libgstreamer-plugins-bad1.0-dev libgstreamer-plugins-good1.0-dev libgstreamer-plugins-good1.0-0 libgstreamer-plugins-bad1.0-0 libgstreamer-plugins-base1.0-dev libsoup-gnome2.4-dev libuchardet0 qtcreator qt-sdk libssl-dev libtinfo5 libtinfo-dev libjson-c-dev gtk-doc-tools
+	sudo apt-get install debhelper autoconf automake autopoint autotools-dev bison cmake flex gawk gnome-common gperf intltool itstool libatk1.0-dev libenchant-dev libfaad-dev libgeoclue-dev libgirepository1.0-dev libgl1-mesa-dev libgl1-mesa-glx libcairo2-dev libgtk2.0-dev libgtk-3-dev libgudev-1.0-dev libharfbuzz-dev libicu-dev libgdk-pixbuf2.0-dev libjpeg8-dev libmpg123-dev libopus-dev libpango1.0-dev libpng12-dev libpulse-dev librsvg2-dev libsecret-1-dev libsoup2.4-dev libsqlite3-dev libtheora-dev libtool libvorbis-dev libwebp-dev libxcomposite-dev libxslt1-dev libxt-dev libxtst-dev ruby xfonts-utils git gobject-introspection icon-naming-utils libcroco3-dev libegl1-mesa-dev libp11-kit-dev libpciaccess-dev libffi-dev libxcb-xfixes0-dev libxfont-dev libxkbfile-dev llvm llvm-dev python-dev ragel x11proto-bigreqs-dev x11proto-composite-dev x11proto-gl-dev x11proto-input-dev x11proto-randr-dev x11proto-resource-dev x11proto-scrnsaver-dev x11proto-video-dev x11proto-xcmisc-dev x11proto-xf86dri-dev xfonts-utils xtrans-dev xutils-dev git-svn subversion ninja-build valac-0.20 librsvg2-bin libgcr-3-dev libnotify-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-0 libgstreamer1.0-0 libgstreamer-plugins-bad1.0-dev libgstreamer-plugins-good1.0-dev libgstreamer-plugins-good1.0-0 libgstreamer-plugins-bad1.0-0 libgstreamer-plugins-base1.0-dev libsoup-gnome2.4-dev libuchardet0 qtcreator qt-sdk libtinfo5 libtinfo-dev libjson-c-dev gtk-doc-tools libuchardet-dev
 fi
 
 pushd $BUILD_PATH
@@ -79,10 +79,11 @@ case $1 in
 if [ ${USE_32BITS} -eq 1 ]; then
 	echo "------------build 32 bits"
 	cd $ThirdParty_DIR
-	tar -zxvf openssl-1.0.0d.tar.gz && cd openssl-1.0.0d
-	./config && make && cd ../../../
+	tar -zxvf gyyssl-0.1.0.tar.gz && cd gyyssl-0.1.0
+	./configure --libdir=/usr/local/lib/cdosbrowser/ && make && cd ../../../
 	mkdir lib 
-	cp -rf $ThirdParty_DIR/openssl-1.0.0d/lib*.a ./lib
+	cp -rf $ThirdParty_DIR/gyyssl-0.1.0/ssl/.libs/lib*.a ./lib
+	cp -rf $ThirdParty_DIR/gyyssl-0.1.0/crypto/.libs/lib*.a ./lib
 
 	
 	echo "build release version start..." && sleep 3
@@ -93,12 +94,18 @@ else
 	mkdir -p bin 
 
 	cd $ThirdParty_DIR
-	tar -zxvf openssl-1.0.0d.tar.gz && cd openssl-1.0.0d
-	./config shared && make && cd ../../../
+	tar -zxvf gyyssl-0.1.0.tar.gz && cd gyyssl-0.1.0
+	./configure --libdir=/usr/local/lib/cdosbrowser/ && make && cd ../../../
 	mkdir -p lib 
-	cp -rf $ThirdParty_DIR/openssl-1.0.0d/lib*.so* ./lib
-	
+	cp -rf $ThirdParty_DIR/gyyssl-0.1.0/ssl/.libs/*.so* ./lib
+	cp -rf $ThirdParty_DIR/gyyssl-0.1.0/crypto/.libs/*.so* ./lib
+
 	cd $ThirdParty_DIR
+        tar -zxvf curl-7.44.0.tar.gz && cd curl-7.44.0
+        cmake . && make
+        cp -rf ./lib/libcurl.so* ../../../lib
+        cd ../
+
 	tar -zxvf uci.tar.gz && cd uci
 	make
 	cp -rf ./libuci.so* ../../../lib
@@ -127,9 +134,11 @@ else
 	cmake -DUSE_64BITS=1 -DPORT=GTK -DAPP_DEBUG=ON -DDEVELOPER_MODE=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_SKIP_BUILD_RPATH=FALSE -DCMAKE_BUILD_WITH_INSTALL_RPATH=FALSE -DCOMPILE_MODE=OFF -DENABLE_MIDORI=$BUILD_MIDORI && make -j${CPU_NUM} && echo ******build release SUCCESS********
 	cp $Download_DIR/release/cdosbrowser_download ./bin
 	sudo mkdir -p /usr/local/lib/cdosbrowser && sudo cp ./lib/libaria2.so.0.0.0 /usr/local/lib/cdosbrowser
-	sudo cp ./lib/libuci.so.0.8 /usr/local/lib/cdosbrowser
-	sudo cp ./lib/libaria2.so.0.0.0 /usr/local/lib/cdosbrowser/libaria2.so.0
-	sudo cp ./lib/libsoup*.so* /usr/local/lib/cdosbrowser/
+	sudo cp ./lib/libuci.so* /usr/local/lib/cdosbrowser/
+	sudo cp ./lib/libaria2.so* /usr/local/lib/cdosbrowser/
+        sudo cp ./lib/libssl*.so* /usr/local/lib/cdosbrowser/
+        sudo cp ./lib/libcrypto*.so* /usr/local/lib/cdosbrowser/
+	sudo cp ./lib/libcurl.so* /usr/local/lib/cdosbrowser/
 	sudo mkdir -p /usr/local/libexec/cdosbrowser && sudo cp ./bin/cdosbrowser_download /usr/local/libexec/cdosbrowser
 fi
 	;;

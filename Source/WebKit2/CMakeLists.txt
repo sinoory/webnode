@@ -734,6 +734,7 @@ set(WebKit2_LIBRARIES
     WebCore
 
     Chromium  # ZRL add Chromium dependence lib.
+    uchardet
 )
 
 set(PluginProcess_LIBRARIES
@@ -775,8 +776,8 @@ set_target_properties(WebKit2 PROPERTIES INSTALL_RPATH "${BROWSER_LIB_INSTALL_DI
 
 # add OpenSSL libs by luyue
 if(USE_64BITS)
-    target_link_libraries(WebKit2 "-Wl,--whole-archive ../../lib/libcrypto.so.1.0.0 -Wl,--no-whole-archive")
-    target_link_libraries(WebKit2 "-Wl,--whole-archive ../../lib/libssl.so.1.0.0 -Wl,--no-whole-archive")
+    target_link_libraries(WebKit2 "-Wl,--whole-archive ../../lib/libcrypto.so.0.0.0 -Wl,--no-whole-archive")
+    target_link_libraries(WebKit2 "-Wl,--whole-archive ../../lib/libssl.so.0.0.1 -Wl,--no-whole-archive")
 else()
     target_link_libraries(WebKit2 "-Wl,--whole-archive ../../lib/libcrypto.a -Wl,--no-whole-archive")
     target_link_libraries(WebKit2 "-Wl,--whole-archive ../../lib/libssl.a -Wl,--no-whole-archive")

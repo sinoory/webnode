@@ -31,8 +31,7 @@
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/WTFString.h>
 #include "TextEncoding.h"
-//#include "../../../../ThirdParty/uchardet/src/uchardet.h"
-#include "uchardet/src/uchardet.h"
+#include <uchardet/uchardet.h>
 
 
 

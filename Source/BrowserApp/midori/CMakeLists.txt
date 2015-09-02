@@ -47,8 +47,8 @@ add_dependencies(${LIBMIDORI} WebKit2)
 if(USE_64BITS)
 #if(BOOKMARK_SYNC)
 #else()
-    target_link_libraries(${LIBMIDORI} "-Wl,--whole-archive ../../../lib/libcrypto.so.1.0.0 -Wl,--no-whole-archive")
-    target_link_libraries(${LIBMIDORI} "-Wl,--whole-archive ../../../lib/libssl.so.1.0.0 -Wl,--no-whole-archive")
+    target_link_libraries(${LIBMIDORI} "-Wl,--whole-archive ../../../lib/libcrypto.so.0.0.0 -Wl,--no-whole-archive")
+    target_link_libraries(${LIBMIDORI} "-Wl,--whole-archive ../../../lib/libssl.so.0.0.1 -Wl,--no-whole-archive")
 #endif()
 endif()
 include_directories(
@@ -92,7 +92,7 @@ include_directories(
                     ${DEPS_INCLUDE_DIRS}
                     ${OPTS_INCLUDE_DIRS}
                     #add openssl path by luyue
-                    ${CMAKE_SOURCE_DIR}/Source/ThirdParty/openssl-1.0.0d/include
+                    ${CMAKE_SOURCE_DIR}/Source/ThirdParty/gyyssl-0.1.0/include
 #if(BOOKMARK_SYNC)
 #                    ${CMAKE_SOURCE_DIR}/Source/ThirdParty/account/include
 #endif()
