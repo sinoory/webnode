@@ -149,6 +149,16 @@ void InjectedBundlePageFormClient::willSendSubmitEvent(WebPage* page, HTMLFormEl
     m_client.willSendSubmitEvent(toAPI(page), form_node, toAPI(frame), toAPI(sourceFrame), toAPI(textFieldsMap.get()), m_client.base.clientInfo);
 }
 
+#if 1//lxx, 20150816+
+void InjectedBundlePageFormClient::willSendUsernamePasswordStoreEvent()
+{
+	    printf("InjectedBundlePageFormClient::willSendUsernamePasswordStoreEvent\n");
+		    if (!m_client.willSendUsernamePasswordStoreEvent)
+				                    return;
+			            m_client.willSendUsernamePasswordStoreEvent();
+}
+#endif//lxx, 20150816-
+
 void InjectedBundlePageFormClient::willSubmitForm(WebPage* page, HTMLFormElement* formElement, WebFrame* frame, WebFrame* sourceFrame, const Vector<std::pair<String, String>>& values, RefPtr<API::Object>& userData)
 {
     if (!m_client.willSubmitForm)

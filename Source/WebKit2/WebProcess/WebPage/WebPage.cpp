@@ -1077,6 +1077,15 @@ void WebPage::loadURLInFrame(const String& url, uint64_t frameID)
     frame->coreFrame()->loader().load(FrameLoadRequest(frame->coreFrame(), ResourceRequest(URL(URL(), url))));
 }
 
+#if 1
+void WebPage::usernamePasswordSave()
+{
+	    printf("WebPage::usernamePasswordSave\n");
+		        injectedBundleFormClient().willSendUsernamePasswordStoreEvent();
+
+}
+#endif
+
 void WebPage::loadRequest(uint64_t navigationID, const ResourceRequest& request, const SandboxExtension::Handle& sandboxExtensionHandle, const UserData& userData)
 {
     SendStopResponsivenessTimer stopper(this);

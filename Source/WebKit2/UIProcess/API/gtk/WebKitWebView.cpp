@@ -2150,6 +2150,14 @@ static void waitForMainResourceResponseIfWaitingForResource(WebKitWebView* webVi
         g_signal_connect(priv->mainResource.get(), "notify::response", G_CALLBACK(mainResourceResponseChangedCallback), webView);
 }
 
+/*lxx add for username password save*/
+void webkit_web_view_new_username_password_save(WebKitWebView *webView)
+{
+	        g_return_if_fail(WEBKIT_IS_WEB_VIEW(webView));
+			            g_print("webkit_web_view_new_username_password_save\n");
+						                getPage(webView)->usernamePasswordSave();
+}
+
 void webkitWebViewResourceLoadStarted(WebKitWebView* webView, WebFrameProxy* frame, uint64_t resourceIdentifier, WebKitURIRequest* request)
 {
     WebKitWebViewPrivate* priv = webView->priv;

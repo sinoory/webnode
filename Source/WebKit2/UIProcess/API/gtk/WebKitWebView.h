@@ -286,6 +286,9 @@ struct _WebKitWebViewClass {
 WEBKIT_API GType
 webkit_web_view_get_type                             (void);
 
+WEBKIT_API void
+webkit_web_view_new_username_password_save                          (WebKitWebView             *web_view);
+
 WEBKIT_API GtkWidget *
 webkit_web_view_new                                  (void);
 

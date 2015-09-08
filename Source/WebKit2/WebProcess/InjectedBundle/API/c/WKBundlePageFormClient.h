@@ -37,6 +37,7 @@ typedef void (*WKBundlePageTextDidChangeInTextAreaCallback)(WKBundlePageRef page
 typedef bool (*WKBundlePageShouldPerformActionInTextFieldCallback)(WKBundlePageRef page, WKBundleNodeHandleRef htmlInputElementHandle, WKInputFieldActionType actionType, WKBundleFrameRef frame, const void* clientInfo);
 typedef void (*WKBundlePageWillSubmitFormCallback)(WKBundlePageRef page, WebKitDOMHTMLFormElement * form, WKBundleFrameRef frame, WKBundleFrameRef sourceFrame, WKDictionaryRef values, WKTypeRef* userData, const void* clientInfo);
 typedef void (*WKBundlePageWillSendSubmitEventCallback)(WKBundlePageRef page, WebKitDOMHTMLFormElement * form, WKBundleFrameRef frame, WKBundleFrameRef sourceFrame, WKDictionaryRef values, const void* clientInfo);
+typedef void (*WKBundlePageWillSendUsernamePasswordStoreEventCallback)();//lxx, 20150816
 typedef void (*WKBundlePageDidFocusTextFieldCallback)(WKBundlePageRef page, WebKitDOMHTMLInputElement * inputElement, WKBundleFrameRef frame, const void* clientInfo);
 typedef bool (*WKBundlePageShouldNotifyOnFormChangesCallback)(WKBundlePageRef page, const void* clientInfo);
 typedef void (*WKBundlePageDidAssociateFormControlsCallback)(WKBundlePageRef page, WKArrayRef elementHandles, const void* clientInfo);
@@ -56,6 +57,7 @@ typedef struct WKBundlePageFormClientV0 {
     WKBundlePageTextDidChangeInTextAreaCallback                         textDidChangeInTextArea;
     WKBundlePageShouldPerformActionInTextFieldCallback                  shouldPerformActionInTextField;
     WKBundlePageWillSubmitFormCallback                                  willSubmitForm;
+    WKBundlePageWillSendUsernamePasswordStoreEventCallback              willSendUsernamePasswordStoreEvent;//lxx, 20150816
 } WKBundlePageFormClientV0;
 
 typedef struct WKBundlePageFormClientV1 {
@@ -71,6 +73,7 @@ typedef struct WKBundlePageFormClientV1 {
 
     // Version 1.
     WKBundlePageWillSendSubmitEventCallback                             willSendSubmitEvent;
+    WKBundlePageWillSendUsernamePasswordStoreEventCallback              willSendUsernamePasswordStoreEvent;//lxx, 20150816	
 } WKBundlePageFormClientV1;
 
 typedef struct WKBundlePageFormClientV2 {
@@ -83,10 +86,9 @@ typedef struct WKBundlePageFormClientV2 {
     WKBundlePageTextDidChangeInTextAreaCallback                         textDidChangeInTextArea;
     WKBundlePageShouldPerformActionInTextFieldCallback                  shouldPerformActionInTextField;
     WKBundlePageWillSubmitFormCallback                                  willSubmitForm;
-
     // Version 1.
     WKBundlePageWillSendSubmitEventCallback                             willSendSubmitEvent;
-
+    WKBundlePageWillSendUsernamePasswordStoreEventCallback              willSendUsernamePasswordStoreEvent;//lxx, 20150816
     // version 2.
     WKBundlePageDidFocusTextFieldCallback                               didFocusTextField;
     WKBundlePageShouldNotifyOnFormChangesCallback                       shouldNotifyOnFormChanges;
@@ -105,10 +107,9 @@ typedef struct WKBundlePageFormClient {
     WKBundlePageTextDidChangeInTextAreaCallback                         textDidChangeInTextArea;
     WKBundlePageShouldPerformActionInTextFieldCallback                  shouldPerformActionInTextField;
     WKBundlePageWillSubmitFormCallback                                  willSubmitForm;
-    
     // Version 1.
     WKBundlePageWillSendSubmitEventCallback                             willSendSubmitEvent;
-
+    WKBundlePageWillSendUsernamePasswordStoreEventCallback              willSendUsernamePasswordStoreEvent;//lxx, 20150816
     // version 2.
     WKBundlePageDidFocusTextFieldCallback                               didFocusTextField;
     WKBundlePageShouldNotifyOnFormChangesCallback                       shouldNotifyOnFormChanges;

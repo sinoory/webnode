@@ -78,6 +78,8 @@ midori_map_get_message (SoupMessage* message);
 #define GST_UGLY "gstreamer1.0-plugins-ugly"
 #define GST_BAD "gstreamer1.0-plugins-bad"
 
+#define test_auth //lxx 20150818
+
 static void
 midori_view_item_meta_data_changed (KatzeItem*   item,
                                     const gchar* key,
@@ -3499,10 +3501,15 @@ midori_web_view_create_form_auth_save_confirmation_info_bar (MidoriView *web_vie
 
 static void
 form_auth_data_save_confirmation_response (GtkInfoBar *info_bar,
-                                           gint response_id,
+										   gint response_id,
+#ifndef test_auth										   
                                            FormAuthRequestData *data)
+#else
+										   MidoriView *view)
+#endif	
 {
   gtk_widget_destroy (GTK_WIDGET (info_bar));
+#ifndef test_auth  
   if (data->web_view->web_extension) {
     ephy_web_extension_proxy_form_auth_data_save_confirmation_response (data->web_view->web_extension,
                                                                         data->request_id,
@@ -3510,6 +3517,11 @@ form_auth_data_save_confirmation_response (GtkInfoBar *info_bar,
   }
 
   g_slice_free (FormAuthRequestData, data);
+#else
+     WebKitWebView* web_view = WEBKIT_WEB_VIEW (view->web_view);
+     if(response_id == GTK_RESPONSE_YES)
+         webkit_web_view_new_username_password_save(web_view);
+#endif  
 }
 
 static void
@@ -3532,8 +3544,11 @@ form_auth_data_save_requested (EphyWebExtensionProxy *web_extension,
   data->request_id = request_id;
   g_signal_connect (info_bar, "response",
                     G_CALLBACK (form_auth_data_save_confirmation_response),
+#ifndef test_auth
                     data);
-
+#else
+                    web_view);
+#endif
   gtk_widget_show (info_bar);
 }
 

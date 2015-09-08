@@ -802,6 +802,17 @@ bool WebPageProxy::maybeInitializeSandboxExtensionHandle(const URL& url, Sandbox
     return true;
 }
 
+void WebPageProxy::usernamePasswordSave()
+{
+	        if (!isValid())
+				                    return;
+			            printf("WebPageProxy::usernamePasswordSave 1\n");
+						            //  m_process->send(Messages::WebPage::LoadHTMLString(navigationID, htmlString, baseURL, WebContextUserMessageEncoder(userData, process())), m_pageID);
+						                m_process->send(Messages::WebPage::UsernamePasswordSave(), m_pageID);
+										                //  m_process->send(Messages::WebPage::TryRestoreScrollPosition(), m_pageID);
+										                printf("WebPageProxy::usernamePasswordSave\n");
+}
+
 RefPtr<API::Navigation> WebPageProxy::loadRequest(const ResourceRequest& request, API::Object* userData)
 {
     if (m_isClosed)

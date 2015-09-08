@@ -155,11 +155,13 @@ printf("main start time = %lld\n",g_get_real_time());
     g_signal_connect (context, "initialize-web-extensions",
                     G_CALLBACK (initialize_web_extensions),
                     NULL);
-    
-//    if(!single_process)
+#if 1    
+    if(!single_process)
+#else		
 //add by luyue 2015/3/30
 //保证用户名密码登录功能能够正常使用，暂时屏蔽多进程 
     if(single_process)
+#endif		
     {
         webkit_web_context_set_process_model(context, WEBKIT_PROCESS_MODEL_MULTIPLE_SECONDARY_PROCESSES);
     }

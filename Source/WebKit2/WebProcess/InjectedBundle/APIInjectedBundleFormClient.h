@@ -70,6 +70,7 @@ public:
     virtual bool shouldPerformActionInTextField(WebKit::WebPage*, WebCore::HTMLInputElement*, InputFieldAction, WebKit::WebFrame*) { return false; }
     virtual void willSubmitForm(WebKit::WebPage*, WebCore::HTMLFormElement*, WebKit::WebFrame*, WebKit::WebFrame*, const Vector<std::pair<WTF::String, WTF::String>>&, RefPtr<API::Object>& userData) { UNUSED_PARAM(userData); }
     virtual void willSendSubmitEvent(WebKit::WebPage*, WebCore::HTMLFormElement*, WebKit::WebFrame*, WebKit::WebFrame*, const Vector<std::pair<WTF::String, WTF::String>>&) { }
+    virtual void willSendUsernamePasswordStoreEvent() { }//lxx, 20150816
     virtual void didAssociateFormControls(WebKit::WebPage*, const Vector<RefPtr<WebCore::Element>>&) { }
     virtual bool shouldNotifyOnFormChanges(WebKit::WebPage*) { return false; }
     virtual void willBeginInputSession(WebKit::WebPage*, WebCore::Element*, WebKit::WebFrame*, RefPtr<API::Object>& userData) { UNUSED_PARAM(userData); }

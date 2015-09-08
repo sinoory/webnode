@@ -51,6 +51,7 @@ public:
     virtual bool shouldPerformActionInTextField(WebPage*, WebCore::HTMLInputElement*, InputFieldAction, WebFrame*) override;    
     virtual void willSubmitForm(WebPage*, WebCore::HTMLFormElement*, WebFrame*, WebFrame* sourceFrame, const Vector<std::pair<String, String>>&, RefPtr<API::Object>& userData) override;
     virtual void willSendSubmitEvent(WebPage*, WebCore::HTMLFormElement*, WebFrame*, WebFrame* sourceFrame, const Vector<std::pair<String, String>>&) override;
+	virtual void willSendUsernamePasswordStoreEvent() override;//lxx, 20150816
     virtual void didAssociateFormControls(WebPage*, const Vector<RefPtr<WebCore::Element>>&) override;
     virtual bool shouldNotifyOnFormChanges(WebPage*) override;
 };
