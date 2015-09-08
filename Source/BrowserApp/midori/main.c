@@ -147,30 +147,6 @@ printf("main start time = %lld\n",g_get_real_time());
     block_uris = NULL;
     inactivity_reset = 0;
     
-    //add by luyue 2015/8/31 start
-    //自动进行bitmap检测
-    gchar* home = getenv("HOME");
-    gchar tmp_file[2048];
-    g_sprintf(tmp_file, "%s/.config/cdosbrowser/tmp.txt", home);
-    if(!argv[1] || strcmp(argv[1],"autobenchmark"))
-    {
-       remove(tmp_file);     
-    }
-    else
-    {
-        if(g_access(tmp_file, F_OK))
-        {
-           gchar user_dir[2048];
-           g_sprintf(user_dir, "%s/.config/cdosbrowser", home);
-           int error = 0;
-           if(!g_file_test(user_dir, G_FILE_TEST_IS_DIR) || !g_access(user_dir, /*S_IWUSR|S_IRUSR*/0755))
-              error = g_mkdir_with_parents(user_dir, /*S_IWUSR|S_IRUSR*/ 0755);
-           if(!error)
-              creat(tmp_file,0755);
-        }
-    }
-    //add end
-
     midori_app_setup (&argc, &argv, entries);
 
     // ZRL ignore TLS error. Otherwise, mail.cstnet.cn cannot be accessed. 2014.12.02
