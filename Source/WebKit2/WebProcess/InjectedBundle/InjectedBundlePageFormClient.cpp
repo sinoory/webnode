@@ -152,10 +152,9 @@ void InjectedBundlePageFormClient::willSendSubmitEvent(WebPage* page, HTMLFormEl
 #if 1//lxx, 20150816+
 void InjectedBundlePageFormClient::willSendUsernamePasswordStoreEvent()
 {
-	    printf("InjectedBundlePageFormClient::willSendUsernamePasswordStoreEvent\n");
-		    if (!m_client.willSendUsernamePasswordStoreEvent)
-				                    return;
-			            m_client.willSendUsernamePasswordStoreEvent();
+   if (!m_client.willSendUsernamePasswordStoreEvent)
+      return;
+   m_client.willSendUsernamePasswordStoreEvent();
 }
 #endif//lxx, 20150816-
 

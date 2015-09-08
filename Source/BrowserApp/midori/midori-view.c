@@ -3501,11 +3501,11 @@ midori_web_view_create_form_auth_save_confirmation_info_bar (MidoriView *web_vie
 
 static void
 form_auth_data_save_confirmation_response (GtkInfoBar *info_bar,
-										   gint response_id,
+					   gint response_id,
 #ifndef test_auth										   
                                            FormAuthRequestData *data)
 #else
-										   MidoriView *view)
+	                                   MidoriView *view)
 #endif	
 {
   gtk_widget_destroy (GTK_WIDGET (info_bar));

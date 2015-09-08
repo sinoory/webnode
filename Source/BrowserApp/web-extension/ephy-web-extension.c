@@ -205,11 +205,9 @@ form_auth_data_save_request_new_id (void)
 static void
 store_password (EphyEmbedFormAuth *form_auth)
 {
-g_print("store_password 1\n");
-if(NULL == lxx_auth)
-  return;
+  if(NULL == lxx_auth)
+    return;
 
-g_print("store_password 2\n");
 
   SoupURI *uri;
   char *uri_str;
@@ -219,8 +217,6 @@ g_print("store_password 2\n");
   char *password_field_value = NULL;
   WebKitDOMNode *username_node;
   EphyWebExtension *extension = ephy_web_extension_get ();
-
-  g_print("store_password 2\n");
 
   username_node = ephy_embed_form_auth_get_username_node (lxx_auth);
   if (username_node)
@@ -242,7 +238,6 @@ g_print("store_password 2\n");
                              password_field_value,
                              NULL, NULL);
   g_free (uri_str);
-g_print("store_password 3\n");
   /* Update internal caching */
   ephy_form_auth_data_cache_add (extension->priv->form_auth_data_cache,
                                  uri->host,
@@ -259,7 +254,6 @@ g_print("store_password 3\n");
 static void
 store_password (EphyEmbedFormAuth *form_auth)
 {
-g_print("store_password\n");
   SoupURI *uri;
   char *uri_str;
   char *username_field_name = NULL;
@@ -379,10 +373,7 @@ should_store_cb (const char *username,
                  const char *password,
                  gpointer user_data)
 {
-g_print("%d should_store_cb\n", __LINE__);
   EphyEmbedFormAuth *form_auth = EPHY_EMBED_FORM_AUTH (user_data);
-
-  g_print("%d should_store_cb username = %s, password = %s\n", __LINE__, username, password);
 
   if (password) {
     WebKitDOMNode *username_node;
@@ -399,22 +390,14 @@ g_print("%d should_store_cb\n", __LINE__);
      * something smarter here */
     if (g_strcmp0 (username, username_field_value) == 0 &&
         g_str_equal (password, password_field_value)) {
-      LOG ("User/password already stored. Not asking about storing.");
     } else {
-g_print("should_store_cb 414 request_decision\n");		
-      LOG ("User/password not yet stored. Asking about storing.");
       request_decision_on_storing (g_object_ref (form_auth));
     }
-g_print("418 username_field_value = %s, password_field_value = %s\n", username_field_value, password_field_value);
     g_free (username_field_value);
     g_free (password_field_value);
   } else {
-    LOG ("No result on query; asking whether we should store.");
     request_decision_on_storing (g_object_ref (form_auth));
   }
-//lxx, 20150817
-//if(NULL != form_auth)
-//  g_print("lxx_auth is now NULL 421\n");
 }
 #else
 static void
@@ -422,11 +405,8 @@ should_store_cb (const char *username,
                  const char *password,
                  gpointer user_data)
 {
-g_print("%d should_store_cb 1\n", __LINE__);
-//  EphyEmbedFormAuth *form_auth = EPHY_EMBED_FORM_AUTH (user_data);lxx_auth
   /*EphyEmbedFormAuth **/lxx_auth = EPHY_EMBED_FORM_AUTH (user_data);
 
-  g_print("%d should_store_cb username = %s, password = %s pageID = %d\n", __LINE__, username, password, ephy_embed_form_auth_get_page_id (lxx_auth));
 
   if (password) {
     WebKitDOMNode *username_node;
@@ -443,25 +423,18 @@ g_print("%d should_store_cb 1\n", __LINE__);
      * something smarter here */
     if (g_strcmp0 (username, username_field_value) == 0 &&
         g_str_equal (password, password_field_value)) {
-      LOG ("User/password already stored. Not asking about storing.");
     } else {
-		 g_print("should_store_cb 458 request_decision\n");
-      LOG ("User/password not yet stored. Asking about storing.");
       request_decision_on_storing (g_object_ref (lxx_auth));
     }
 
-g_print("463 username_field_value = %s, password_field_value = %s\n", username_field_value, password_field_value);	
 
     g_free (username_field_value);
     g_free (password_field_value);
   } else {
-    LOG ("No result on query; asking whether we should store.");
     request_decision_on_storing (g_object_ref (lxx_auth));
   }
-g_print("should_store_cb 2\n");
 }
 #endif
-
 
 static gboolean
 form_submitted_cb (WebKitDOMHTMLFormElement *dom_form,
@@ -1217,14 +1190,11 @@ static void willSendSubmitEvent(WKBundlePageRef page, WebKitDOMHTMLFormElement *
     form_submitted_cb(form, 0, (WebKitWebPage*)clientInfo);
 }
 
-#if 1//lxx, 20150816
 static void willSendUsernamePasswordStoreEvent()
 {
-	    g_print("1107willSendUsernamePasswordStoreEvent\n");
-		    store_password (NULL);
-			    //    form_submitted_cb(form, 0, (WebKitWebPage*)clientInfo);
+    store_password (NULL);
+    //    form_submitted_cb(form, 0, (WebKitWebPage*)clientInfo);
 }
-#endif//lxx,20150816
 
 static void didFocusTextField(WKBundlePageRef page, WebKitDOMHTMLInputElement * inputElement, WKBundleFrameRef frame, const void* clientInfo)
 {

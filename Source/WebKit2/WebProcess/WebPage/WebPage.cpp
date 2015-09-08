@@ -1080,9 +1080,7 @@ void WebPage::loadURLInFrame(const String& url, uint64_t frameID)
 #if 1
 void WebPage::usernamePasswordSave()
 {
-	    printf("WebPage::usernamePasswordSave\n");
-		        injectedBundleFormClient().willSendUsernamePasswordStoreEvent();
-
+   injectedBundleFormClient().willSendUsernamePasswordStoreEvent();
 }
 #endif
 
