@@ -183,6 +183,7 @@ set_target_properties(${MIDORI_PROJECT_NAME} PROPERTIES
                       COMPILE_FLAGS ${CFLAGS}
                       )
 set_target_properties(${MIDORI_PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BROWSER_LIB_INSTALL_DIR}")
+set_target_properties(cdosbrowser-core PROPERTIES INSTALL_RPATH "${BROWSER_LIB_INSTALL_DIR}")
 install(TARGETS ${MIDORI_PROJECT_NAME}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         )

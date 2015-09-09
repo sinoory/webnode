@@ -115,6 +115,7 @@ foreach(UNIT_SRC ${EXTENSIONS})
         set_target_properties(${UNIT} PROPERTIES
                               COMPILE_FLAGS ${CFLAGS}
                               )
+	set_target_properties(${UNIT} PROPERTIES INSTALL_RPATH "${BROWSER_LIB_INSTALL_DIR}")
         install(TARGETS ${UNIT}
             LIBRARY DESTINATION ${EXTENSIONDIR}
                 )
@@ -150,6 +151,7 @@ foreach(UNIT_SRC ${EXTENSIONS})
             target_link_libraries(${UNIT_SRC}
                                   ${LIBMIDORI}
                                   )
+            set_target_properties(${UNIT_SRC} PROPERTIES INSTALL_RPATH "${BROWSER_LIB_INSTALL_DIR}")
             install(TARGETS ${UNIT_SRC}
                     LIBRARY DESTINATION ${EXTENSIONDIR}
                     )
@@ -195,6 +197,7 @@ foreach(UNIT_SRC ${EXTENSIONS})
         set_target_properties(${UNIT} PROPERTIES
                               COMPILE_FLAGS "${VALA_CFLAGS}"
                               )
+	set_target_properties(${UNIT} PROPERTIES INSTALL_RPATH "${BROWSER_LIB_INSTALL_DIR}")
         install(TARGETS ${UNIT}
                 LIBRARY DESTINATION ${EXTENSIONDIR}
                 )
@@ -222,4 +225,5 @@ add_library(${BUILTIN_EXTENSION_LIBRARY} MODULE ${BUILTIN_EXTENSION_SOURCE_C})
 add_dependencies(${BUILTIN_EXTENSION_LIBRARY} ${LIBMIDORI})
 target_link_libraries(${BUILTIN_EXTENSION_LIBRARY} ${LIBMIDORI})
 set_target_properties(${BUILTIN_EXTENSION_LIBRARY} PROPERTIES COMPILE_FLAGS "${VALA_CFLAGS}")
+set_target_properties(${BUILTIN_EXTENSION_LIBRARY} PROPERTIES INSTALL_RPATH "${BROWSER_LIB_INSTALL_DIR}")
 install(TARGETS ${BUILTIN_EXTENSION_LIBRARY} LIBRARY DESTINATION ${EXTENSIONDIR})
