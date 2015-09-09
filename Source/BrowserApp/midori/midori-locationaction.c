@@ -487,8 +487,8 @@ midori_location_entry_render_text_cb (GtkCellLayout*   layout,
 		g_free (uri_escaped);
    	 }
 
-    g_object_set (renderer, "text", desc_text,NULL);
-      //  "ellipsize-set", TRUE, "ellipsize", PANGO_ELLIPSIZE_END, NULL);
+    g_object_set (renderer, "text", desc_text,
+        "ellipsize-set", TRUE, "ellipsize", PANGO_ELLIPSIZE_END, NULL);
     g_free (desc_title);  
     g_free (desc_uri);
     g_free (desc_text);
