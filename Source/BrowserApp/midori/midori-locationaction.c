@@ -211,7 +211,7 @@ midori_location_action_class_init (MidoriLocationActionClass* class)
     gobject_class->get_property = midori_location_action_get_property;
 
     action_class = GTK_ACTION_CLASS (class);
-    action_class->activate = midori_location_action_activate;
+    //action_class->activate = midori_location_action_activate;//打开浏览器地址栏不要聚焦
     action_class->create_tool_item = midori_location_action_create_tool_item;
     action_class->connect_proxy = midori_location_action_connect_proxy;
     action_class->disconnect_proxy = midori_location_action_disconnect_proxy;
@@ -426,6 +426,24 @@ midori_location_entry_render_title_cb (GtkCellLayout*   layout,
 }
 //wangyl 2015.6.10 start
 // function :修改以前title和uri的内容显示的方式，将其显示在两行上。
+midori_location_entry_render_icon_cb (GtkCellLayout*   layout,
+                                          GtkCellRenderer*   renderer,
+                                          GtkTreeModel*      model,
+                                          GtkTreeIter*       iter,
+                                          GtkWidget*         treeview)
+{
+   KatzeItem* item =katze_item_new();
+   gchar* uri;
+   GdkPixbuf* pixbuf;
+   gtk_tree_model_get (model, iter, MIDORI_AUTOCOMPLETER_COLUMNS_URI, &uri, -1);
+   katze_item_set_uri(item,uri);
+   pixbuf = katze_item_get_pixbuf (item, treeview);
+   g_object_set (renderer, "pixbuf", pixbuf, NULL);
+   if (pixbuf)
+     g_object_unref (pixbuf);
+   g_free (uri);
+   g_object_unref (item);
+}
 static void
 midori_location_entry_render_text_cb (GtkCellLayout*   layout,
                                        GtkCellRenderer* renderer,
@@ -675,7 +693,11 @@ midori_location_action_populated_suggestions_cb (MidoriAutocompleter*  autocompl
                                                  guint                 count,
                                                  MidoriLocationAction* action)
 {
-	 gtk_widget_show (action->popup);   
+    if(count == 0){
+       midori_location_action_popdown_completion (action);
+       return;
+    }
+    gtk_widget_show (action->popup);   
     GtkTreePath* path = gtk_tree_path_new_first ();
     gtk_tree_view_scroll_to_cell (GTK_TREE_VIEW (action->treeview), path, NULL,
         FALSE, 0.0, 0.0);
@@ -773,7 +795,7 @@ midori_location_action_popup_timeout_cb (gpointer data)
         gtk_frame_set_shadow_type (GTK_FRAME (popup_frame), GTK_SHADOW_ETCHED_IN);
         gtk_container_add (GTK_CONTAINER (popup), popup_frame);
         scrolled = g_object_new (GTK_TYPE_SCROLLED_WINDOW,
-            "hscrollbar-policy", GTK_POLICY_AUTOMATIC,
+            "hscrollbar-policy", GTK_POLICY_NEVER,
             "vscrollbar-policy", GTK_POLICY_AUTOMATIC, NULL);
         gtk_container_add (GTK_CONTAINER (popup_frame), scrolled);
         treeview = gtk_tree_view_new_with_model (action->completion_model);
@@ -799,6 +821,8 @@ midori_location_action_popup_timeout_cb (gpointer data)
             "yalign", MIDORI_AUTOCOMPLETER_COLUMNS_YALIGN,
             "cell-background", MIDORI_AUTOCOMPLETER_COLUMNS_BACKGROUND,
             NULL);
+        gtk_cell_layout_set_cell_data_func ( GTK_CELL_LAYOUT (column), renderer,
+               midori_location_entry_render_icon_cb, treeview, NULL);
         renderer = gtk_cell_renderer_text_new ();
         gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (column), renderer, TRUE);
         gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (column), renderer,
@@ -1065,6 +1089,9 @@ midori_location_action_changed_cb (GtkEntry*             entry,
                                    MidoriLocationAction* location_action)
 {
     katze_assign (location_action->text, g_strdup (gtk_entry_get_text (entry)));
+    gchar* key = g_strdup (gtk_entry_get_text (GTK_ENTRY (entry)));
+    midori_location_action_popup_completion (location_action, entry, key);
+    location_action->completion_index = -1;
 }
 
 static void
@@ -1085,19 +1112,19 @@ static void
 midori_location_action_backspace_cb (GtkWidget*            entry,
                                      MidoriLocationAction* action)
 {
-    gchar* key = g_strdup (gtk_entry_get_text (GTK_ENTRY (entry)));
+   // gchar* key = g_strdup (gtk_entry_get_text (GTK_ENTRY (entry)));
 
-    midori_location_action_popup_completion (action, entry, key);
-    action->completion_index = -1;
+    //midori_location_action_popup_completion (action, entry, key);
+    //action->completion_index = -1;
 }
 
 static void
 midori_location_action_paste_clipboard_cb (GtkWidget*            entry,
                                            MidoriLocationAction* action)
 {
-    gchar* key = g_strdup (gtk_entry_get_text (GTK_ENTRY (entry)));
-    midori_location_action_popup_completion (action, entry, key);
-    action->completion_index = -1;
+    //gchar* key = g_strdup (gtk_entry_get_text (GTK_ENTRY (entry)));
+    //midori_location_action_popup_completion (action, entry, key);
+    //action->completion_index = -1;
 }
 
 static gboolean
@@ -1329,12 +1356,13 @@ midori_location_action_key_press_event_cb (GtkEntry*    entry,
         /* Don't trigger completion on control characters */
         if (!character || event->is_modifier)
             return FALSE;
-
+        /*//modified by wangyl 2015.9.9
         length = g_unichar_to_utf8 (character, buffer);
         buffer[length] = '\0';
         key = g_strconcat (gtk_entry_get_text (entry), buffer, NULL);
         midori_location_action_popup_completion (location_action, widget, key);
         location_action->completion_index = -1;
+        */
         return FALSE;
     }
     }

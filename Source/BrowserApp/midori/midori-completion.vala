@@ -164,6 +164,7 @@ namespace Midori {
             List<Midori.Suggestion>? suggestions = yield completion.complete (text, action, cancellable);
             if (!cancellable.is_cancelled () && suggestions != null)
                 fill_model (completion, suggestions);
+            else populated (0);
         }
 
         public async void complete (string text) {
