@@ -225,8 +225,13 @@ midori_bookmarks_read_from_db_to_model (MidoriBookmarks* bookmarks,
     gint last;
     KatzeItem* item;
     GtkTreeIter child;
+    GdkPixbuf* pixbuf;
 
     array = midori_bookmarks_read_from_db (bookmarks, parentid, keyword);
+    KATZE_ARRAY_FOREACH_ITEM (item, array){
+       pixbuf = katze_item_get_pixbuf (item, bookmarks->treeview);
+       if (pixbuf)g_object_unref (pixbuf);  
+    }
     katze_bookmark_populate_tree_view (array, model, parent);
     /* Remove invisible dummy row */
     last = gtk_tree_model_iter_n_children (GTK_TREE_MODEL (model), parent);

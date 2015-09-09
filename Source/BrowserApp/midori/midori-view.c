@@ -610,7 +610,7 @@ midori_view_set_title (MidoriView* view, const gchar* title)
 {
     const gchar* uri = midori_tab_get_uri (MIDORI_TAB (view));
     //ZRL 修复当uri为空时crash问题。
-    if (uri == NULL)
+    if (uri == NULL|| title == NULL &&view->title !=NULL)
         return;
     if(strstr (uri, "speeddial-head.html") ||g_str_has_prefix (uri, "about:"))
     {
