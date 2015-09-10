@@ -1,3 +1,16 @@
+cdosbrowser (0.3.0) Sep10; urgency=high
+
+  * New upstream release
+ -thirdparty中依赖整理，uchardet用系统,curl和openssl通过源码编译，libsoup用系统
+ - 去掉cdosbrowser autobenchmark功能
+ - 解决用户名/密码无法保存的bug
+ - 修改lib依赖有缺失的问题
+ - 解决书签栏书签图片显示不正确的问题
+  - 解决同一网页只有一个tab图片正常显示的问题
+   -打开浏览器时，使其光标不在地址栏中聚焦
+  - 修改地址栏下拉菜单中部分网址图标不显示问题
+ -- ZhangRuili <zhangrl_os@sari.ac.cn>  Sep, 10 Thu 2015 10:18:15 +0800
+
 cdosbrowser (0.2.5) Sep1; urgency=low
 
   * New upstream release

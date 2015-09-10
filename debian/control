@@ -104,13 +104,13 @@ Build-Depends: debhelper (>= 8.0.0),
 	libssl-dev,
 	libsoup-gnome2.4-dev (>=2.27.90),
         libjson-c-dev
-Standards-Version: 0.2.3
+Standards-Version: 0.3.0
 Homepage: <insert the upstream URL, if relevant>
 #Vcs-Git: git://git.debian.org/collab-maint/zrltest.git
 #Vcs-Browser: http://git.debian.org/?p=collab-maint/zrltest.git;a=summary
 
 Package:cdosbrowser
-Version:0.2.5
+Version:0.3.0
 Section:web
 Architecture:any
 Pre-Depends: dpkg (>= 1.16.10)
