@@ -800,7 +800,7 @@ int  is_arrrow_appear(Gtk.Allocation allocation,int page_n)
   //modified by wangyl in 2015.5.18 start 
            Gtk.Allocation tab_size, btn_size;             
            var page_n = notebook.get_n_pages();
-           if(page_n == 1)return;
+           if(page_n == 1 && btn_end  == false)return;
            Idle.add(control_close_button_show);
            have_arrow = is_arrrow_appear(allocation,page_n);   
            if(have_arrow == 0){

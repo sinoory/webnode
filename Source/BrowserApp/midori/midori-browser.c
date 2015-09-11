@@ -1588,7 +1588,7 @@ midori_browser_save_uri (MidoriBrowser* browser,
     else
     {
         gchar* dirname = midori_uri_get_folder (uri);
-        if (dirname == NULL)
+        if (dirname == NULL || strstr(dirname,"speedial"))
         {
               gchar* home = getenv("HOME");
               gchar download_setting_file[256];
@@ -2203,7 +2203,7 @@ _midori_show_much_tab_warning(MidoriBrowser* browser)
    if(bvalue)
    {
       gint itabNum = _midori_browser_get_num_of_tabs();
-      if(itabNum > 100)
+      if(itabNum > 30)
          bshow = 1;
    }
    return bshow;

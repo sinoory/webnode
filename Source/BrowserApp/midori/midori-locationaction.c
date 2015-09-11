@@ -457,7 +457,7 @@ midori_location_entry_render_text_cb (GtkCellLayout*   layout,
     gchar* desc_title;
     gchar* desc_uri;
     gchar* desc_text;
-    int len;	
+    int len,len1,len2;	
     gtk_tree_model_get (model, iter,
         MIDORI_AUTOCOMPLETER_COLUMNS_MARKUP, &title,
         MIDORI_AUTOCOMPLETER_COLUMNS_URI, &uri_escaped,
@@ -466,28 +466,58 @@ midori_location_entry_render_text_cb (GtkCellLayout*   layout,
 	 {
 		gchar** parts = g_strsplit (title, "\n", 2);
 		desc_title = g_strdup (parts[0]);
-	   desc_uri = g_strdup (parts[1]);
-	   len = strlen(desc_title) + strlen(desc_uri);
-	   desc_text = malloc(len+3);
-	   sprintf(desc_text,"%s\n%s",desc_title,desc_uri);
+	        desc_uri = g_strdup (parts[1]);
+                desc_text = g_markup_printf_escaped(
+                     "<span size=\"10000\">%s</span>\n<span foreground=\"green\">%s</span>",desc_title ,desc_uri );
+ 
 		g_strfreev (parts);
 	}
    else
     	{
 		gchar* key = g_utf8_strdown (action->key ? action->key : "", -1);
 		gchar** keys = g_strsplit_set (key, " %", -1);
-		g_free (key);
 		desc_title = midori_location_action_render_title (keys, title);
 		desc_uri = midori_location_action_render_uri (keys, uri_escaped);
-		len = strlen(title) + strlen(uri_escaped);
-		desc_text = malloc(len+3);
-		sprintf(desc_text,"%s\n%s",title,uri_escaped);
-		g_strfreev (keys);
+		len =strstr(uri_escaped,key) - uri_escaped;
+                len1 = strlen(key);
+                len2 = strlen(uri_escaped);
+                if(len == 0){
+                   gchar*uri_first = g_malloc(len1 + 1);
+                   memset(uri_first,0,len1 + 1);
+                   gchar *uri_second = g_malloc(len2 -len1 + 1);
+                   memset(uri_second,0,len2 -len1 + 1);
+                   strncpy(uri_first,uri_escaped,len1);
+                   strcpy(uri_second,uri_escaped+len1);
+                   desc_text = g_markup_printf_escaped(
+                     "<span size=\"10000\">%s</span>\n<span foreground=\"blue\" >%s</span><span foreground=\"green\">%s</span>",
+                     title ,uri_first,uri_second );
+                   g_free(uri_first);
+                   g_free(uri_second);
+                }
+                else if (len > 0){
+                   gchar*uri_first = g_malloc(len + 1);
+                   memset(uri_first,0,len + 1);
+                   gchar *uri_second = g_malloc(len1 + 1);
+                   memset(uri_second,0,len1 + 1);
+                   gchar *uri_third = g_malloc(len2 - len - len1 + 1);
+                   memset(uri_third,0,len2 - len - len1 + 1 );
+                   strncpy(uri_first,uri_escaped,len);
+                   strncpy(uri_second,uri_escaped + len,len1);
+                   strcpy(uri_third,uri_escaped + len + len1);
+                   desc_text = g_markup_printf_escaped(
+                     "<span size=\"10000\">%s</span>\n<span foreground=\"green\">%s</span><span foreground=\"blue\" >%s</span><span foreground=\"green\">%s</span>",
+                     title ,uri_first,uri_second,uri_third );
+                   g_free(uri_first);
+                   g_free(uri_second);
+                   g_free(uri_third);
+                }
+                g_free (key);
+                g_strfreev (keys);
 		g_free (title);
 		g_free (uri_escaped);
    	 }
 
-    g_object_set (renderer, "text", desc_text,
+    g_object_set (renderer, "markup", desc_text,"height",45,
         "ellipsize-set", TRUE, "ellipsize", PANGO_ELLIPSIZE_END, NULL);
     g_free (desc_title);  
     g_free (desc_uri);
