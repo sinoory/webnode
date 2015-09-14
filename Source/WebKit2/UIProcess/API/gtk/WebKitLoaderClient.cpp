@@ -61,10 +61,11 @@ private:
             return;
         GUniquePtr<GError> error(g_error_new_literal(g_quark_from_string(resourceError.domain().utf8().data()),
             toWebKitError(resourceError.errorCode()), resourceError.localizedDescription().utf8().data()));
-        if (resourceError.tlsErrors()) {
-            webkitWebViewLoadFailedWithTLSErrors(m_webView, resourceError.failingURL().utf8().data(), error.get(),
-                static_cast<GTlsCertificateFlags>(resourceError.tlsErrors()), resourceError.certificate());
-        } else
+// annotated by zhangzc		
+//        if (resourceError.tlsErrors()) {
+//            webkitWebViewLoadFailedWithTLSErrors(m_webView, resourceError.failingURL().utf8().data(), error.get(),
+//                static_cast<GTlsCertificateFlags>(resourceError.tlsErrors()), resourceError.certificate());
+//        } else
             webkitWebViewLoadFailed(m_webView, WEBKIT_LOAD_STARTED, resourceError.failingURL().utf8().data(), error.get());
     }
 
@@ -76,14 +77,14 @@ private:
     }
 
 //add by luyue 2015/6/8 start
-    static void didFinishDocumentLoadForFrame(WKPageRef, WKFrameRef frame, WKTypeRef /* userData */, const void* clientInfo)
+    void didFinishDocumentLoadForFrame(WebPageProxy&, WebFrameProxy& frame, API::Navigation*, API::Object* /* userData */) override
     {
-        if (!WKFrameIsMainFrame(frame))
+        if (!frame.isMainFrame())
             return;
 #ifdef APP_LEVEL_TIME
         printf("emit finish document load time = %lld\n",g_get_real_time());
 #endif
-        webkitWebViewDocumentLoadFinish(WEBKIT_WEB_VIEW(clientInfo));
+        webkitWebViewDocumentLoadFinish(m_webView);
 }
 //add end
 
@@ -95,12 +96,12 @@ private:
     }
 
     //Only for cdos browser
-    static void didFinishProgress(WKPageRef,const void*clientInfo)
+    void didFinishProgress(WebPageProxy&) override
     {
 #ifdef APP_LEVEL_TIME
         printf("emit finish progress time = %lld\n",g_get_real_time());
 #endif
-        webkitWebViewFinishProgress(WEBKIT_WEB_VIEW(clientInfo));
+        webkitWebViewFinishProgress(m_webView);
     }
 
     void didFailLoadWithErrorForFrame(WebPageProxy&, WebFrameProxy& frame, API::Navigation*, const ResourceError& resourceError, API::Object* /* userData */) override
