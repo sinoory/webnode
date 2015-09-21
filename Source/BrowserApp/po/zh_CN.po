@@ -1893,6 +1893,10 @@ msgstr "删除选中的书签"
 msgid "Clear the entire bookmarks"
 msgstr "清除全部书签"
 
+#: ../panels/midori-bookmaeks.c:762
+msgid "Are you sure you want to remove all bookmarks items?"
+msgstr "您确定要移除所有书签吗？"
+
 #: ../panels/midori-bookmarks.c:794
 msgid "Add a new folder"
 msgstr "添加新文件夹"

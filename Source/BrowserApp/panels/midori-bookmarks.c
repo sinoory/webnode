@@ -763,8 +763,19 @@ midori_bookmarks_clear_clicked_cb (GtkWidget*       toolitem,
                                     MidoriBookmarks* bookmarks)
 {
     MidoriBrowser* browser;
-    
+    GtkWidget* dialog;
+    gint result;
+
     browser = midori_browser_get_for_widget (GTK_WIDGET (bookmarks));
+    dialog = gtk_message_dialog_new (GTK_WINDOW (browser),
+        GTK_DIALOG_DESTROY_WITH_PARENT,
+        GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
+        _("Are you sure you want to remove all bookmarks items?"));
+    result = gtk_dialog_run (GTK_DIALOG (dialog));
+    gtk_widget_destroy (dialog);
+    if (result != GTK_RESPONSE_YES)
+        return;
+    
     midori_browser_clear_bookmarks(browser);
 }
 
