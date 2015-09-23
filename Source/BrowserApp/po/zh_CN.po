@@ -1025,7 +1025,7 @@ msgstr "显示主页"
 
 #: ../midori/midori-websettings.c:115 ../midori/midori-frontend.c:364
 msgid "Show last open tabs"
-msgstr "显示上次打开的标签"
+msgstr "上次打开的标签"
 
 #: ../midori/midori-websettings.c:116 ../midori/midori-frontend.c:363
 msgid "Show last tabs without loading"
@@ -2919,7 +2919,7 @@ msgstr "清除以下数据："
 
 #: ../midori/midori-privatedata.c:172
 msgid "Last open _tabs"
-msgstr "上次打开的标签(_T)"
+msgstr "已打开的标签(_T)"
 
 #. i18n: Logins and passwords in websites and web forms
 #: ../midori/midori-privatedata.c:321

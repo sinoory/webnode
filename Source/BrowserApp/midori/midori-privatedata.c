@@ -37,9 +37,20 @@ midori_private_data_dialog_response_cb (GtkWidget*     dialog,
         button = g_object_get_data (G_OBJECT (dialog), "session");
         if (gtk_toggle_button_get_active (button))
         {
-            GList* tabs = midori_browser_get_tabs (browser);
+            /*GList* tabs = midori_browser_get_tabs (browser);
             for (; tabs != NULL; tabs = g_list_next (tabs))
                 midori_browser_close_tab (browser, tabs->data);
+            g_list_free (tabs);
+            clear_prefs |= MIDORI_CLEAR_SESSION;*/
+            
+            GtkWidget* view = midori_browser_add_uri (browser, "about:new");
+            midori_browser_set_current_tab (browser, view);
+            GList* tabs = midori_browser_get_tabs (browser);
+            for (; tabs; tabs = g_list_next (tabs))
+            {
+                if (tabs->data != view)
+                    midori_browser_close_tab (browser, tabs->data);
+            }
             g_list_free (tabs);
             clear_prefs |= MIDORI_CLEAR_SESSION;
         }
