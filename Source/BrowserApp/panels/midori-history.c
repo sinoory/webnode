@@ -432,16 +432,24 @@ midori_history_add_item_cb (KatzeArray*    array,
         g_object_unref (today);
 
         if (has_today)
-        {
-            //add by luyue 2015/8/18 start
-            //gchar* tooltip = g_markup_escape_text (katze_item_get_uri (item), -1);
+        {/*
             gchar* tooltip = g_markup_escape_text (g_locale_to_utf8(katze_item_get_uri (item),-1,0,0,0), -1);
-            //add end
             KatzeItem* copy = katze_item_copy (item);
             gtk_tree_store_insert_with_values (GTK_TREE_STORE (model), NULL, &iter,
                                                0, 0, copy, 1, tooltip, -1);
             g_object_unref (copy);
-            g_free (tooltip);
+            g_free (tooltip);*/
+            GtkTreeStore* treestore;
+            GtkTreeIter child;
+
+            model = gtk_tree_view_get_model (GTK_TREE_VIEW (treeview));
+            treestore = GTK_TREE_STORE (model);
+            while (gtk_tree_model_iter_nth_child (model, &child, &iter, 0))
+               gtk_tree_store_remove (treestore, &child);
+            /* That's an invisible dummy, so we always have an expander */
+            gtk_tree_store_insert_with_values (treestore, &child, &iter,
+               0, 0, NULL, -1);
+
             return;
         }
     }

@@ -3537,6 +3537,13 @@ _action_compact_menu_populate_popup (GtkAction*     action,
     midori_context_action_create_menu (menu, default_menu, FALSE);
 }
 
+midori_preferences_window_hide (GtkWidget*      window, 
+                                MidoriBrowser*  browser)
+{
+    gtk_widget_hide(window);
+    return; 
+}
+
 static void
 _action_preferences_activate (GtkAction*     action,
                               MidoriBrowser* browser)
@@ -3546,12 +3553,14 @@ _action_preferences_activate (GtkAction*     action,
    if (!dialog)
    {
       dialog = browser_settings_window_new(browser->settings); 
-      g_signal_connect (dialog, "destroy",
-                        G_CALLBACK (gtk_widget_destroyed), &dialog);
-      gtk_widget_show (dialog);
+      //g_signal_connect (dialog, "destroy",
+      //                  G_CALLBACK (gtk_widget_destroyed), &dialog);
+      //gtk_widget_show (dialog);
+      g_signal_connect(G_OBJECT(dialog), "delete-event", midori_preferences_window_hide , browser);
    }
    else
       gtk_window_present (GTK_WINDOW (dialog));
+   gtk_widget_show_all(dialog);
 }
 
 static gboolean
