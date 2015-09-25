@@ -489,7 +489,7 @@ midori_location_entry_render_text_cb (GtkCellLayout*   layout,
                    strncpy(uri_first,uri_escaped,len1);
                    strcpy(uri_second,uri_escaped+len1);
                    desc_text = g_markup_printf_escaped(
-                     "<span size=\"10000\">%s</span>\n<span foreground=\"blue\" >%s</span><span foreground=\"green\">%s</span>",
+                     "  <span size=\"10000\">%s</span>\n  <span foreground=\"blue\" >%s</span><span foreground=\"green\">%s</span>",
                      title ,uri_first,uri_second );
                    g_free(uri_first);
                    g_free(uri_second);
@@ -505,7 +505,7 @@ midori_location_entry_render_text_cb (GtkCellLayout*   layout,
                    strncpy(uri_second,uri_escaped + len,len1);
                    strcpy(uri_third,uri_escaped + len + len1);
                    desc_text = g_markup_printf_escaped(
-                     "<span size=\"10000\">%s</span>\n<span foreground=\"green\">%s</span><span foreground=\"blue\" >%s</span><span foreground=\"green\">%s</span>",
+                     "  <span size=\"10000\">%s</span>\n  <span foreground=\"green\">%s</span><span foreground=\"blue\" >%s</span><span foreground=\"green\">%s</span>",
                      title ,uri_first,uri_second,uri_third );
                    g_free(uri_first);
                    g_free(uri_second);

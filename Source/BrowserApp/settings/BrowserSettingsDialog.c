@@ -1320,7 +1320,7 @@ GtkWidget * browser_settings_window_new(MidoriWebSettings *settings)
    gtk_widget_reparent (g_list_nth_data (children, 0), scrolled);
    g_list_free (children);
    gtk_notebook_append_page (GTK_NOTEBOOK (notebook), scrolled, label);
-   gtk_widget_show_all(window);
+   //gtk_widget_show_all(window);
    return window;
 }
 
