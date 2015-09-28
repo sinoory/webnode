@@ -595,7 +595,8 @@ midori_normal_app_new (const gchar* config,
 
     katze_assign (config_file, midori_paths_get_config_filename_for_reading ("search"));
     midori_search_engines_set_filename (search_engines, config_file);
-
+    g_free(config_file);
+ 
     if ((midori_app_get_crashed (app)
      && katze_object_get_boolean (settings, "show-crash-dialog")
      && open_uris && !execute_commands)

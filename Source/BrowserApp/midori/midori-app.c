@@ -778,6 +778,7 @@ midori_app_create_instance (MidoriApp* app)
     gchar* name_hash = g_compute_checksum_for_string (G_CHECKSUM_MD5, app_name, -1);
     katze_assign (app_name, g_strconcat (PACKAGE_NAME,
         "_", config_hash, "_", name_hash, NULL));
+    g_free (config);
     g_free (config_hash);
     g_free (name_hash);
     g_object_notify (G_OBJECT (app), "name");
