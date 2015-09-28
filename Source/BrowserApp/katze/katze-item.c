@@ -292,25 +292,32 @@ katze_item_get_name (KatzeItem* item)
   g_return_val_if_fail (KATZE_IS_ITEM (item), NULL);
 
   if (item->name != NULL && strlen(item->name)>128)   //make sure name not too long
-     {
+  {
     unsigned char *p;
     p = item->name;
-    int i_longth = 0;
-	 while (i_longth <=42)
-           {
-	   if(*p>=0xA1)
-	        {
-	    i_longth = i_longth + 1;
-	    p+=3;
-	        }
-		else
-		{
-		  i_longth = i_longth + 1;
-		  p+=1;		
-		}
-	   }
-	 *p=0;
-     }
+    int size_num = 0;
+    int size_longth = 0;
+    while (size_num <=84)
+    {
+      if(*p>=0xA1)
+      {
+        size_num = size_num + 2;
+        size_longth+=3;
+	p+=3;
+      }
+      else
+      {
+        size_num = size_num + 1;
+        size_longth+=1;
+	p+=1;
+      }
+    }
+    gchar* tmp_name=g_malloc(size_longth+1);
+    memset(tmp_name,0,size_longth+1);
+    strncpy(tmp_name,item->name,size_longth);
+    katze_item_set_name(item,tmp_name);
+    g_free(tmp_name);                                       //change end
+  }
   return item->name;
 }
 
@@ -331,8 +338,8 @@ katze_item_set_name (KatzeItem*   item,
         return;
 
     katze_assign (item->name, g_strdup (name));
-    if (item->parent)
-        katze_array_update ((KatzeArray*)item->parent);
+    //if (item->parent)                                           //delete by liuyibiao 20150928
+    //    katze_array_update ((KatzeArray*)item->parent);
     g_object_notify (G_OBJECT (item), "name");
 }
 
