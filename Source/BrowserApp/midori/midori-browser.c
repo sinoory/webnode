@@ -3537,8 +3537,8 @@ _action_compact_menu_populate_popup (GtkAction*     action,
     midori_context_action_add_by_name (menu, "About");
     midori_context_action_create_menu (menu, default_menu, FALSE);
 }
-
-midori_preferences_window_hide (GtkWidget*      window, 
+static void
+midori_browser_preferences_window_hide_cb (GtkWidget*      window, 
                                 MidoriBrowser*  browser)
 {
     gtk_widget_hide(window);
@@ -3561,7 +3561,15 @@ _action_preferences_activate (GtkAction*     action,
    }
    else
       gtk_window_present (GTK_WINDOW (dialog));*/
+   MidoriApp  *app = midori_app_get_default();
+   GList*  browsers=midori_app_get_browsers(app);
+   for(; browsers; browsers=g_list_next(browsers))
+   {
+     browser = MIDORI_BROWSER(browsers->data);
+     if(browser->settings_dialog)break;
+   }
    gtk_widget_show_all(browser->settings_dialog);
+   gtk_window_present(browser->settings_dialog);
 }
 
 static gboolean
@@ -6756,12 +6764,12 @@ static const gchar* ui_markup =
     "</ui>";
 // added by wangyl 2015/9/25 为了每次打开对话框快而且不影响浏览器打开的时间
 static void 
-browser_settings_window_new_cb(MidoriBrowser* browser)
+midori_browser_settings_window_new_cb(MidoriBrowser* browser)
 {
    if(!browser->settings_dialog)
    {
      browser->settings_dialog = browser_settings_window_new(browser->settings); 
-     g_signal_connect(G_OBJECT(browser->settings_dialog), "delete-event", midori_preferences_window_hide , browser);
+     g_signal_connect(G_OBJECT(browser->settings_dialog), "delete-event",midori_browser_preferences_window_hide_cb , browser);
    }
    pthread_exit(0);
 }
@@ -6779,9 +6787,13 @@ midori_browser_realize_cb (GtkStyle*      style,
         else
             gtk_window_set_icon_name (GTK_WINDOW (browser), MIDORI_STOCK_WEB_BROWSER);
     }
+    int n;
+    MidoriApp* app = midori_app_get_default();  
+    n= midori_app_get_browsers_num(app);
+    if(n>1)return;
     pthread_t ntid;
     int ret;
-    ret = pthread_create(&ntid, NULL, browser_settings_window_new_cb, browser);
+    ret = pthread_create(&ntid, NULL, midori_browser_settings_window_new_cb, browser);
 }
 
 // add by wangyl 2015.6.17 start
