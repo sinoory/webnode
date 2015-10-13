@@ -354,7 +354,7 @@
       # Run tools/clang/scripts/update.sh to make sure they are compiled.
       # This causes 'clang_chrome_plugins_flags' to be set.
       # Has no effect if 'clang' is not set as well.
-      'clang_use_chrome_plugins%': 1,
+      'clang_use_chrome_plugins%': 0,
 
       # Enable building with ASAN (Clang's -fsanitize=address option).
       # -fsanitize=address only works with clang, but asan=1 implies clang=1
@@ -547,7 +547,8 @@
       'chromium_win_pch%': 0,
 
       # Clang stuff.
-      'make_clang_dir%': 'third_party/llvm-build/Release+Asserts',
+      #'make_clang_dir%': 'third_party/llvm-build/Release+Asserts',
+      'make_clang_dir%': '/usr',
       # Set this to true when building with Clang.
       # See http://code.google.com/p/chromium/wiki/Clang for details.
       # If this is set, clang is used as both host and target compiler in
@@ -4244,7 +4245,7 @@
                       # a security measure, -pie takes precedence for
                       # now.
                       #'-Wl,--icf=safe',
-                      '-Wl,--icf=none',
+                      #'-Wl,--icf=none',
                     ],
                   }],
                 ],
