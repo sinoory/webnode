@@ -132,6 +132,10 @@
 #include <JavaScriptCore/RemoteInspector.h>
 #endif
 
+#include <v8.h>
+#include <libplatform/libplatform.h>
+#include "third_party/node/src/node_webkit.h"
+
 using namespace JSC;
 using namespace WebCore;
 
@@ -142,6 +146,58 @@ static const double plugInAutoStartExpirationTimeUpdateThreshold = 29 * 24 * 60 
 static const double nonVisibleProcessCleanupDelay = 10;
 
 namespace WebKit {
+class ShellArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
+    public:
+        virtual void* Allocate(size_t length) {
+            void* data = AllocateUninitialized(length);
+            return data == NULL ? data : memset(data, 0, length);
+        }
+        virtual void* AllocateUninitialized(size_t length) { return malloc(length); }
+        virtual void Free(void* data, size_t) { free(data); }
+};
+static inline v8::Local<v8::String> v8_str(const char* x) {
+        return v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), x);
+}
+
+static bool nodeInited=false; 
+void initNode(){
+    if(nodeInited){
+        return ;
+    }
+    nodeInited=true;
+    printf("initNode ok\n");
+
+    v8::Platform* platform = v8::platform::CreateDefaultPlatform();
+    v8::V8::InitializePlatform(platform);
+    v8::Isolate* isolate = v8::Isolate::New();
+    isolate->Enter(); 
+
+    //TODO:need right param
+    int argc = 2;
+    char* argv[]={"app --appname=nw --type=renderer --nodejs --working-directory=.","index.js"};
+    node::SetupUv(argc, argv);
+
+    //TODO:ShellArrayBufferAllocator ??
+    ShellArrayBufferAllocator array_buffer_allocator;
+    v8::V8::SetArrayBufferAllocator(&array_buffer_allocator);
+    v8::V8::Initialize();
+
+    {
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope scope(isolate);
+
+    //TODO: add window_bindings.js v8::RegisterExtension
+    v8::Local<v8::Context> context = v8::Context::New(isolate);
+    node::g_context.Reset(isolate, context);
+    context->SetSecurityToken(v8_str("nw-token"));
+    context->Enter();
+    context->SetEmbedderData(0, v8_str("node"));
+
+    node::SetupContext(argc, argv, context);
+
+    }
+
+}
 
 WebProcess& WebProcess::singleton()
 {
@@ -208,6 +264,7 @@ WebProcess::WebProcess()
     addSupplement<WebMediaKeyStorageManager>();
 #endif
     m_plugInAutoStartOriginHashes.add(SessionID::defaultSessionID(), HashMap<unsigned, double>());
+    initNode();
 }
 
 void WebProcess::initializeProcess(const ChildProcessInitializationParameters& parameters)

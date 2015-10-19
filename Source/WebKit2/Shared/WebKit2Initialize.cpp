@@ -31,14 +31,12 @@
 #include <runtime/InitializeThreading.h>
 #include <wtf/MainThread.h>
 #include <wtf/RunLoop.h>
-
 #if PLATFORM(COCOA)
 #include "WebSystemInterface.h"
 #endif
 #if PLATFORM(IOS)
 #import <WebCore/WebCoreThreadSystemInterface.h>
 #endif
-
 namespace WebKit {
 
 void InitializeWebKit2()
@@ -49,7 +47,6 @@ void InitializeWebKit2()
 #if PLATFORM(IOS)
     InitWebCoreThreadSystemInterface();
 #endif
-
     JSC::initializeThreading();
     WTF::initializeMainThread();
     RunLoop::initializeMainRunLoop();

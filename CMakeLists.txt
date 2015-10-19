@@ -19,6 +19,7 @@ set(WEBKIT2_DIR "${CMAKE_SOURCE_DIR}/Source/WebKit2")
 set(THIRDPARTY_DIR "${CMAKE_SOURCE_DIR}/Source/ThirdParty")
 set(PLATFORM_DIR "${CMAKE_SOURCE_DIR}/Source/Platform")
 set(CHROMIUM_SOURCES_DIR "${CMAKE_SOURCE_DIR}/Source/Chromium")
+set(NODE_ROOT_DIR "${CMAKE_SOURCE_DIR}/Source/src")
 
 set(TOOLS_DIR "${CMAKE_SOURCE_DIR}/Tools")
 

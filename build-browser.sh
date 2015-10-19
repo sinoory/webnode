@@ -93,6 +93,7 @@ else
 	echo "-----------build 64 bits"
 	mkdir -p bin 
 
+    if [ ! -d "$ThirdParty_DIR/gyyssl-0.1.0/" ];then
 	cd $ThirdParty_DIR
 	tar -zxvf gyyssl-0.1.0.tar.gz && cd gyyssl-0.1.0
 	./configure --libdir=/usr/local/lib/cdosbrowser/ && make && cd ../../../
@@ -129,6 +130,17 @@ else
 	cd ./release && make
 	make clean
 	cd ../../../
+fi
+
+    cd Source/src;
+    ./build/gyp_chromium third_party/node/node.gyp
+    ninja -C out/Release zlib
+    ninja -C out/Release cares
+    ninja -C out/Release http_parser
+    ninja -C out/Release openssl
+    ninja -C out/Release libuv
+    ninja -C out/Release node
+    cd ../..
 
 	echo "build release version start..." && sleep 3
 	cmake -DUSE_64BITS=1 -DPORT=GTK -DAPP_DEBUG=ON -DDEVELOPER_MODE=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_SKIP_BUILD_RPATH=FALSE -DCMAKE_BUILD_WITH_INSTALL_RPATH=FALSE -DCOMPILE_MODE=OFF -DENABLE_MIDORI=$BUILD_MIDORI && make -j${CPU_NUM} && echo ******build release SUCCESS********

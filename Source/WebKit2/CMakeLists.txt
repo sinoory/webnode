@@ -146,6 +146,9 @@ set(WebKit2_INCLUDE_DIRECTORIES
     "${DERIVED_SOURCES_WEBKIT2_DIR}"
     "${DERIVED_SOURCES_WEBKIT2_DIR}/include"
     "${CMAKE_BINARY_DIR}"
+    "${NODE_ROOT_DIR}"
+    "${NODE_ROOT_DIR}/v8"
+    "${NODE_ROOT_DIR}/v8/include"
     "${CMAKE_SOURCE_DIR}/Source"
 )
 
@@ -774,6 +777,17 @@ set_target_properties(WebKit2 PROPERTIES FOLDER "WebKit")
 set_target_properties(WebKit2 PROPERTIES LINK_FLAGS "-fPIC")
 set_target_properties(WebKit2 PROPERTIES INSTALL_RPATH "${BROWSER_LIB_INSTALL_DIR}")
 
+target_link_libraries(WebKit2 "-Wl,--whole-archive ../../Source/src/out/Release/obj/v8/tools/gyp/libv8_base.a -Wl,--no-whole-archive")
+target_link_libraries(WebKit2 "-Wl,--whole-archive ../../Source/src/out/Release/obj/v8/tools/gyp/libv8_libbase.a -Wl,--no-whole-archive")
+target_link_libraries(WebKit2 "-Wl,--whole-archive ../../Source/src/out/Release/obj/v8/tools/gyp/libv8_snapshot.a -Wl,--no-whole-archive")
+target_link_libraries(WebKit2 "-Wl,--whole-archive ../../Source/src/out/Release/obj/v8/tools/gyp/libv8_libplatform.a -Wl,--no-whole-archive")
+target_link_libraries(WebKit2 "-Wl,--whole-archive ../../Source/src/out/Release/obj/third_party/zlib/libchrome_zlib.a -Wl,--no-whole-archive")
+target_link_libraries(WebKit2 "-Wl,--whole-archive ../../Source/src/out/Release/obj/third_party/node/deps/cares/libcares.a -Wl,--no-whole-archive")
+target_link_libraries(WebKit2 "-Wl,--whole-archive ../../Source/src/out/Release/obj/third_party/node/deps/openssl/libopenssl.a -Wl,--no-whole-archive")
+target_link_libraries(WebKit2 "-Wl,--whole-archive ../../Source/src/out/Release/obj/third_party/node/deps/http_parser/libhttp_parser.a -Wl,--no-whole-archive")
+target_link_libraries(WebKit2 "-Wl,--whole-archive ../../Source/src/out/Release/obj/third_party/node/libnode.a -Wl,--no-whole-archive")
+target_link_libraries(WebKit2 "-Wl,--whole-archive ../../Source/src/out/Release/obj/third_party/node/deps/uv/libuv.a -Wl,--no-whole-archive")
+
 # add OpenSSL libs by luyue
 if(USE_64BITS)
     target_link_libraries(WebKit2 "-Wl,--whole-archive ../../lib/libcrypto.so.0.0.0 -Wl,--no-whole-archive")
@@ -821,6 +835,7 @@ if (ENABLE_PLUGIN_PROCESS)
     target_link_libraries(PluginProcess ${PluginProcess_LIBRARIES})
     set_target_properties(PluginProcess PROPERTIES FOLDER "WebKit")
     set_target_properties(PluginProcess PROPERTIES INSTALL_RPATH "${BROWSER_LIB_INSTALL_DIR}")
+
     install(TARGETS PluginProcess DESTINATION "${LIBEXEC_INSTALL_DIR}")
 
     if (WebKit2_PluginProcess_OUTPUT_NAME)
