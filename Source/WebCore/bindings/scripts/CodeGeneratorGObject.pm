@@ -344,6 +344,10 @@ sub SkipFunction {
         return 1;
     }
 
+    if ($function->signature->name eq "require") {
+        return 1;
+    }
+
     if ($function->signature->name eq "getCSSCanvasContext") {
         return 1;
     }
@@ -1040,7 +1044,9 @@ sub GenerateFunction {
     }
 
     if ($returnType ne "void" && $returnValueIsGDOMType && $functionSigType ne "any") {
-        $implIncludes{"WebKitDOM${functionSigType}Private.h"} = 1;
+        if($functionSigType ne "NodeProxy"){
+            $implIncludes{"WebKitDOM${functionSigType}Private.h"} = 1;
+        }
     }
 
     $functionSig .= ", GError** error" if $raisesException;

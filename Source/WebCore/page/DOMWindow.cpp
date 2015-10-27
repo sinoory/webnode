@@ -100,6 +100,7 @@
 #include "WebKitPoint.h"
 #include "WindowFeatures.h"
 #include "WindowFocusAllowedIndicator.h"
+#include "NodeProxy.h"
 #include <algorithm>
 #include <inspector/ScriptCallStack.h>
 #include <inspector/ScriptCallStackFactory.h>
@@ -471,6 +472,13 @@ DOMWindow* DOMWindow::toDOMWindow()
     return this;
 }
 
+PassRefPtr<NodeProxy> DOMWindow::require(const String& module){
+    //printf("DOMWindow::require(%s)\n",module.characters8());
+    //printf("DOMWindow::require(%s)\n",module.ascii().data());
+    NodeProxy* np = new NodeProxy();
+    np->require(module.ascii().data());
+    return np;
+}
 PassRefPtr<MediaQueryList> DOMWindow::matchMedia(const String& media)
 {
     return document() ? document()->mediaQueryMatcher().matchMedia(media) : 0;

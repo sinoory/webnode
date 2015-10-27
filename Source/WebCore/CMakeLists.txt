@@ -120,6 +120,9 @@ set(WebCore_INCLUDE_DIRECTORIES
     "${JAVASCRIPTCORE_DIR}/runtime"
     "${JAVASCRIPTCORE_DIR}/yarr"
     "${WTF_DIR}"
+    "${NODE_ROOT_DIR}"
+    "${NODE_ROOT_DIR}/v8"
+    "${NODE_ROOT_DIR}/v8/include"
     "${DERIVED_SOURCES_DIR}"
     "${DERIVED_SOURCES_DIR}/ForwardingHeaders"
     "${DERIVED_SOURCES_JAVASCRIPTCORE_DIR}"
@@ -390,6 +393,7 @@ set(WebCore_NON_SVG_IDL_FILES
     dom/EntityReference.idl
     dom/ErrorEvent.idl
     dom/Event.idl
+    dom/NodeProxy.idl
     dom/EventException.idl
     dom/EventTarget.idl
     dom/FocusEvent.idl
@@ -1077,6 +1081,7 @@ set(WebCore_SOURCES
     bindings/js/JSElementCustom.cpp
     bindings/js/JSErrorHandler.cpp
     bindings/js/JSEventCustom.cpp
+    bindings/js/JSNodeProxyCustom.cpp
     bindings/js/JSEventListener.cpp
     bindings/js/JSEventTargetCustom.cpp
     bindings/js/JSExceptionBase.cpp
@@ -1349,6 +1354,7 @@ set(WebCore_SOURCES
     dom/EntityReference.cpp
     dom/ErrorEvent.cpp
     dom/Event.cpp
+    dom/NodeProxy.cpp
     dom/EventContext.cpp
     dom/EventDispatcher.cpp
     dom/EventException.cpp
@@ -3509,6 +3515,17 @@ if (WTF_USE_3D_GRAPHICS)
 endif ()
 
 target_link_libraries(WebCore ${WebCore_LIBRARIES})
+target_link_libraries(WebCore "-Wl,--whole-archive ../../Source/src/out/Release/obj/v8/tools/gyp/libv8_base.a -Wl,--no-whole-archive")
+target_link_libraries(WebCore "-Wl,--whole-archive ../../Source/src/out/Release/obj/v8/tools/gyp/libv8_libbase.a -Wl,--no-whole-archive")
+target_link_libraries(WebCore "-Wl,--whole-archive ../../Source/src/out/Release/obj/v8/tools/gyp/libv8_snapshot.a -Wl,--no-whole-archive")
+target_link_libraries(WebCore "-Wl,--whole-archive ../../Source/src/out/Release/obj/v8/tools/gyp/libv8_libplatform.a -Wl,--no-whole-archive")
+target_link_libraries(WebCore "-Wl,--whole-archive ../../Source/src/out/Release/obj/third_party/zlib/libchrome_zlib.a -Wl,--no-whole-archive")
+target_link_libraries(WebCore "-Wl,--whole-archive ../../Source/src/out/Release/obj/third_party/node/deps/cares/libcares.a -Wl,--no-whole-archive")
+target_link_libraries(WebCore "-Wl,--whole-archive ../../Source/src/out/Release/obj/third_party/node/deps/openssl/libopenssl.a -Wl,--no-whole-archive")
+target_link_libraries(WebCore "-Wl,--whole-archive ../../Source/src/out/Release/obj/third_party/node/deps/http_parser/libhttp_parser.a -Wl,--no-whole-archive")
+target_link_libraries(WebCore "-Wl,--whole-archive ../../Source/src/out/Release/obj/third_party/node/libnode.a -Wl,--no-whole-archive")
+target_link_libraries(WebCore "-Wl,--whole-archive ../../Source/src/out/Release/obj/third_party/node/deps/uv/libuv.a -Wl,--no-whole-archive")
+
 
 if (WebCore_OUTPUT_NAME)
     set_target_properties(WebCore PROPERTIES OUTPUT_NAME ${WebCore_OUTPUT_NAME})

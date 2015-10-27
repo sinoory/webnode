@@ -78,6 +78,7 @@ namespace WebCore {
     class StyleMedia;
     class WebKitNamespace;
     class WebKitPoint;
+    class NodeProxy;
 
 #if ENABLE(REQUEST_ANIMATION_FRAME)
     class RequestAnimationFrameCallback;
@@ -124,6 +125,7 @@ namespace WebCore {
         void resumeFromPageCache();
 
         PassRefPtr<MediaQueryList> matchMedia(const String&);
+        PassRefPtr<NodeProxy> require(const String&);
 
         WEBCORE_EXPORT unsigned pendingUnloadEventListeners() const;
 

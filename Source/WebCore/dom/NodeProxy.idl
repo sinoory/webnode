@@ -1,0 +1,6 @@
+[
+    CustomGetOwnPropertySlot,
+] interface NodeProxy {
+    void    hello( );
+    [Custom] readonly attribute boolean     flag; //use Custom to genereate getOwnPropertySlot
+};
