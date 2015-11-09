@@ -47,7 +47,8 @@
 
     startup.globalVariables();
     startup.globalTimeouts();
-    if (process.__node_webkit) {
+    //if (process.__node_webkit) {
+    if (false) {
       // nw: we try to keep the uniform behaviour (logging to devtools) here.
       // FIXME: should have a better solution for full console support
       global.console = {
@@ -72,6 +73,7 @@
 
     startup.resolveArgv0();
 
+    console.log("=====node.js process.__node_webkit="+process.__node_webkit);
     if (process.__node_webkit) {
       startup.initNw();
       var Module = NativeModule.require('module');
@@ -799,8 +801,8 @@
     global.__nwWindowsStore = {};
 
     // Make Window a EventEmitter
-    NativeModule.require('util').inherits(global.Window, process.EventEmitter);
-    global.Window.init();
+    //NativeModule.require('util').inherits(global.Window, process.EventEmitter);
+    //global.Window.init();
   }
 
   // Below you find a minimal module system, which is used to load the node

@@ -483,6 +483,8 @@ set(WebKit2_SOURCES
 
     WebProcess/WebConnectionToUIProcess.cpp
     WebProcess/WebProcess.cpp
+    WebProcess/node_bindings.cpp
+    WebProcess/node_bindings_linux.cpp
 
     WebProcess/ApplicationCache/WebApplicationCacheManager.cpp
 

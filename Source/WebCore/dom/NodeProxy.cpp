@@ -2,8 +2,6 @@
 #include "config.h"
 #include "NodeProxy.h"
 
-#include "third_party/node/src/node_webkit.h"
-#include "third_party/node/src/node.h"
 #include <sstream>
 #include <iostream>
 using namespace std;
@@ -12,18 +10,57 @@ namespace WebCore {
         printf("NodeProxy::hello \n");
     }
 
-    void NodeProxy::require(const char* module){
-        printf("NodeProxy::require(%s)\n",module);
+    void NodeProxy::v82jscCb(const v8::FunctionCallbackInfo<v8::Value>& args) {
+        printf("NodeProxy v82jscCb \n");
+    }
+
+    static void setjsobj(v8::Local<v8::Object> nodeGlobal){
+        NODE_SET_METHOD(nodeGlobal, "nodeproxyCb", NodeProxy::v82jscCb);
+    }
+
+    static void tstcb(){
         v8::Isolate* isolate = v8::Isolate::GetCurrent();
-        v8::HandleScope scope(isolate);
         v8::Local<v8::Context> g_context =
             v8::Local<v8::Context>::New(isolate, node::g_context);
         v8::Context::Scope cscope(g_context);{
             v8::TryCatch try_catch;
+            v8::Local<v8::Script> script1 = v8::Script::Compile(v8::String::NewFromUtf8(isolate,
+                        "nodeproxyCb();"));
+            script1->Run();
+            if (try_catch.HasCaught()) {
+                v8::Handle<v8::Message> message = try_catch.Message();
+                printf("call nodeproxyCb faild:%s\n", *v8::String::Utf8Value(message->Get()));
+            }
+        }
+
+    }
+    void NodeProxy::require(const char* module){
+        static long moduleid=0;
+        v8::Isolate* isolate = v8::Isolate::GetCurrent();
+        printf("NodeProxy::require(%s) i1=%p i2=%p\n",module,isolate,(*node::g_context)->GetIsolate());
+        v8::HandleScope scope(isolate);
+        v8::Local<v8::Context> g_context =
+            v8::Local<v8::Context>::New(isolate, node::g_context);
+        
+
+        v8::Context::Scope cscope(g_context);{
+            v8::TryCatch try_catch;
+            ostringstream osModule;
+            osModule<<"NPReq_"<<module<<"_"<<moduleid<<std::endl;
+            mModuleName = osModule.str();
+
+            ostringstream oscb;
+            oscb<<"NPReq_"<<module<<"_cb_"<<moduleid<<std::endl;
+            mModuleCb = oscb.str();
+            moduleid++;
+
+            v8::Local<v8::Object> nodeGlobal = g_context->Global();
+            setjsobj(nodeGlobal);
+
             ostringstream ostr;
             //ostr << "process.nextTick();" << std::endl;
             //ostr << "if(!global){noglobal();}else{global();}" << std::endl;
-            ostr << "global.require('" << module << "')" << std::endl;
+            ostr <<"var "<<mModuleName<< " =global.require('" << module << "');" << std::endl;
             v8::Local<v8::Script> script = v8::Script::Compile(v8::String::NewFromUtf8(isolate,
                         ostr.str().c_str()));
             script->Run();
@@ -34,6 +71,40 @@ namespace WebCore {
 
 
         }
+
+    }
+
+
+    JSValue NodeProxy::exeMethod(ExecState* exec){
+        printf("NodeProxy::exeMethod mMethod=%s,args=%d\n",mMethod.c_str(),exec->argumentCount());
+        JSValue trueresult = jsBoolean(true);
+
+        v8::Isolate* isolate = v8::Isolate::GetCurrent();
+        v8::HandleScope scope(isolate);
+        v8::Local<v8::Context> g_context =
+            v8::Local<v8::Context>::New(isolate, node::g_context);
+        v8::Context::Scope cscope(g_context);{
+            v8::TryCatch try_catch;
+            ostringstream ostr;
+            //
+            //ostr <<mModuleName<< ".readFile"<<"('/home/sin/tmp/webjs',nodeproxyCb);" << std::endl;
+            //ostr <<mModuleName<< ".writeFileSync"<<"('/home/sin/tmp/webjs','wNodePrx');" << std::endl;
+            ostr <<mModuleName<< ".writeFile"<<"('/home/sin/tmp/webjs','byNodeProxy',nodeproxyCb);" << std::endl;
+            //ostr <<mModuleName<< ".open"<<"('/home/sin/tmp/webjs','r',nodeproxyCb);" << std::endl;
+            //ostr <<mModuleName<< "."<<mMethod<<"('~/tmp/webjs','writefile');" << std::endl;
+            printf("NodeProxy::exeMethod %s\n",ostr.str().c_str());
+            v8::Local<v8::Script> script = v8::Script::Compile(v8::String::NewFromUtf8(isolate,
+                        ostr.str().c_str()));
+            v8::Handle<v8::Value> result = script->Run();//TD:convert v8::result to jsc::result
+            if (try_catch.HasCaught()) {
+                v8::Handle<v8::Message> message = try_catch.Message();
+                printf("NodeProxy::exeMethod faild:%s\n", *v8::String::Utf8Value(message->Get()));
+            }
+
+
+        }
+
+        return trueresult;
     }
 
     NodeProxy::~NodeProxy(){

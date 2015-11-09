@@ -2920,6 +2920,13 @@ void Load(Environment* env) {
 
   Local<Value> arg = env->process_object();
   f->Call(global, 1, &arg);
+            if (try_catch.HasCaught()) {
+                v8::Handle<v8::Message> message = try_catch.Message();
+                printf("node.cc load node.js faild:%s\n",*v8::String::Utf8Value(message->Get()));
+            }else{
+                printf("node.cc load node.js ok\n");
+            }
+
 }
 
 static void PrintHelp();

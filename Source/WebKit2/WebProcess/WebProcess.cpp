@@ -135,10 +135,11 @@
 #include <v8.h>
 #include <libplatform/libplatform.h>
 #include "third_party/node/src/node_webkit.h"
+#include "node_bindings_linux.h"
 
 using namespace JSC;
 using namespace WebCore;
-
+using namespace atom;
 // This should be less than plugInAutoStartExpirationTimeThreshold in PlugInAutoStartProvider.
 static const double plugInAutoStartExpirationTimeUpdateThreshold = 29 * 24 * 60 * 60;
 
@@ -160,6 +161,7 @@ static inline v8::Local<v8::String> v8_str(const char* x) {
 }
 
 static bool nodeInited=false; 
+static NodeBindings* nb=0;
 void initNode(){
     if(nodeInited){
         return ;
@@ -196,6 +198,10 @@ void initNode(){
     node::SetupContext(argc, argv, context);
 
     }
+
+    nb=new NodeBindingsLinux(false);
+    nb->PrepareMessageLoop();
+    nb->RunMessageLoop();
 
 }
 
