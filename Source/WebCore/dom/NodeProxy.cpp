@@ -93,6 +93,13 @@ namespace WebCore {
         WTF::String cb = exec->uncheckedArgument(1).getString(exec);
         WTF::String p0 = exec->uncheckedArgument(0).getString(exec);
         printf("NodeProxy::exeMethod p0=%s callback=%s argc=%d\n",p0.ascii().data(),cb.ascii().data(),exec->argumentCount());
+        
+        if(this->m_data !=0){
+            delete this->m_data;
+        }
+        this->m_data=new JSCallbackData(asObject(exec->uncheckedArgument(1)), this->globalObject);
+
+
 
         JSValue trueresult = jsBoolean(true);
 

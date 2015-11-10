@@ -476,7 +476,7 @@ PassRefPtr<NodeProxy> DOMWindow::require(const String& module){
     //printf("DOMWindow::require(%s)\n",module.characters8());
     //printf("DOMWindow::require(%s)\n",module.ascii().data());
     PassRefPtr<NodeProxy> np = NodeProxy::create();
-    //NodeProxy* np = new NodeProxy();
+    //NodeProxy* np = new NodeProxy(); //test git
     np->require(module.ascii().data());
     return np;
 }

@@ -23,18 +23,13 @@ bool JSNodeProxy::getOwnPropertySlot(JSObject* object, ExecState* exec, Property
     JSNodeProxy* thisObject = jsCast<JSNodeProxy*>(object);
     NodeProxy& impl = thisObject->impl();
     if(propertyName=="write"){
-        printf("JSNodeProxy::getOwnPropertySlot handle write() exec=%p\n",exec);
+        printf("JSNodeProxy::getOwnPropertySlot handle write() exec=%p argc=%d\n",exec,exec->argumentCount());
         //for js : var res=np.write;
         //slot.setCustom(thisObject, ReadOnly | DontDelete | DontEnum, jsNodeProxyGenralFunc);
 
-        if(impl.m_data !=0){
-            delete impl.m_data;
+        if(!impl.globalObject){
+            impl.globalObject=thisObject->globalObject();
         }
-        //WTF::String cb = exec->uncheckedArgument(1).getString(exec);
-        //WTF::String p0 = exec->uncheckedArgument(0).getString(exec);
-        //printf("JSNodeProxy::getOwnPropertySlot write p0=%s callback=%s argc=%d\n",p0.ascii().data(),cb.ascii().data(),exec->argumentCount());
-        impl.m_data=new JSCallbackData(asObject(exec->uncheckedArgument(1)), thisObject->globalObject());
-
         //for js : var res=np.write();
         slot.setCustom(thisObject, ReadOnly | DontDelete | DontEnum, nonCachingStaticFunctionGetter<jsNodeProxyGeneralMethodFunc, 0>);
         impl.mMethod=std::string((char*)(propertyName.uid()->characters8()));

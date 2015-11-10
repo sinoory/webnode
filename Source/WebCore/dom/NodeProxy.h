@@ -14,6 +14,7 @@
 //#include <runtime/JSCJSValue.h>
 #include "JSDOMBinding.h"
 #include "JSCallbackData.h"
+#include "JSDOMGlobalObject.h"
 
 #include "third_party/node/src/node_webkit.h"
 #include "third_party/node/src/node.h"
@@ -37,6 +38,8 @@ class NodeProxy : public ScriptWrappable, public RefCounted<NodeProxy> {
 
 
     static JSCallbackData* m_data;
+
+    JSDOMGlobalObject* globalObject;
 
     std::string mMethod;
     std::string mProperty;
