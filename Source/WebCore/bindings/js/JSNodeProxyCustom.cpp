@@ -27,6 +27,13 @@ bool JSNodeProxy::getOwnPropertySlot(JSObject* object, ExecState* exec, Property
         //for js : var res=np.write;
         //slot.setCustom(thisObject, ReadOnly | DontDelete | DontEnum, jsNodeProxyGenralFunc);
 
+        if(impl.m_data !=0){
+            delete impl.m_data;
+        }
+        //WTF::String cb = exec->uncheckedArgument(1).getString(exec);
+        //WTF::String p0 = exec->uncheckedArgument(0).getString(exec);
+        //printf("JSNodeProxy::getOwnPropertySlot write p0=%s callback=%s argc=%d\n",p0.ascii().data(),cb.ascii().data(),exec->argumentCount());
+        impl.m_data=new JSCallbackData(asObject(exec->uncheckedArgument(1)), thisObject->globalObject());
 
         //for js : var res=np.write();
         slot.setCustom(thisObject, ReadOnly | DontDelete | DontEnum, nonCachingStaticFunctionGetter<jsNodeProxyGeneralMethodFunc, 0>);

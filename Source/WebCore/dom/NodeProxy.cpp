@@ -4,18 +4,30 @@
 
 #include <sstream>
 #include <iostream>
+
+#include <runtime/JSLock.h>
+
 using namespace std;
 namespace WebCore {
+    JSCallbackData* NodeProxy::m_data=0;
+
     void NodeProxy::hello(){
         printf("NodeProxy::hello \n");
     }
 
-    void NodeProxy::v82jscCb(const v8::FunctionCallbackInfo<v8::Value>& args) {
-        printf("NodeProxy v82jscCb \n");
+    static void v82jscCb(const v8::FunctionCallbackInfo<v8::Value>& args) {
+        printf("NodeProxy v82jscCb jsc cb=%p \n",NodeProxy::m_data);
+        JSLockHolder lock(NodeProxy::m_data->globalObject()->vm());
+
+        ExecState* exec = NodeProxy::m_data->globalObject()->globalExec();
+        MarkedArgumentBuffer jsargs;
+        bool raisedException = false; 
+        NodeProxy::m_data->invokeCallback(jsargs, &raisedException);
+        printf("NodeProxy v82jscCb raisedException=%d",raisedException); 
     }
 
     static void setjsobj(v8::Local<v8::Object> nodeGlobal){
-        NODE_SET_METHOD(nodeGlobal, "nodeproxyCb", NodeProxy::v82jscCb);
+        NODE_SET_METHOD(nodeGlobal, "nodeproxyCb", v82jscCb);
     }
 
     static void tstcb(){
@@ -76,13 +88,19 @@ namespace WebCore {
 
 
     JSValue NodeProxy::exeMethod(ExecState* exec){
-        printf("NodeProxy::exeMethod mMethod=%s,args=%d\n",mMethod.c_str(),exec->argumentCount());
+        printf("NodeProxy::exeMethod mMethod=%s,argc=%d\n",mMethod.c_str(),exec->argumentCount());
+
+        WTF::String cb = exec->uncheckedArgument(1).getString(exec);
+        WTF::String p0 = exec->uncheckedArgument(0).getString(exec);
+        printf("NodeProxy::exeMethod p0=%s callback=%s argc=%d\n",p0.ascii().data(),cb.ascii().data(),exec->argumentCount());
+
         JSValue trueresult = jsBoolean(true);
 
         v8::Isolate* isolate = v8::Isolate::GetCurrent();
         v8::HandleScope scope(isolate);
         v8::Local<v8::Context> g_context =
             v8::Local<v8::Context>::New(isolate, node::g_context);
+
         v8::Context::Scope cscope(g_context);{
             v8::TryCatch try_catch;
             ostringstream ostr;
@@ -92,7 +110,7 @@ namespace WebCore {
             ostr <<mModuleName<< ".writeFile"<<"('/home/sin/tmp/webjs','byNodeProxy',nodeproxyCb);" << std::endl;
             //ostr <<mModuleName<< ".open"<<"('/home/sin/tmp/webjs','r',nodeproxyCb);" << std::endl;
             //ostr <<mModuleName<< "."<<mMethod<<"('~/tmp/webjs','writefile');" << std::endl;
-            printf("NodeProxy::exeMethod %s\n",ostr.str().c_str());
+            printf("NodeProxy::exeMethod %s , this=%p\n",ostr.str().c_str(),this);
             v8::Local<v8::Script> script = v8::Script::Compile(v8::String::NewFromUtf8(isolate,
                         ostr.str().c_str()));
             v8::Handle<v8::Value> result = script->Run();//TD:convert v8::result to jsc::result

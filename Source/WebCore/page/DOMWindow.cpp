@@ -475,7 +475,8 @@ DOMWindow* DOMWindow::toDOMWindow()
 PassRefPtr<NodeProxy> DOMWindow::require(const String& module){
     //printf("DOMWindow::require(%s)\n",module.characters8());
     //printf("DOMWindow::require(%s)\n",module.ascii().data());
-    NodeProxy* np = new NodeProxy();
+    PassRefPtr<NodeProxy> np = NodeProxy::create();
+    //NodeProxy* np = new NodeProxy();
     np->require(module.ascii().data());
     return np;
 }
