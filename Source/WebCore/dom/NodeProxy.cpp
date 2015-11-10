@@ -49,7 +49,7 @@ namespace WebCore {
     void NodeProxy::require(const char* module){
         static long moduleid=0;
         v8::Isolate* isolate = v8::Isolate::GetCurrent();
-        printf("NodeProxy::require(%s) i1=%p i2=%p\n",module,isolate,(*node::g_context)->GetIsolate());
+        //printf("NodeProxy::require(%s) i1=%p i2=%p\n",module,isolate,(*node::g_context)->GetIsolate());
         v8::HandleScope scope(isolate);
         v8::Local<v8::Context> g_context =
             v8::Local<v8::Context>::New(isolate, node::g_context);
