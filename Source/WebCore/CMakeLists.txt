@@ -131,6 +131,7 @@ set(WebCore_INCLUDE_DIRECTORIES
     "${CMAKE_SOURCE_DIR}/Source"
     "${CMAKE_BINARY_DIR}"
     "${THIRDPARTY_DIR}"
+    "/usr/include/gobject-introspection-1.0"
 )
 
 set(WebCore_IDL_INCLUDES
@@ -3515,6 +3516,7 @@ if (WTF_USE_3D_GRAPHICS)
 endif ()
 
 target_link_libraries(WebCore ${WebCore_LIBRARIES})
+target_link_libraries(WebCore seed-gtk3)
 target_link_libraries(WebCore "-Wl,--whole-archive ../../Source/src/out/Release/obj/v8/tools/gyp/libv8_base.a -Wl,--no-whole-archive")
 target_link_libraries(WebCore "-Wl,--whole-archive ../../Source/src/out/Release/obj/v8/tools/gyp/libv8_libbase.a -Wl,--no-whole-archive")
 target_link_libraries(WebCore "-Wl,--whole-archive ../../Source/src/out/Release/obj/v8/tools/gyp/libv8_snapshot.a -Wl,--no-whole-archive")
