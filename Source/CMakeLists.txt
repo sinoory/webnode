@@ -11,6 +11,8 @@ if (ENABLE_API_TESTS)
     add_subdirectory(cmake/gtest)
 endif ()
 
+add_subdirectory(WebCore/libseed)
+
 if (ENABLE_WEBCORE)
     add_subdirectory(WebCore)
 endif ()

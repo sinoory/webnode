@@ -38,7 +38,7 @@
 #include "WebCoreJSClientData.h"
 #include <runtime/Microtask.h>
 #include <wtf/MainThread.h>
-#include <seed-gtk3/seed.h>
+#include "libseed/seed.h"
 #include <API/APICast.h>
 #include <API/JSContextRef.h>
 
@@ -95,11 +95,12 @@ void JSDOMWindowBase::updateDocument()
 {
     ASSERT(m_impl->document());
     ExecState* exec = globalExec();
+
+    //init seed
     JSGlobalContextRef ctx = toGlobalRef(exec);
     JSContextGroupRef grp = JSContextGetGroup(ctx);
-    gint argc=0;
-    gchar* argv[]={};
-    seed_init_with_context_and_group(&argc,0,ctx,grp);
+    seed_init_with_context_and_group(0,0,ctx,grp);
+
     symbolTablePutWithAttributes(this, exec->vm(), exec->vm().propertyNames->document, toJS(exec, this, m_impl->document()), DontDelete | ReadOnly);
 }
 

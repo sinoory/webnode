@@ -80,8 +80,10 @@ seed_init_with_context (gint * argc, gchar *** argv, SeedGlobalContext context);
 
 SeedEngine *seed_init_with_context_group (gint *argc, gchar ***argv,
 					  SeedContextGroup group);
-SeedEngine *seed_init_with_context_and_group (gint * argc,gchar *** argv,
-					  SeedGlobalContext context, SeedContextGroup group);
+//SeedEngine *seed_init_with_context_and_group (gint * argc,gchar *** argv,
+//					  SeedGlobalContext context, SeedContextGroup group);
+SeedEngine * seed_init_with_context_and_group (gint * argc,
+        gchar *** argv, JSGlobalContextRef context, JSContextGroupRef group);
 SeedEngine *seed_init_constrained (gint * argc, gchar *** argv);
 SeedEngine *seed_init_constrained_with_context_and_group (gint * argc,
                                                                  gchar *** argv,

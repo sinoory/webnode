@@ -2745,6 +2745,7 @@ set(WebCore_PLUG_INS_RESOURCES
 set(WebCore_LIBRARIES
     JavaScriptCore
     WTF
+    seed
 )
 
 if (ENABLE_ENCRYPTED_MEDIA OR ENABLE_ENCRYPTED_MEDIA_V2)
@@ -3516,7 +3517,6 @@ if (WTF_USE_3D_GRAPHICS)
 endif ()
 
 target_link_libraries(WebCore ${WebCore_LIBRARIES})
-target_link_libraries(WebCore seed-gtk3)
 target_link_libraries(WebCore "-Wl,--whole-archive ../../Source/src/out/Release/obj/v8/tools/gyp/libv8_base.a -Wl,--no-whole-archive")
 target_link_libraries(WebCore "-Wl,--whole-archive ../../Source/src/out/Release/obj/v8/tools/gyp/libv8_libbase.a -Wl,--no-whole-archive")
 target_link_libraries(WebCore "-Wl,--whole-archive ../../Source/src/out/Release/obj/v8/tools/gyp/libv8_snapshot.a -Wl,--no-whole-archive")

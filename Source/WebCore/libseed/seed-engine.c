@@ -1711,7 +1711,7 @@ seed_init_constrained_with_context_and_group (gint * argc,
 
   if (seed_arg_print_version)
     {
-      g_print("%s\n", "Seed " VERSION);
+      //g_print("%s\n", "Seed " VERSION);
       exit(EXIT_SUCCESS);
     }
 
@@ -1788,7 +1788,6 @@ SeedEngine *
 seed_init_with_context_and_group (gint * argc,
 			      gchar *** argv, JSGlobalContextRef context, JSContextGroupRef group)
 {
-
   eng = seed_init_constrained_with_context_and_group (argc, argv, context, group);
   seed_init_builtins (eng, argc, argv);
   seed_initialize_importer (eng->context, eng->global);

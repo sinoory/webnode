@@ -4,13 +4,14 @@ PROJECT(seed)
 add_definitions(-DGOBJECT_INTROSPECTION_VERSION=0x014000)
 
 set(SEED_INCLUDE_DIRECTORIES
+    "${CMAKE_SOURCE_DIR}"
     "${CMAKE_SOURCE_DIR}/Source"
     "${JAVASCRIPTCORE_DIR}"
     "${JAVASCRIPTCORE_DIR}/ForwardingHeaders"
-    "/usr/include/glib-2.0"
-    "/usr/lib/x86_64-linux-gnu/glib-2.0/include"
+    "${JAVASCRIPTCORE_DIR}/runtime"
+    "${WTF_DIR}"
+    "${GLIB_INCLUDE_DIRS}"
     "/usr/include/gobject-introspection-1.0"
-    "/usr/include/webkitgtk-3.0"
     )
 
 include_directories(${SEED_INCLUDE_DIRECTORIES})
@@ -42,3 +43,13 @@ set(SEED_SOURCES
 
 
 ADD_LIBRARY(seed SHARED ${SEED_SOURCES})
+
+target_link_libraries(seed 
+    girepository-1.0
+    gobject-2.0
+    glib-2.0
+    gio-2.0
+    gmodule-2.0
+    JavaScriptCore
+    WTF
+    )
