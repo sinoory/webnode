@@ -480,6 +480,13 @@ PassRefPtr<NodeProxy> DOMWindow::require(const String& module){
     np->require(module.ascii().data());
     return np;
 }
+
+PassRefPtr<NodeProxy> DOMWindow::_require_obj_from_class_(const String& module){
+    PassRefPtr<NodeProxy> np = NodeProxy::create();
+    np->require(module.ascii().data(),true);
+    return np;
+}
+
 PassRefPtr<MediaQueryList> DOMWindow::matchMedia(const String& media)
 {
     return document() ? document()->mediaQueryMatcher().matchMedia(media) : 0;

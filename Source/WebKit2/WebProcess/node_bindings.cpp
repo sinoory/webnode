@@ -153,9 +153,9 @@ void NodeBindings::UvRunOnce() {
 void NodeBindings::WakeupMainThread() {
   //message_loop_->PostTask(FROM_HERE, base::Bind(&NodeBindings::UvRunOnce,
   //                                              weak_factory_.GetWeakPtr()));
-  RefPtr<NodeBindings> protector(this);
-  RunLoop::main().dispatch([protector] {
-    protector->UvRunOnce();
+  //RefPtr<NodeBindings> protector(this);
+  RunLoop::main().dispatch([this] {
+    this->UvRunOnce();
   });
 }
 

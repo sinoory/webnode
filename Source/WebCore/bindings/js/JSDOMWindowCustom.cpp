@@ -35,6 +35,11 @@
 #include "Location.h"
 #include "ScheduledAction.h"
 #include "Settings.h"
+#include "JSNodeProxy.h"
+#include "JSMainThreadExecState.h"
+
+#include <sstream>
+#include <iostream>
 
 #if ENABLE(IOS_TOUCH_EVENTS)
 #include "JSTouchConstructorIOS.h"
@@ -318,6 +323,34 @@ bool JSDOMWindow::getOwnPropertySlotByIndex(JSObject* object, ExecState* exec, u
     return Base::getOwnPropertySlotByIndex(thisObject, exec, index, slot);
 }
 
+JSValue JSDOMWindow::require(ExecState* exec){
+    const String& module(exec->argument(0).isEmpty() ? String() : exec->argument(0).toString(exec)->value(exec));
+    PassRefPtr<NodeProxy> np = impl().require(module);
+    //printf("======JSDOMWindow::require lastRequireIsObject=%d\n",np->lastRequireIsObject);
+    if(np->lastRequireIsObject){
+        JSValue result = toJS(exec, this->globalObject(), WTF::getPtr(np));
+        return result;
+    }
+
+    std::ostringstream ostr;
+    //TODO: also need pass arguments to requireObjFromClass to new a real object
+    ostr << "function __NODE_PROXY_CLS__(){return node_require_obj_from_class('"<< module.ascii().data() <<"');} ; eval(__NODE_PROXY_CLS__) " << std::endl;
+    printf("===JSDOMWindow::require %s\n",ostr.str().c_str());
+    JSValue evaluationException;
+    String jsstr=String::fromUTF8WithLatin1Fallback(ostr.str().c_str(),strlen(ostr.str().c_str()));
+    SourceCode jsc = makeSource(jsstr, "nodeproxycls");
+    JSValue returnValue = JSMainThreadExecState::evaluate(exec,jsc,JSValue(), &evaluationException);
+    return returnValue;
+
+}
+JSValue JSDOMWindow::node_require_obj_from_class(ExecState* exec){
+    const String& module(exec->argument(0).isEmpty() ? String() : exec->argument(0).toString(exec)->value(exec));
+    PassRefPtr<NodeProxy> np = impl()._require_obj_from_class_(module);
+    printf("======JSDOMWindow::require obj from class\n");
+    JSValue result = toJS(exec, this->globalObject(), WTF::getPtr(np));
+    return result;
+
+}
 void JSDOMWindow::put(JSCell* cell, ExecState* exec, PropertyName propertyName, JSValue value, PutPropertySlot& slot)
 {
     JSDOMWindow* thisObject = jsCast<JSDOMWindow*>(cell);

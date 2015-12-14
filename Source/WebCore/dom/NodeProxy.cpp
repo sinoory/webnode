@@ -23,7 +23,7 @@ namespace WebCore {
         MarkedArgumentBuffer jsargs;
         bool raisedException = false; 
         NodeProxy::m_data->invokeCallback(jsargs, &raisedException);
-        printf("NodeProxy v82jscCb raisedException=%d",raisedException); 
+        printf("NodeProxy v82jscCb raisedException=%d\n",raisedException); 
     }
 
     static void setjsobj(v8::Local<v8::Object> nodeGlobal){
@@ -46,7 +46,8 @@ namespace WebCore {
         }
 
     }
-    void NodeProxy::require(const char* module){
+
+    int NodeProxy::require(const char* module,bool requireObjFromClass,const char* constructParams){
         static long moduleid=0;
         v8::Isolate* isolate = v8::Isolate::GetCurrent();
         //printf("NodeProxy::require(%s) i1=%p i2=%p\n",module,isolate,(*node::g_context)->GetIsolate());
@@ -79,7 +80,38 @@ namespace WebCore {
             if (try_catch.HasCaught()) {
                 v8::Handle<v8::Message> message = try_catch.Message();
                 printf("require(%s) faild:%s\n", module,*v8::String::Utf8Value(message->Get()));
+                return -1;
             }
+
+            ostr.clear();
+            ostr << "typeof(" << mModuleName << ");" << std::endl;
+            script = v8::Script::Compile(v8::String::NewFromUtf8(isolate,ostr.str().c_str()));
+            v8::Handle<v8::Value> result = script->Run();
+            if (try_catch.HasCaught()) {
+                v8::Handle<v8::Message> message = try_catch.Message();
+                printf("get type info faild:%s\n", module,*v8::String::Utf8Value(message->Get()));
+                return -1;
+            }
+            v8::String::Utf8Value str(result);
+            const char* cstr = *str;
+            printf("require(%s) type = %s\n",module,cstr);
+        
+            if(strstr(cstr,"function")){
+                lastRequireIsObject=false;
+                if(requireObjFromClass){
+                    ostr.clear();
+                    //convert class to object
+                    ostr<<mModuleName<<" = new "<< mModuleName <<"("<<(constructParams?constructParams:"")<<");"<<std::endl;
+                    printf("======convert c=>o : %s\n",ostr.str().c_str());
+                    v8::Local<v8::Script> script = v8::Script::Compile(v8::String::NewFromUtf8(isolate,
+                        ostr.str().c_str()));
+                    script->Run();
+                }
+                return 1;
+
+            }
+            lastRequireIsObject=true;
+            return 0;
 
 
         }
@@ -88,7 +120,7 @@ namespace WebCore {
 
 
     JSValue NodeProxy::exeMethod(ExecState* exec){
-        printf("NodeProxy::exeMethod mMethod=%s,argc=%d\n",mMethod.c_str(),exec->argumentCount());
+        printf("NodeProxy::exeMethod mMethod=%s,argc=%d exe=%p\n",mMethod.c_str(),exec->argumentCount(),exec);
 
         WTF::String cb = exec->uncheckedArgument(1).getString(exec);
         WTF::String p0 = exec->uncheckedArgument(0).getString(exec);

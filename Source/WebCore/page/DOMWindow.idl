@@ -122,7 +122,8 @@
     // This attribute is an alias of defaultStatus and is necessary for legacy uses.
     [ImplementedAs=defaultStatus] attribute DOMString defaultstatus;
 #endif
-    NodeProxy require(DOMString module);
+    [Custom] NodeProxy require(DOMString module);
+    [Custom] NodeProxy node_require_obj_from_class(DOMString module);
 
     // Self referential attributes
     [Replaceable, DoNotCheckSecurityOnGetter] readonly attribute DOMWindow self;

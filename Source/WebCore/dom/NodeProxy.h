@@ -32,7 +32,10 @@ class NodeProxy : public ScriptWrappable, public RefCounted<NodeProxy> {
     }
 
     void hello();
-    void require(const char* module);
+    //return 0: object , 1:class
+    //requireObjFromClass : if set true and require result is a class,
+    //                      then new a NodeProxy object to js
+    int require(const char* module,bool requireObjFromClass=false,const char* constructParams=0);
     JSValue exeMethod(ExecState* exec);
 
 
@@ -40,6 +43,8 @@ class NodeProxy : public ScriptWrappable, public RefCounted<NodeProxy> {
     static JSCallbackData* m_data;
 
     JSDOMGlobalObject* globalObject;
+
+    bool lastRequireIsObject;
 
     std::string mMethod;
     std::string mProperty;
