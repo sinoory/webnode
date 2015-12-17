@@ -10,9 +10,37 @@
 using namespace std;
 namespace WebCore {
     JSCallbackData* NodeProxy::m_data=0;
+    int NodeProxy::ExeCnt=0;
 
     void NodeProxy::hello(){
         printf("NodeProxy::hello \n");
+    }
+
+    char NodeProxy::getPropertyType(const char* prop){
+        ostringstream ostr;
+        ostr<<"typeof("<<mModuleName<<"."<<prop<<")"<<std::endl;
+        //TODO:store result for effetionce
+        v8::Isolate* isolate = v8::Isolate::GetCurrent();
+        v8::HandleScope scope(isolate);
+
+        v8::Local<v8::Context> g_context =
+            v8::Local<v8::Context>::New(isolate, node::g_context);
+        v8::Context::Scope cscope(g_context);{
+            v8::TryCatch try_catch;
+            v8::Local<v8::Script> script = v8::Script::Compile(v8::String::NewFromUtf8(isolate,
+                        ostr.str().c_str()));
+            v8::Handle<v8::Value> result = script->Run();
+            if (try_catch.HasCaught()) {
+                v8::Handle<v8::Message> message = try_catch.Message();
+                printf("getPropertyType faild:%s\n", *v8::String::Utf8Value(message->Get()));
+                return 0;
+            }
+            v8::String::Utf8Value str(result);
+            const char* res=*str;
+            printf("NodeProxy::getPropertyType %s = %s.\n",ostr.str().c_str(),res);
+            return (char)(*((const char*)(*str)));
+        }
+
     }
 
     static void v82jscCb(const v8::FunctionCallbackInfo<v8::Value>& args) {
@@ -83,7 +111,7 @@ namespace WebCore {
                 return -1;
             }
 
-            ostr.clear();
+            ostr.str("");
             ostr << "typeof(" << mModuleName << ");" << std::endl;
             script = v8::Script::Compile(v8::String::NewFromUtf8(isolate,ostr.str().c_str()));
             v8::Handle<v8::Value> result = script->Run();
@@ -99,7 +127,7 @@ namespace WebCore {
             if(strstr(cstr,"function")){
                 lastRequireIsObject=false;
                 if(requireObjFromClass){
-                    ostr.clear();
+                    ostr.str("");
                     //convert class to object
                     ostr<<mModuleName<<" = new "<< mModuleName <<"("<<(constructParams?constructParams:"")<<");"<<std::endl;
                     printf("======convert c=>o : %s\n",ostr.str().c_str());
@@ -112,56 +140,63 @@ namespace WebCore {
             }
             lastRequireIsObject=true;
             return 0;
-
-
         }
-
     }
 
 
-    JSValue NodeProxy::exeMethod(ExecState* exec){
+    char NodeProxy::exeMethod(ExecState* exec){
         printf("NodeProxy::exeMethod mMethod=%s,argc=%d exe=%p\n",mMethod.c_str(),exec->argumentCount(),exec);
-
-        WTF::String cb = exec->uncheckedArgument(1).getString(exec);
-        WTF::String p0 = exec->uncheckedArgument(0).getString(exec);
-        printf("NodeProxy::exeMethod p0=%s callback=%s argc=%d\n",p0.ascii().data(),cb.ascii().data(),exec->argumentCount());
-        
-        if(this->m_data !=0){
-            delete this->m_data;
-        }
-        this->m_data=new JSCallbackData(asObject(exec->uncheckedArgument(1)), this->globalObject);
-
-
-
-        JSValue trueresult = jsBoolean(true);
 
         v8::Isolate* isolate = v8::Isolate::GetCurrent();
         v8::HandleScope scope(isolate);
         v8::Local<v8::Context> g_context =
             v8::Local<v8::Context>::New(isolate, node::g_context);
 
+        ostringstream ostr;
+        //do not use var , so return res to be a global object in v8
+        //otherwise typeof() will can't got the result
+        ostr <<" "<<EXE_RES_VAR<<++ExeCnt<<" = " << mModuleName<< "." <<mMethod<<"(";
         v8::Context::Scope cscope(g_context);{
             v8::TryCatch try_catch;
-            ostringstream ostr;
-            //
-            //ostr <<mModuleName<< ".readFile"<<"('/home/sin/tmp/webjs',nodeproxyCb);" << std::endl;
-            //ostr <<mModuleName<< ".writeFileSync"<<"('/home/sin/tmp/webjs','wNodePrx');" << std::endl;
-            ostr <<mModuleName<< ".writeFile"<<"('/home/sin/tmp/webjs','byNodeProxy',nodeproxyCb);" << std::endl;
-            //ostr <<mModuleName<< ".open"<<"('/home/sin/tmp/webjs','r',nodeproxyCb);" << std::endl;
-            //ostr <<mModuleName<< "."<<mMethod<<"('~/tmp/webjs','writefile');" << std::endl;
+            bool pa=false;
+            for(int i=0;i<exec->argumentCount();i++){
+                JSValue arg=exec->uncheckedArgument(i);
+                if(arg.isString()){
+                    ostr<< (pa?",'":"'") <<arg.toString(exec)->value(exec).ascii().data()<<"'";  
+                    pa=true;
+                }else if(arg.isNumber()){
+                    ostr<< (pa?",":"") <<arg.toNumber(exec);  
+                    pa=true;
+                }else if(arg.isFunction()){
+                    ostr<< (pa?",":"") <<"nodeproxyCb";  
+                    if(this->m_data !=0){
+                        delete this->m_data;
+                    }
+                    this->m_data=new JSCallbackData(asObject(arg), this->globalObject);
+                }
+            }
+            ostr <<");"<<std::endl;
+
             printf("NodeProxy::exeMethod %s , this=%p\n",ostr.str().c_str(),this);
             v8::Local<v8::Script> script = v8::Script::Compile(v8::String::NewFromUtf8(isolate,
                         ostr.str().c_str()));
-            v8::Handle<v8::Value> result = script->Run();//TD:convert v8::result to jsc::result
+            v8::Handle<v8::Value> result = script->Run();
             if (try_catch.HasCaught()) {
                 v8::Handle<v8::Message> message = try_catch.Message();
                 printf("NodeProxy::exeMethod faild:%s\n", *v8::String::Utf8Value(message->Get()));
             }
 
+            ostr.str("");
+            ostr<<"typeof("<<EXE_RES_VAR<<ExeCnt<<")"<<std::endl;
+            script = v8::Script::Compile(v8::String::NewFromUtf8(isolate,ostr.str().c_str()));
+            result = script->Run();
 
+            v8::String::Utf8Value str(result);
+            const char* res=*str;
+            printf("NodeProxy::exeMethod res %s = %s\n",ostr.str().c_str(),res);
+            return (char)(*((const char*)(*str)));
         }
-
-        return trueresult;
+        return 'u';
     }
 
     NodeProxy::~NodeProxy(){

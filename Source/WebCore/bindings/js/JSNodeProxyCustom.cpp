@@ -8,6 +8,10 @@
 #include <wtf/text/AtomicString.h>
 #include <v8.h>
 #include <libplatform/libplatform.h>
+
+#include <sstream>
+#include <iostream>
+
 using namespace JSC;
 
 namespace WebCore {
@@ -22,8 +26,23 @@ bool JSNodeProxy::getOwnPropertySlot(JSObject* object, ExecState* exec, Property
 {
     JSNodeProxy* thisObject = jsCast<JSNodeProxy*>(object);
     NodeProxy& impl = thisObject->impl();
+    const char* nm = propertyName.uid()->utf8().data();
+    char type = impl.getPropertyType(nm);
+    printf("JSNodeProxy::getOwnPropertySlot handle %s type=%c exec=%p argc=%d\n",nm,type,exec,exec->argumentCount());
+    if(!impl.globalObject){
+        impl.globalObject=thisObject->globalObject();
+    }
+
+    if(type=='f'){//function
+        slot.setCustom(thisObject, ReadOnly | DontDelete | DontEnum, nonCachingStaticFunctionGetter<jsNodeProxyGeneralMethodFunc, 0>);
+        impl.mMethod=std::string(nm);
+        return true;
+    }else if(type=='o'){//object
+        slot.setCustom(thisObject, ReadOnly | DontDelete | DontEnum, jsNodeProxyGenralFunc);
+        return true;
+    }
+#if 0
     if(propertyName=="write"){
-        printf("JSNodeProxy::getOwnPropertySlot handle write() exec=%p argc=%d\n",exec,exec->argumentCount());
         //for js : var res=np.write;
         //slot.setCustom(thisObject, ReadOnly | DontDelete | DontEnum, jsNodeProxyGenralFunc);
 
@@ -35,9 +54,8 @@ bool JSNodeProxy::getOwnPropertySlot(JSObject* object, ExecState* exec, Property
         impl.mMethod=std::string((char*)(propertyName.uid()->characters8()));
         return true;
     }
+#endif
 
-    //v8::Platform* platform = v8::platform::CreateDefaultPlatform();
-    //v8::V8::Initialize();
     printf("JSNodeProxy::getOwnPropertySlot propertyName=%s\n",propertyName.uid()->characters8());
     return false;
 }
@@ -78,9 +96,20 @@ EncodedJSValue JSC_HOST_CALL jsNodeProxyGeneralMethodFunc(ExecState* exec){
     ScriptExecutionContext* scriptContext = jsCast<JSDOMGlobalObject*>(exec->lexicalGlobalObject())->scriptExecutionContext();
     if (!scriptContext)
         return JSValue::encode(falseresult);
-    //impl.focus(scriptContext);
-    return JSValue::encode(impl.exeMethod(exec));
 
+    char restype = impl.exeMethod(exec);
+    if(restype=='o'){//object
+        PassRefPtr<NodeProxy> np = new NodeProxy;
+        np->globalObject=jsCast<JSDOMGlobalObject*>(exec->lexicalGlobalObject());
+        std::ostringstream ostr;
+        ostr<<EXE_RES_VAR<<NodeProxy::ExeCnt<<std::endl;
+        np->mModuleName=ostr.str();
+        JSValue jnp = toJS(exec, np->globalObject, WTF::getPtr(np));
+        return JSValue::encode(jnp);
+    }else {
+    }
+
+    return JSValue::encode(jsUndefined());
 }
 
 bool JSNodeProxy::getOwnPropertySlotByIndex(JSObject* object, ExecState* exec, unsigned index, PropertySlot& slot)

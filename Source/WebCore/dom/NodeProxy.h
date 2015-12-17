@@ -22,6 +22,8 @@
 
 using namespace JSC;
 
+#define EXE_RES_VAR "_node_proxy_exe_res_"
+
 namespace WebCore {
 class NodeProxy : public ScriptWrappable, public RefCounted<NodeProxy> {
     public:
@@ -36,10 +38,12 @@ class NodeProxy : public ScriptWrappable, public RefCounted<NodeProxy> {
     //requireObjFromClass : if set true and require result is a class,
     //                      then new a NodeProxy object to js
     int require(const char* module,bool requireObjFromClass=false,const char* constructParams=0);
-    JSValue exeMethod(ExecState* exec);
+    char exeMethod(ExecState* exec);
+    char getPropertyType(const char* prop);
 
 
 
+    static int ExeCnt;
     static JSCallbackData* m_data;
 
     JSDOMGlobalObject* globalObject;
