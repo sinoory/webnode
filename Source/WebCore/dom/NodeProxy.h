@@ -23,6 +23,7 @@
 using namespace JSC;
 
 #define EXE_RES_VAR "_node_proxy_exe_res_"
+#define CB_PARAM_VAR "_np_callback_param_"
 
 namespace WebCore {
 class NodeProxy : public ScriptWrappable, public RefCounted<NodeProxy> {

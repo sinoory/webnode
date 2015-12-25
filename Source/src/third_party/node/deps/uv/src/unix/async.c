@@ -52,6 +52,7 @@ int uv_async_init(uv_loop_t* loop, uv_async_t* handle, uv_async_cb async_cb) {
   QUEUE_INSERT_TAIL(&loop->async_handles, &handle->queue);
   uv__handle_start(handle);
 
+  uv_run(loop, UV_RUN_NOWAIT);
   return 0;
 }
 

@@ -1,6 +1,7 @@
 
 #include "config.h"
 #include "NodeProxy.h"
+#include "JSNodeProxy.h"
 
 #include <sstream>
 #include <iostream>
@@ -18,7 +19,11 @@ namespace WebCore {
 
     char NodeProxy::getPropertyType(const char* prop){
         ostringstream ostr;
-        ostr<<"typeof("<<mModuleName<<"."<<prop<<")"<<std::endl;
+        if(mModuleName.empty()){
+            ostr<<"typeof("<<prop<<")"<<std::endl;
+        }else{
+            ostr<<"typeof("<<mModuleName<<"."<<prop<<")"<<std::endl;
+        }
         //TODO:store result for effetionce
         v8::Isolate* isolate = v8::Isolate::GetCurrent();
         v8::HandleScope scope(isolate);
@@ -44,14 +49,69 @@ namespace WebCore {
     }
 
     static void v82jscCb(const v8::FunctionCallbackInfo<v8::Value>& args) {
-        printf("NodeProxy v82jscCb jsc cb=%p \n",NodeProxy::m_data);
+        static int pcnt=0;
+        int argc = args.Length();
+        MarkedArgumentBuffer jsargs;
+        for (int i = 0; i < argc; i++){
+            v8::HandleScope handle_scope(args.GetIsolate());
+            v8::Local<v8::Value> v = args[i];
+            if (v->IsUndefined() || v->IsNull()) {
+                jsargs.append(JSC::jsNull());
+            }else if (v->IsString()) {
+                v8::Local<v8::String> rv = v->ToString();
+                JSString* jsv = jsString(NodeProxy::m_data->globalObject()->globalExec(), 
+                        *v8::String::Utf8Value(rv));
+                //jsargs.append(*jsv);
+            }else if (v->IsBoolean()) {
+                v8::Local<v8::Boolean> rv = v->ToBoolean();
+                jsargs.append(jsBoolean(rv->Value()));
+            }else if (v->IsInt32()) {
+                v8::Local<v8::Int32> rv = v->ToInt32();
+                jsargs.append(JSValue(rv->Value()));
+            }else if (v->IsUint32()) {
+                v8::Local<v8::Uint32> rv = v->ToUint32();
+                jsargs.append(JSValue(rv->Value()));
+            }else if (v->IsNumber()) {
+                v8::Local<v8::Number> rv = v->ToNumber();
+                jsargs.append(JSValue(rv->Value()));
+            }else if (v->IsObject()) {
+                v8::Local<v8::Object> obj= v->ToObject();
+                v8::Local<v8::Context> context = args.GetIsolate()->GetCurrentContext();
+                v8::Local<v8::Object> global = context->Global();
+
+                std::ostringstream ostr;
+                ostr<<CB_PARAM_VAR<<pcnt++;
+                //printf("NodeProxy v82jscCb ostr=%s.\n",ostr.str().c_str());
+
+                global->Set(v8::String::NewFromUtf8(args.GetIsolate(), ostr.str().c_str()), obj);
+
+                PassRefPtr<NodeProxy> np = new NodeProxy;
+                np->globalObject = NodeProxy::m_data->globalObject();
+                np->mModuleName=ostr.str();
+
+                JSValue jnp = toJS(np->globalObject->globalExec(), np->globalObject, WTF::getPtr(np));
+                jsargs.append(jnp);
+            }else{
+                printf("v82jscCb args[%d] is unknow\n",i);
+                jsargs.append(JSC::jsNull());
+            }
+        }
+        printf("NodeProxy v82jscCb jsc cb=%p argc=%d\n",NodeProxy::m_data,argc);
         JSLockHolder lock(NodeProxy::m_data->globalObject()->vm());
 
         ExecState* exec = NodeProxy::m_data->globalObject()->globalExec();
-        MarkedArgumentBuffer jsargs;
+        //args.append(globalThisValue);
+        //args.append(jsNumber(id));
         bool raisedException = false; 
         NodeProxy::m_data->invokeCallback(jsargs, &raisedException);
-        printf("NodeProxy v82jscCb raisedException=%d\n",raisedException); 
+        //if (exec->hadException()) {
+        if (raisedException) {
+            //JSValue e ;//= exec->exception();
+            //exec->clearException();
+            //printf("NodeProxy v82jscCb raisedException=%s\n",e.toString(exec)->value(exec).utf8().data()); 
+            printf("NodeProxy v82jscCb raisedException\n"); 
+        }
+
     }
 
     static void setjsobj(v8::Local<v8::Object> nodeGlobal){
