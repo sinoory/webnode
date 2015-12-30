@@ -13,8 +13,36 @@ namespace WebCore {
     JSCallbackData* NodeProxy::m_data=0;
     int NodeProxy::ExeCnt=0;
 
-    void NodeProxy::hello(){
-        printf("NodeProxy::hello \n");
+    static JSValue v8data2jsc(v8::Isolate* isolate, v8::Local<v8::Value> v,
+            ExecState* exec=0,std::string v8refname="");
+
+    JSValue NodeProxy::getProp(ExecState* exec,const char* prop){
+        ostringstream ostr;
+        ostr<<EXE_RES_VAR<<++ExeCnt<<"="<<mModuleName<<"."<<prop<<std::endl;
+        printf("NodeProxy getProp %s : %s\n",prop,ostr.str().c_str());
+        v8::Isolate* isolate = v8::Isolate::GetCurrent();
+        v8::HandleScope scope(isolate);
+
+        v8::Local<v8::Context> g_context =
+            v8::Local<v8::Context>::New(isolate, node::g_context);
+        v8::Context::Scope cscope(g_context);{
+            v8::TryCatch try_catch;
+            v8::Local<v8::Script> script = v8::Script::Compile(v8::String::NewFromUtf8(isolate,
+                        ostr.str().c_str()));
+            v8::Handle<v8::Value> result = script->Run();
+            if (try_catch.HasCaught()) {
+                v8::Handle<v8::Message> message = try_catch.Message();
+                printf("getPropertyType faild:%s\n", *v8::String::Utf8Value(message->Get()));
+                return jsUndefined();
+            }
+            ostr.str("");
+            ostr<<EXE_RES_VAR<<ExeCnt;
+            return v8data2jsc(isolate,result,exec,ostr.str());
+        }
+    }
+
+    void NodeProxy::setPropProxy(const char* prop,NodeProxy* np){
+        propProxyMap[prop]=np;
     }
 
     char NodeProxy::getPropertyType(const char* prop){
@@ -46,6 +74,58 @@ namespace WebCore {
             return (char)(*((const char*)(*str)));
         }
 
+    }
+
+    void NodeProxy::setProperty(ExecState* exec,const char* prop,JSValue value){
+        ostringstream ostr;
+        if(value.isString()){
+            ostr<<mModuleName<<"."<<prop<<"="<<"'"<<value.toString(exec)->value(exec).utf8().data()<<"'";
+        }else if(value.isFunction()){
+
+        }
+        printf("NodeProxy setProperty %s\n",ostr.str().c_str());
+
+    }
+
+    static JSValue v8data2jsc(v8::Isolate* isolate, v8::Local<v8::Value> v,
+            ExecState* exec,std::string v8refname){
+
+            v8::String::Utf8Value str(v);
+            const char* res=*str;
+            printf("v8data2jsc v8 v = %s IsNumber=%d\n",res,v->IsNumber());
+
+            if (v->IsUndefined() || v->IsNull()) {
+                return JSC::jsNull();
+            }else if (v->IsBoolean()) {
+                v8::Local<v8::Boolean> rv = v->ToBoolean();
+                return (jsBoolean(rv->Value()));
+            }else if (v->IsInt32()) {
+                v8::Local<v8::Int32> rv = v->ToInt32();
+                return (JSValue(rv->Value()));
+            }else if (v->IsUint32()) {
+                v8::Local<v8::Uint32> rv = v->ToUint32();
+                return (JSValue(rv->Value()));
+            }else if (v->IsNumber()) {
+                v8::Local<v8::Number> rv = v->ToNumber();
+                return (JSValue(rv->Value()));
+            }else if (v->IsString()) {
+                if(!exec){
+                    return JSC::jsUndefined();
+                }
+                v8::Local<v8::String> rv = v->ToString();
+                JSString* jsv = jsString(exec, *v8::String::Utf8Value(rv));
+                return jsv->toPrimitive(exec,PreferString);
+            }else if (v->IsObject()){
+                if(!exec){
+                    return JSC::jsUndefined();
+                }
+                PassRefPtr<NodeProxy> np = new NodeProxy;
+                np->globalObject=jsCast<JSDOMGlobalObject*>(exec->lexicalGlobalObject());
+                np->mModuleName=v8refname;
+                JSValue jnp = toJS(exec, np->globalObject, WTF::getPtr(np));
+                return jnp;
+            }
+            return JSC::jsUndefined();
     }
 
     static void v82jscCb(const v8::FunctionCallbackInfo<v8::Value>& args) {
@@ -104,7 +184,7 @@ namespace WebCore {
         //args.append(jsNumber(id));
         bool raisedException = false; 
         NodeProxy::m_data->invokeCallback(jsargs, &raisedException);
-        //if (exec->hadException()) {
+        //if (exec->hadException()) 
         if (raisedException) {
             //JSValue e ;//= exec->exception();
             //exec->clearException();
@@ -204,7 +284,7 @@ namespace WebCore {
     }
 
 
-    char NodeProxy::exeMethod(ExecState* exec){
+    JSValue NodeProxy::exeMethod(ExecState* exec){
         printf("NodeProxy::exeMethod mMethod=%s,argc=%d exe=%p\n",mMethod.c_str(),exec->argumentCount(),exec);
 
         v8::Isolate* isolate = v8::Isolate::GetCurrent();
@@ -247,16 +327,11 @@ namespace WebCore {
             }
 
             ostr.str("");
-            ostr<<"typeof("<<EXE_RES_VAR<<ExeCnt<<")"<<std::endl;
-            script = v8::Script::Compile(v8::String::NewFromUtf8(isolate,ostr.str().c_str()));
-            result = script->Run();
+            ostr<<EXE_RES_VAR<<ExeCnt;
+            return v8data2jsc(isolate,result,exec,ostr.str());
 
-            v8::String::Utf8Value str(result);
-            const char* res=*str;
-            printf("NodeProxy::exeMethod res %s = %s\n",ostr.str().c_str(),res);
-            return (char)(*((const char*)(*str)));
         }
-        return 'u';
+        return JSC::jsUndefined();
     }
 
     NodeProxy::~NodeProxy(){

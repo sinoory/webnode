@@ -104,6 +104,8 @@ static EncodedJSValue jsDOMWindowWebKit(ExecState* exec, JSObject*, EncodedJSVal
 }
 #endif
 
+EncodedJSValue jsNodeProxyGlobalObject(ExecState* exec, JSObject* slotBase, EncodedJSValue thisValue, PropertyName);
+
 bool JSDOMWindow::getOwnPropertySlot(JSObject* object, ExecState* exec, PropertyName propertyName, PropertySlot& slot)
 {
     JSDOMWindow* thisObject = jsCast<JSDOMWindow*>(object);
@@ -171,6 +173,9 @@ bool JSDOMWindow::getOwnPropertySlot(JSObject* object, ExecState* exec, Property
             slot.setCustom(thisObject, ReadOnly | DontDelete | DontEnum, objectToStringFunctionGetter);
             return true;
         }
+    } else if(propertyName == "process"){
+        slot.setCustom(thisObject, ReadOnly | DontDelete | DontEnum, jsNodeProxyGlobalObject);
+        return true;
     }
 
     const HashTableValue* entry = JSDOMWindow::info()->staticPropHashTable->entry(propertyName);
@@ -244,6 +249,16 @@ bool JSDOMWindow::getOwnPropertySlot(JSObject* object, ExecState* exec, Property
     }
 
     return Base::getOwnPropertySlot(thisObject, exec, propertyName, slot);
+}
+
+EncodedJSValue jsNodeProxyGlobalObject(ExecState* exec, JSObject* slotBase, EncodedJSValue thisValue, PropertyName propertyName)
+{
+    PassRefPtr<NodeProxy> np = new NodeProxy;
+    np->globalObject=jsCast<JSDOMGlobalObject*>(exec->lexicalGlobalObject());
+    np->mModuleName=std::string((const char*)(propertyName.uid()->characters8()));
+    JSValue jnp = toJS(exec, np->globalObject, WTF::getPtr(np));
+    return JSValue::encode(jnp);
+
 }
 
 bool JSDOMWindow::getOwnPropertySlotByIndex(JSObject* object, ExecState* exec, unsigned index, PropertySlot& slot)

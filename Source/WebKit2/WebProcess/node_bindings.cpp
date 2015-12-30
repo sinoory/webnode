@@ -170,7 +170,7 @@ void NodeBindings::EmbedThreadRunner(void *arg) {
   while (true) {
     // Wait for the main loop to deal with events.
 
-    printf("NodeBindings::EmbedThreadRunner in,sem waiting mainthread post...\n");
+    //printf("NodeBindings::EmbedThreadRunner in,sem waiting mainthread post...\n");
     uv_sem_wait(&self->embed_sem_);
     if (self->embed_closed_)
       break;
@@ -179,7 +179,7 @@ void NodeBindings::EmbedThreadRunner(void *arg) {
     // this class is being destructed the PollEvents() would not be available
     // anymore. Because of it we must make sure we only invoke PollEvents()
     // when this class is alive.
-    printf("NodeBindings::EmbedThreadRunner event polling...\n");
+    //printf("NodeBindings::EmbedThreadRunner event polling...\n");
     self->PollEvents();
     if (self->embed_closed_)
       break;

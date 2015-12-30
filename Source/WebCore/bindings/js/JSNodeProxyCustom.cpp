@@ -11,16 +11,32 @@
 
 #include <sstream>
 #include <iostream>
+#include "JSMainThreadExecState.h"
 
 using namespace JSC;
 
 namespace WebCore {
+JSNodeProxy* toJSNodeProxy(JSValue value);
 JSValue JSNodeProxy::flag(ExecState* exec) const{
     return jsUndefined();
 }
 EncodedJSValue jsNodeProxyGenralFunc(ExecState* exec, JSObject* slotBase, EncodedJSValue thisValue, PropertyName);
 
 EncodedJSValue JSC_HOST_CALL jsNodeProxyGeneralMethodFunc(ExecState* exec);
+
+//add   CustomPutFunction in idl head
+void JSNodeProxy::put(JSCell* cell, ExecState* exec, PropertyName propertyName, JSValue value, PutPropertySlot& slot)
+{
+    printf("JSNodeProxy::put propertyName=%s\n",propertyName.uid()->characters8());
+    JSNodeProxy* thisObject = jsCast<JSNodeProxy*>(cell);
+    NodeProxy& impl = thisObject->impl();
+    impl.setProperty(exec,(const char*)(propertyName.uid()->characters8()),value);
+}
+void JSNodeProxy::putByIndex(JSCell* cell, ExecState* exec, unsigned index, JSValue value, bool shouldThrow)
+{
+    printf("JSNodeProxy::putByIndex index=%d\n",index);
+} 
+
 #if 1
 bool JSNodeProxy::getOwnPropertySlot(JSObject* object, ExecState* exec, PropertyName propertyName, PropertySlot& slot)
 {
@@ -37,7 +53,7 @@ bool JSNodeProxy::getOwnPropertySlot(JSObject* object, ExecState* exec, Property
         slot.setCustom(thisObject, ReadOnly | DontDelete | DontEnum, nonCachingStaticFunctionGetter<jsNodeProxyGeneralMethodFunc, 0>);
         impl.mMethod=std::string(nm);
         return true;
-    }else if(type=='o'){//object
+    }else {//prop
         slot.setCustom(thisObject, ReadOnly | DontDelete | DontEnum, jsNodeProxyGenralFunc);
         return true;
     }
@@ -59,28 +75,33 @@ bool JSNodeProxy::getOwnPropertySlot(JSObject* object, ExecState* exec, Property
     printf("JSNodeProxy::getOwnPropertySlot propertyName=%s\n",propertyName.uid()->characters8());
     return false;
 }
-EncodedJSValue jsNodeProxyGenralFunc(ExecState* exec, JSObject* slotBase, EncodedJSValue thisValue, PropertyName)
+EncodedJSValue jsNodeProxyGenralFunc(ExecState* exec, JSObject* slotBase, EncodedJSValue thisValue, PropertyName propertyName)
 {
+    printf("jsNodeProxyGenralFunc argc=%d exe=%p\n",exec->argumentCount(),exec);
+
+    JSNodeProxy* castedThis = toJSNodeProxy(JSValue::decode(thisValue));
+    NodeProxy& impl = castedThis->impl();
+
+    return JSValue::encode(impl.getProp(exec,(const char*)(propertyName.uid()->utf8().data())));
+
+
     UNUSED_PARAM(exec);
     UNUSED_PARAM(slotBase);
     UNUSED_PARAM(thisValue);
-    JSNodeProxy* castedThis = 0;//toJSDOMWindow(JSValue::decode(thisValue));
-    //DOMWindow& impl = castedThis->impl();
     JSValue result = jsBoolean(false);
     //JSValue result = jsBoolean(impl.closed());
     printf("JSNodeProxy 1 jsNodeProxyGenralFunc\n");
-    return JSValue::encode(result);
+
+    std::ostringstream ostr;
+    ostr << "function testfunc(){print('in testfunc');} ; eval(testfunc) " ;
+    printf("===JSDOMWindow::require %s\n",ostr.str().c_str());
+    JSValue evaluationException;
+    String jsstr=String::fromUTF8WithLatin1Fallback(ostr.str().c_str(),strlen(ostr.str().c_str()));
+    SourceCode jsc = makeSource(jsstr, "nodeproxycls");
+    JSValue returnValue = JSMainThreadExecState::evaluate(exec,jsc,JSValue(), &evaluationException);
+    return JSValue::encode(returnValue);
 }
 
-JSNodeProxy* toJSNodeProxy(JSValue value)
-{
-    if (!value.isObject())
-        return 0;
-    const ClassInfo* classInfo = asObject(value)->classInfo();
-    if (classInfo == JSNodeProxy::info())
-        return jsCast<JSNodeProxy*>(asObject(value));
-    return 0;
-}
 
 EncodedJSValue JSC_HOST_CALL jsNodeProxyGeneralMethodFunc(ExecState* exec){
     JSValue falseresult = jsBoolean(false);
@@ -97,7 +118,9 @@ EncodedJSValue JSC_HOST_CALL jsNodeProxyGeneralMethodFunc(ExecState* exec){
     if (!scriptContext)
         return JSValue::encode(falseresult);
 
-    char restype = impl.exeMethod(exec);
+    JSValue res = impl.exeMethod(exec);
+    return JSValue::encode(res);
+    /*    
     if(restype=='o'){//object
         PassRefPtr<NodeProxy> np = new NodeProxy;
         np->globalObject=jsCast<JSDOMGlobalObject*>(exec->lexicalGlobalObject());
@@ -108,8 +131,19 @@ EncodedJSValue JSC_HOST_CALL jsNodeProxyGeneralMethodFunc(ExecState* exec){
         return JSValue::encode(jnp);
     }else {
     }
+    */
 
     return JSValue::encode(jsUndefined());
+}
+
+JSNodeProxy* toJSNodeProxy(JSValue value)
+{
+    if (!value.isObject())
+        return 0;
+    const ClassInfo* classInfo = asObject(value)->classInfo();
+    if (classInfo == JSNodeProxy::info())
+        return jsCast<JSNodeProxy*>(asObject(value));
+    return 0;
 }
 
 bool JSNodeProxy::getOwnPropertySlotByIndex(JSObject* object, ExecState* exec, unsigned index, PropertySlot& slot)

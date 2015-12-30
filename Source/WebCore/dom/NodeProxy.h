@@ -18,7 +18,7 @@
 
 #include "third_party/node/src/node_webkit.h"
 #include "third_party/node/src/node.h"
-
+#include   <map>
 
 using namespace JSC;
 
@@ -34,14 +34,17 @@ class NodeProxy : public ScriptWrappable, public RefCounted<NodeProxy> {
         return adoptRef(new NodeProxy());
     }
 
-    void hello();
+    //void hello();
     //return 0: object , 1:class
     //requireObjFromClass : if set true and require result is a class,
     //                      then new a NodeProxy object to js
     int require(const char* module,bool requireObjFromClass=false,const char* constructParams=0);
-    char exeMethod(ExecState* exec);
+    JSValue exeMethod(ExecState* exec);
     char getPropertyType(const char* prop);
+    void setProperty(ExecState* exec,const char* prop,JSValue value);
 
+    JSValue getProp(ExecState* exec,const char* prop);
+    void setPropProxy(const char* prop,NodeProxy* np);
 
 
     static int ExeCnt;
@@ -55,6 +58,8 @@ class NodeProxy : public ScriptWrappable, public RefCounted<NodeProxy> {
     std::string mProperty;
     std::string mModuleName;
     std::string mModuleCb;
+
+    std::map<const char*,NodeProxy*> propProxyMap;
 };
 
 }
