@@ -7,6 +7,7 @@
 #include <iostream>
 
 #include <runtime/JSLock.h>
+#include <runtime/JSONObject.h>
 
 using namespace std;
 namespace WebCore {
@@ -76,13 +77,60 @@ namespace WebCore {
 
     }
 
+    static v8::Handle<v8::Value> execStringInV8(const char* str,v8::Isolate* isolate=0){
+        printf("execStringInV8 %s\n",str);
+        if(!isolate){
+           isolate = v8::Isolate::GetCurrent();
+        }
+        v8::HandleScope scope(isolate);
+        v8::Local<v8::Context> g_context =
+            v8::Local<v8::Context>::New(isolate, node::g_context);
+        v8::Context::Scope cscope(g_context);{
+            v8::TryCatch try_catch;
+            v8::Local<v8::Script> script = v8::Script::Compile(v8::String::NewFromUtf8(isolate,str));
+            v8::Handle<v8::Value> result = script->Run();
+            if (try_catch.HasCaught()) {
+                v8::Handle<v8::Message> message = try_catch.Message();
+                printf("execStringInV8 failed: %s err=%s\n",str,*v8::String::Utf8Value(message->Get()));
+            }
+            return result;
+        }
+    }
+
     void NodeProxy::setProperty(ExecState* exec,const char* prop,JSValue value){
         ostringstream ostr;
-        if(value.isString()){
+        if(value.isFunction()){
+            printf("setProperty unhandled function\n");
+        }else if(value.isString()){
             ostr<<mModuleName<<"."<<prop<<"="<<"'"<<value.toString(exec)->value(exec).utf8().data()<<"'";
-        }else if(value.isFunction()){
-
+        }else if(value.isInt32()){
+            ostr<<mModuleName<<"."<<prop<<"="<<value.asInt32();
+        }else if(value.isUInt32()){
+            ostr<<mModuleName<<"."<<prop<<"="<<value.asUInt32();
+        }else if(value.isDouble()){
+            ostr<<mModuleName<<"."<<prop<<"="<<value.asDouble();
+        }else if(value.isTrue()){
+            ostr<<mModuleName<<"."<<prop<<"=true";
+        }else if(value.isFalse()){
+            ostr<<mModuleName<<"."<<prop<<"=false";
+        }else if(value.isNumber()){
+            ostr<<mModuleName<<"."<<prop<<"="<<value.toString(exec)->value(exec).utf8().data();
+        }else if(value.isUndefinedOrNull()){
+            ostr<<mModuleName<<"."<<prop<<"=null";
+        }else if(value.isObject()){
+            const char* s = value.toString(exec)->value(exec).utf8().data();
+            String ss = JSONStringify(exec,value,0);
+            printf("setProperty unhandled object s=%s js=%s\n",s,ss.utf8().data());
+            if(ss.startsWith('[')){//object is an array
+            }else if(ss.startsWith('{')){//a json or a object,convert to json 
+                //TODO: if is object, convert to json will be empty
+                ostr<<mModuleName<<"."<<prop<<"=JSON.parse('"<<ss.utf8().data()<<"')";
+            }
+        }else{
+            printf("setProperty unkown type\n");
+            ostr<<mModuleName<<"."<<prop<<"="<<"'"<<value.toString(exec)->value(exec).utf8().data()<<"'";
         }
+        execStringInV8(ostr.str().c_str());
         printf("NodeProxy setProperty %s\n",ostr.str().c_str());
 
     }
@@ -114,7 +162,11 @@ namespace WebCore {
                 }
                 v8::Local<v8::String> rv = v->ToString();
                 JSString* jsv = jsString(exec, *v8::String::Utf8Value(rv));
-                return jsv->toPrimitive(exec,PreferString);
+                return jsv->toPrimitive(exec,PreferString);//TODO: set process.k=chinese, get k return e
+            }else if (v->IsArray()){
+                printf("v8data2jsc v is array\n");
+                //V8_INLINE static Array* Cast(Value* obj);
+                return JSC::jsUndefined();
             }else if (v->IsObject()){
                 if(!exec){
                     return JSC::jsUndefined();
@@ -132,6 +184,7 @@ namespace WebCore {
         static int pcnt=0;
         int argc = args.Length();
         MarkedArgumentBuffer jsargs;
+        ExecState* exec = NodeProxy::m_data->globalObject()->globalExec();
         for (int i = 0; i < argc; i++){
             v8::HandleScope handle_scope(args.GetIsolate());
             v8::Local<v8::Value> v = args[i];
@@ -141,7 +194,7 @@ namespace WebCore {
                 v8::Local<v8::String> rv = v->ToString();
                 JSString* jsv = jsString(NodeProxy::m_data->globalObject()->globalExec(), 
                         *v8::String::Utf8Value(rv));
-                //jsargs.append(*jsv);
+                jsargs.append(jsv->toPrimitive(exec,PreferString));
             }else if (v->IsBoolean()) {
                 v8::Local<v8::Boolean> rv = v->ToBoolean();
                 jsargs.append(jsBoolean(rv->Value()));
@@ -179,7 +232,6 @@ namespace WebCore {
         printf("NodeProxy v82jscCb jsc cb=%p argc=%d\n",NodeProxy::m_data,argc);
         JSLockHolder lock(NodeProxy::m_data->globalObject()->vm());
 
-        ExecState* exec = NodeProxy::m_data->globalObject()->globalExec();
         //args.append(globalThisValue);
         //args.append(jsNumber(id));
         bool raisedException = false; 

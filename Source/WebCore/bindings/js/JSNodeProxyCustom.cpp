@@ -27,10 +27,10 @@ EncodedJSValue JSC_HOST_CALL jsNodeProxyGeneralMethodFunc(ExecState* exec);
 //add   CustomPutFunction in idl head
 void JSNodeProxy::put(JSCell* cell, ExecState* exec, PropertyName propertyName, JSValue value, PutPropertySlot& slot)
 {
-    printf("JSNodeProxy::put propertyName=%s\n",propertyName.uid()->characters8());
+    printf("JSNodeProxy::put propertyName=%s\n",propertyName.uid()->utf8().data());
     JSNodeProxy* thisObject = jsCast<JSNodeProxy*>(cell);
     NodeProxy& impl = thisObject->impl();
-    impl.setProperty(exec,(const char*)(propertyName.uid()->characters8()),value);
+    impl.setProperty(exec,(const char*)(propertyName.uid()->utf8().data()),value);
 }
 void JSNodeProxy::putByIndex(JSCell* cell, ExecState* exec, unsigned index, JSValue value, bool shouldThrow)
 {
