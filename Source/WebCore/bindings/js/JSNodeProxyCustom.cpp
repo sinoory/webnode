@@ -86,27 +86,14 @@ EncodedJSValue jsNodeProxyGenralFunc(ExecState* exec, JSObject* slotBase, Encode
         return JSValue::encode(jsBoolean(true));
     }
 
+
+
     JSNodeProxy* castedThis = toJSNodeProxy(JSValue::decode(thisValue));
     NodeProxy& impl = castedThis->impl();
 
     return JSValue::encode(impl.getProp(exec,(const char*)(propertyName.uid()->utf8().data())));
 
 
-    UNUSED_PARAM(exec);
-    UNUSED_PARAM(slotBase);
-    UNUSED_PARAM(thisValue);
-    JSValue result = jsBoolean(false);
-    //JSValue result = jsBoolean(impl.closed());
-    printf("JSNodeProxy 1 jsNodeProxyGenralFunc\n");
-
-    std::ostringstream ostr;
-    ostr << "function testfunc(){print('in testfunc');} ; eval(testfunc) " ;
-    printf("===JSDOMWindow::require %s\n",ostr.str().c_str());
-    JSValue evaluationException;
-    String jsstr=String::fromUTF8WithLatin1Fallback(ostr.str().c_str(),strlen(ostr.str().c_str()));
-    SourceCode jsc = makeSource(jsstr, "nodeproxycls");
-    JSValue returnValue = JSMainThreadExecState::evaluate(exec,jsc,JSValue(), &evaluationException);
-    return JSValue::encode(returnValue);
 }
 
 

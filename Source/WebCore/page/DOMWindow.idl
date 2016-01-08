@@ -126,7 +126,8 @@
     [Custom] NodeProxy node_require_obj_from_class(DOMString module);
     [Custom] any    node_get_prop_from_required_class(DOMString module,DOMString prop);
     [Custom] void   node_set_prop_from_required_class(DOMString module,DOMString prop,any value);
-    //[Custom] any    node_proxy_cls_exe_fun(any v1,any v2,any v3,any v4,any v5);
+    [Custom] any    node_proxy_cls_get_prop(DOMString module,DOMString prop);
+    [Custom] void   node_proxy_cls_set_prop(DOMString module,DOMString prop,any value);
     [Custom] any    node_proxy_cls_exe_fun(any v1,optional any v2,optional any v3,optional any v4);
 
     // Self referential attributes

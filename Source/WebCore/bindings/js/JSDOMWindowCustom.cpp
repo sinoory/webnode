@@ -390,14 +390,13 @@ JSValue JSDOMWindow::node_get_prop_from_required_class(ExecState* exec){
         ostr << "function __NODE_PROXY_CLS__"<<++cnt<<"(){"
                     "var args=Array.prototype.slice.call(arguments);"
                     "args.splice(0,0,'"<<EXE_RES_VAR<<NodeProxy::ExeCnt<<"'); " //p1 is func
-                    "print('======in=NODE_proxy_class=====argc='+arguments.length+',ac='+args.length);"
                     "return node_proxy_cls_exe_fun.apply(window,args);"
                 "} ; "
-                "__NODE_PROXY_CLS__"<<cnt<<".__nodejs_func_prop_get__=function(prop){"
-                    " return node_proxy_cls_get_prop('"<< module.ascii().data() <<"',prop); "
+                "__NODE_PROXY_CLS__"<<cnt<<".__nodejs_func_prop_get__"<<cnt<<"=function(prop){"
+                    " return node_proxy_cls_get_prop('"<< EXE_RES_VAR<<NodeProxy::ExeCnt <<"',prop); "
                 "} ; "
-                "__NODE_PROXY_CLS__"<<cnt<<".__nodejs_func_prop_set__=function(prop,value){"
-                    "node_proxy_cls_set_prop('"<<module.ascii().data()<<"',prop,value);"
+                "__NODE_PROXY_CLS__"<<cnt<<".__nodejs_func_prop_set__"<<cnt<<"=function(prop,value){"
+                    "node_proxy_cls_set_prop('"<<EXE_RES_VAR<<NodeProxy::ExeCnt<<"',prop,value);"
                 "} ; "
                 "eval(__NODE_PROXY_CLS__"<<cnt<<") " << std::endl;
         printf("%s f=%s\n",__func__,ostr.str().c_str());
@@ -416,7 +415,86 @@ JSValue JSDOMWindow::node_get_prop_from_required_class(ExecState* exec){
 }
 
 JSValue JSDOMWindow::node_set_prop_from_required_class(ExecState* exec){
-    printf("%s\n",__func__);
+    return jsNull();
+}
+
+JSValue JSDOMWindow::node_proxy_cls_get_prop(ExecState* exec){
+    const String& module(exec->argument(0).toString(exec)->value(exec));
+    const String& prop(exec->argument(1).toString(exec)->value(exec));
+    printf("%s get %s\n",__func__,prop.utf8().data());
+
+    std::ostringstream ostr;
+    ostr<<EXE_RES_VAR<<++NodeProxy::ExeCnt<<"="<<module.utf8().data()<<"."<<prop.utf8().data();
+
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope scope(isolate);
+    v8::Handle<v8::Value> result = NodeProxy::execStringInV8(ostr.str().c_str());
+
+    ostr.str("");
+    ostr<<EXE_RES_VAR<<NodeProxy::ExeCnt;
+    char type = NodeProxy::v8typeof(ostr.str().c_str());
+
+    printf("%s %s type=%c \n",__func__,ostr.str().c_str(),type);
+    if(type=='o'){
+        PassRefPtr<NodeProxy> np = new NodeProxy;
+        np->globalObject=jsCast<JSDOMGlobalObject*>(exec->lexicalGlobalObject());
+        np->mModuleName=std::string(ostr.str());
+        JSValue jnp = toJS(exec, np->globalObject, WTF::getPtr(np));
+        return jnp;
+    }else{
+        return NodeProxy::v8data2jsc(v8::Isolate::GetCurrent(),result);
+    }
+
+    return jsUndefined();
+}
+
+JSValue JSDOMWindow::node_proxy_cls_set_prop(ExecState* exec){
+    const String& module(exec->argument(0).toString(exec)->value(exec));
+    const String& prop(exec->argument(1).toString(exec)->value(exec));
+    JSValue value=exec->uncheckedArgument(2);
+    printf("%s set %s\n",__func__,prop.utf8().data());
+
+    std::ostringstream ostr;
+    ostr<<module.utf8().data()<<"."<<prop.utf8().data()<<"=";
+
+    bool p=false;
+    if(value.isFunction()){
+        printf("%s TODO: function param\n",__func__);
+    }else if(value.isString()){
+        ostr<<value.toString(exec)->value(exec).utf8().data()<<"'";
+        p=true;
+    }else if(value.isNumber()){
+        ostr<<value.toNumber(exec);
+        p=true;
+    }else if(value.isObject()){//to be the last one
+        JSValue isnodeproxyobj=value.get(exec,Identifier(exec,"isNodeProxyObj"));
+        if(isnodeproxyobj.isTrue()){
+            JSNodeProxy* jnp = jsCast<JSNodeProxy*>(value);
+            printf("%s param is nodeproxyobj,module=%s\n",__func__,
+                    jnp->impl().mModuleName.c_str());
+            ostr<<jnp->impl().mModuleName.c_str();
+            p=true;
+        }else{
+            const char* s = value.toString(exec)->value(exec).utf8().data();
+            String ss = JSONStringify(exec,value,0);
+            if(ss.startsWith('[')){//object is an array
+                printf("%s TODO: array param\n",__func__);
+            }else if(ss.startsWith('{')){//a json or a object,convert to json 
+                //TODO: if is object, convert to json will be empty
+                ostr<<"JSON.parse('"<<ss.utf8().data()<<"')";
+                p=true;
+            }else{
+                printf("%s TODO: unkown type\n",__func__);
+            }
+        }
+    }else{
+        printf("%s TODO: unkown type\n",__func__);
+    }
+    if(p){
+        v8::Isolate* isolate = v8::Isolate::GetCurrent();
+        v8::HandleScope scope(isolate);
+        v8::Handle<v8::Value> result = NodeProxy::execStringInV8(ostr.str().c_str());
+    }
     return jsNull();
 }
 
@@ -439,7 +517,7 @@ JSValue JSDOMWindow::node_proxy_cls_exe_fun(ExecState* exec){
             JSValue value=exec->uncheckedArgument(i);
 
             if(value.isFunction()){
-                printf("setProperty unhandled function\n");
+                printf("%s TODO: function param\n",__func__);
             }else if(value.isString()){
                 printf("string param=%s\n",value.toString(exec)->value(exec).utf8().data());
                 ostr<<(pa?",'":"'")<<value.toString(exec)->value(exec).utf8().data()<<"'";
@@ -447,8 +525,6 @@ JSValue JSDOMWindow::node_proxy_cls_exe_fun(ExecState* exec){
             }else if(value.isNumber()){
                 ostr<< (pa?",":"") <<value.toNumber(exec);
                 pa=true;
-            }else if(value.isFunction()){
-                printf("%s TODO: function param\n",__func__);
             }else if(value.isObject()){//to be the last one
                 JSValue isnodeproxyobj=value.get(exec,Identifier(exec,"isNodeProxyObj"));
                 if(isnodeproxyobj.isTrue()){

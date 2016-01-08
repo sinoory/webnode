@@ -689,8 +689,10 @@ LLINT_SLOW_PATH_DECL(slow_path_put_by_id)
         if(fun->name(exec).startsWith("__NODE_PROXY_CLS__") && 
                 (!ident.string().startsWith("__nodejs_func_prop_"))){
             printf("%s use __nodejs_func_set_prop__ %s\n",__func__,ident.utf8().data());
+            String setprop("__nodejs_func_prop_set__");
+            setprop.append(fun->name(exec).substring(sizeof("__NODE_PROXY_CLS__")-1,fun->name(exec).length()-sizeof("__NODE_PROXY_CLS__")+1));
             PropertySlot slot(baseValue);
-            JSValue result = baseValue.get(exec, Identifier(exec,"__nodejs_func_prop_set__"),slot);
+            JSValue result = baseValue.get(exec, Identifier(exec,setprop),slot);
             if(result.isFunction()){
                 JSObject* funcobj = result.toObject(exec);
                 CallData callData;

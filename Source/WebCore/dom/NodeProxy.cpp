@@ -75,7 +75,6 @@ namespace WebCore {
         if(!isolate){
            isolate = v8::Isolate::GetCurrent();
         }
-        v8::HandleScope scope(isolate);
         v8::Local<v8::Context> g_context =
             v8::Local<v8::Context>::New(isolate, node::g_context);
         v8::Context::Scope cscope(g_context);{
@@ -128,6 +127,8 @@ namespace WebCore {
             printf("setProperty unkown type\n");
             ostr<<mModuleName<<"."<<prop<<"="<<"'"<<value.toString(exec)->value(exec).utf8().data()<<"'";
         }
+        v8::Isolate* isolate = v8::Isolate::GetCurrent();
+        v8::HandleScope scope(isolate);
         execStringInV8(ostr.str().c_str());
         printf("NodeProxy setProperty %s\n",ostr.str().c_str());
 
