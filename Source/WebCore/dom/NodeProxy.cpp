@@ -14,8 +14,6 @@ namespace WebCore {
     JSCallbackData* NodeProxy::m_data=0;
     int NodeProxy::ExeCnt=0;
 
-    static JSValue v8data2jsc(v8::Isolate* isolate, v8::Local<v8::Value> v,
-            ExecState* exec=0,std::string v8refname="");
 
     JSValue NodeProxy::getProp(ExecState* exec,const char* prop){
         ostringstream ostr;
@@ -33,7 +31,7 @@ namespace WebCore {
             v8::Handle<v8::Value> result = script->Run();
             if (try_catch.HasCaught()) {
                 v8::Handle<v8::Message> message = try_catch.Message();
-                printf("getPropertyType faild:%s\n", *v8::String::Utf8Value(message->Get()));
+                printf("getProp faild:%s\n", *v8::String::Utf8Value(message->Get()));
                 return jsUndefined();
             }
             ostr.str("");
@@ -46,13 +44,9 @@ namespace WebCore {
         propProxyMap[prop]=np;
     }
 
-    char NodeProxy::getPropertyType(const char* prop){
+    char NodeProxy::v8typeof(const char* prop){
         ostringstream ostr;
-        if(mModuleName.empty()){
-            ostr<<"typeof("<<prop<<")"<<std::endl;
-        }else{
-            ostr<<"typeof("<<mModuleName<<"."<<prop<<")"<<std::endl;
-        }
+        ostr<<"typeof("<<prop<<")"<<std::endl;
         //TODO:store result for effetionce
         v8::Isolate* isolate = v8::Isolate::GetCurrent();
         v8::HandleScope scope(isolate);
@@ -66,19 +60,18 @@ namespace WebCore {
             v8::Handle<v8::Value> result = script->Run();
             if (try_catch.HasCaught()) {
                 v8::Handle<v8::Message> message = try_catch.Message();
-                printf("getPropertyType faild:%s\n", *v8::String::Utf8Value(message->Get()));
+                printf("v8typeof faild:%s\n", *v8::String::Utf8Value(message->Get()));
                 return 0;
             }
             v8::String::Utf8Value str(result);
             const char* res=*str;
-            printf("NodeProxy::getPropertyType %s = %s.\n",ostr.str().c_str(),res);
+            printf("v8typeof %s = %s.\n",ostr.str().c_str(),res);
             return (char)(*((const char*)(*str)));
         }
 
     }
 
-    static v8::Handle<v8::Value> execStringInV8(const char* str,v8::Isolate* isolate=0){
-        printf("execStringInV8 %s\n",str);
+    v8::Handle<v8::Value> NodeProxy::execStringInV8(const char* str,v8::Isolate* isolate){
         if(!isolate){
            isolate = v8::Isolate::GetCurrent();
         }
@@ -93,6 +86,11 @@ namespace WebCore {
                 v8::Handle<v8::Message> message = try_catch.Message();
                 printf("execStringInV8 failed: %s err=%s\n",str,*v8::String::Utf8Value(message->Get()));
             }
+            
+            //v8::String::Utf8Value str1(result);
+            //const char* res=*str1;
+            //printf("execStringInV8 %s res=%s\n",str,res);
+
             return result;
         }
     }
@@ -135,7 +133,7 @@ namespace WebCore {
 
     }
 
-    static JSValue v8data2jsc(v8::Isolate* isolate, v8::Local<v8::Value> v,
+    JSValue NodeProxy::v8data2jsc(v8::Isolate* isolate, v8::Local<v8::Value> v,
             ExecState* exec,std::string v8refname){
 
             v8::String::Utf8Value str(v);
@@ -143,6 +141,7 @@ namespace WebCore {
             printf("v8data2jsc v8 v = %s IsNumber=%d\n",res,v->IsNumber());
 
             if (v->IsUndefined() || v->IsNull()) {
+                printf("v8data2jsc v8 is null\n");
                 return JSC::jsNull();
             }else if (v->IsBoolean()) {
                 v8::Local<v8::Boolean> rv = v->ToBoolean();
@@ -157,6 +156,7 @@ namespace WebCore {
                 v8::Local<v8::Number> rv = v->ToNumber();
                 return (JSValue(rv->Value()));
             }else if (v->IsString()) {
+                printf("v8data2jsc v8 is str\n");
                 if(!exec){
                     return JSC::jsUndefined();
                 }
@@ -168,6 +168,7 @@ namespace WebCore {
                 //V8_INLINE static Array* Cast(Value* obj);
                 return JSC::jsUndefined();
             }else if (v->IsObject()){
+                printf("v8data2jsc v8 is obj\n");
                 if(!exec){
                     return JSC::jsUndefined();
                 }
@@ -176,7 +177,24 @@ namespace WebCore {
                 np->mModuleName=v8refname;
                 JSValue jnp = toJS(exec, np->globalObject, WTF::getPtr(np));
                 return jnp;
+            }else if (v->IsSymbol()) {
+                printf("v8data2jsc v8 is symb\n");
+            }else if (v->IsFunction()) {
+                printf("v8data2jsc v8 is func\n");
+            }else if (v->IsExternal()) {
+                printf("v8data2jsc v8 is external\n");
+            }else if (v->IsDate()) {
+                printf("v8data2jsc v8 is data\n");
+            }else if (v->IsSymbolObject()) {
+                printf("v8data2jsc v8 is symbol o\n");
+            }else if (v->IsStringObject()) {
+                printf("v8data2jsc v8 is stro o\n");
+            }else if (v->IsNativeError()) {
+                printf("v8data2jsc v8 is e\n");
+            }else if (v->IsPromise()) {
+                printf("v8data2jsc v8 is p\n");
             }
+            printf("v8data2jsc v8 is unknown\n");
             return JSC::jsUndefined();
     }
 
@@ -365,6 +383,26 @@ namespace WebCore {
                         delete this->m_data;
                     }
                     this->m_data=new JSCallbackData(asObject(arg), this->globalObject);
+                }else if(arg.isObject()){//to be the last selection
+                    JSValue isnodeproxyobj=arg.get(exec,Identifier(exec,"isNodeProxyObj"));
+                    if(isnodeproxyobj.isTrue()){
+                        JSNodeProxy* jnp = jsCast<JSNodeProxy*>(arg);
+                        printf("%s param is nodeproxyobj,module=%s\n",__func__,
+                            jnp->impl().mModuleName.c_str());
+                        ostr<<(pa?",":"")<<jnp->impl().mModuleName.c_str();
+                        continue; 
+                    }
+                    const char* s = arg.toString(exec)->value(exec).utf8().data();
+                    String ss = JSONStringify(exec,arg,0);
+                    //printf("setProperty unhandled object s=%s js=%s\n",s,ss.utf8().data());
+                    if(ss.startsWith('[')){//object is an array
+                    }else if(ss.startsWith('{')){//a json or a object,convert to json 
+                        //TODO: if is object, convert to json will be empty
+                        ostr<<(pa?",":"")<<"JSON.parse('"<<ss.utf8().data()<<"')";
+                        pa=true;
+                    }
+                }else{
+                    printf("%s TODO unkown arg %d type\n",i);
                 }
             }
             ostr <<");"<<std::endl;

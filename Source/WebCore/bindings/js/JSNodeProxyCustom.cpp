@@ -17,8 +17,9 @@ using namespace JSC;
 
 namespace WebCore {
 JSNodeProxy* toJSNodeProxy(JSValue value);
-JSValue JSNodeProxy::flag(ExecState* exec) const{
-    return jsUndefined();
+JSValue JSNodeProxy::isNodeProxyObj(ExecState* exec) const{
+    printf("JSNodeProxy::isNodeProxyObj=true\n");
+    return jsBoolean(true);
 }
 EncodedJSValue jsNodeProxyGenralFunc(ExecState* exec, JSObject* slotBase, EncodedJSValue thisValue, PropertyName);
 
@@ -43,7 +44,9 @@ bool JSNodeProxy::getOwnPropertySlot(JSObject* object, ExecState* exec, Property
     JSNodeProxy* thisObject = jsCast<JSNodeProxy*>(object);
     NodeProxy& impl = thisObject->impl();
     const char* nm = propertyName.uid()->utf8().data();
-    char type = impl.getPropertyType(nm);
+    std::ostringstream ostr;
+    ostr<<impl.mModuleName<<"."<<nm;
+    char type = NodeProxy::v8typeof(ostr.str().c_str());
     printf("JSNodeProxy::getOwnPropertySlot handle %s type=%c exec=%p argc=%d\n",nm,type,exec,exec->argumentCount());
     if(!impl.globalObject){
         impl.globalObject=thisObject->globalObject();
@@ -78,6 +81,10 @@ bool JSNodeProxy::getOwnPropertySlot(JSObject* object, ExecState* exec, Property
 EncodedJSValue jsNodeProxyGenralFunc(ExecState* exec, JSObject* slotBase, EncodedJSValue thisValue, PropertyName propertyName)
 {
     printf("jsNodeProxyGenralFunc argc=%d exe=%p\n",exec->argumentCount(),exec);
+    if(propertyName=="isNodeProxyObj"){
+        printf("%s isNodeProxyObj return ture\n",__func__);
+        return JSValue::encode(jsBoolean(true));
+    }
 
     JSNodeProxy* castedThis = toJSNodeProxy(JSValue::decode(thisValue));
     NodeProxy& impl = castedThis->impl();

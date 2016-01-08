@@ -187,6 +187,7 @@ void initNode(){
     {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope scope(isolate);
+    printf("initNode isolate=%p\n",isolate);
 
     //TODO: add window_bindings.js v8::RegisterExtension
     v8::Local<v8::Context> context = v8::Context::New(isolate);

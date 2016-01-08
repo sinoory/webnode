@@ -34,13 +34,21 @@ class NodeProxy : public ScriptWrappable, public RefCounted<NodeProxy> {
         return adoptRef(new NodeProxy());
     }
 
-    //void hello();
+    static v8::Handle<v8::Value> execStringInV8(const char* str,v8::Isolate* isolate=0);
+    static char v8typeof(const char* prop);
+
+    //if v8 value is object,then v8refname must supplied, 
+    //  return a jsc nodeprox object which contain the v8 object refname 
+    static JSValue v8data2jsc(v8::Isolate* isolate, v8::Local<v8::Value> v,
+            ExecState* exec=0,std::string v8refname="");
+
+    bool isNodeProxyObj(){return true;}
+
     //return 0: object , 1:class
     //requireObjFromClass : if set true and require result is a class,
     //                      then new a NodeProxy object to js
     int require(const char* module,bool requireObjFromClass=false,const char* constructParams=0);
     JSValue exeMethod(ExecState* exec);
-    char getPropertyType(const char* prop);
     void setProperty(ExecState* exec,const char* prop,JSValue value);
 
     JSValue getProp(ExecState* exec,const char* prop);

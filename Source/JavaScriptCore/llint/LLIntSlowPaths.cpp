@@ -598,6 +598,30 @@ LLINT_SLOW_PATH_DECL(slow_path_get_by_id)
     PropertySlot slot(baseValue);
 
     JSValue result = baseValue.get(exec, ident, slot);
+    static int cnt=0;
+    //printf("%s %d\n",__func__,cnt++);
+    //printf("%s ident=%s,basevalue=%s\n",__func__,ident.utf8().data(),baseValue.toString(exec)->value(exec).utf8().data());
+    if(baseValue.isFunction() && result==jsUndefined()){
+        JSFunction* fun = jsCast<JSFunction*>(baseValue);
+        if(fun->name(exec).startsWith("__NODE_PROXY_CLS__") && 
+                (!ident.string().startsWith("__nodejs_func_prop_"))){
+            String getprop("__nodejs_func_prop_get__");
+            getprop.append(fun->name(exec).substring(sizeof("__NODE_PROXY_CLS__")-1,fun->name(exec).length()-sizeof("__NODE_PROXY_CLS__")+1));
+            result = baseValue.get(exec, Identifier(exec,getprop),slot);
+            printf("%s use %s %s result==func?%d f=%s\n",__func__,getprop.utf8().data(),ident.utf8().data(),result.isFunction(),result.toString(exec)->value(exec).utf8().data());
+            if(result.isFunction()){
+                JSObject* funcobj = result.toObject(exec);
+                CallData callData;
+                CallType callType = funcobj->methodTable()->getCallData(funcobj, callData);
+                MarkedArgumentBuffer args;
+                JSString* jsprop = jsString(exec,ident.utf8().data());
+                args.append(jsprop->toPrimitive(exec,PreferString));
+                JSValue e;
+                result = JSC::call(exec, funcobj, callType, callData, baseValue, args, &e);
+            }
+            //printf("%s reget __nodejs_func_get_prop__ isfunc=%d\n",__func__,result.isFunction());
+        }
+    }
     LLINT_CHECK_EXCEPTION();
     LLINT_OP(1) = result;
     
@@ -658,10 +682,37 @@ LLINT_SLOW_PATH_DECL(slow_path_put_by_id)
     
     JSValue baseValue = LLINT_OP_C(1).jsValue();
     PutPropertySlot slot(baseValue, codeBlock->isStrictMode(), codeBlock->putByIdContext());
-    if (pc[8].u.operand)
-        asObject(baseValue)->putDirect(vm, ident, LLINT_OP_C(3).jsValue(), slot);
-    else
-        baseValue.put(exec, ident, LLINT_OP_C(3).jsValue(), slot);
+
+    bool putcustom=false;
+    if(baseValue.isFunction() ){
+        JSFunction* fun = jsCast<JSFunction*>(baseValue);
+        if(fun->name(exec).startsWith("__NODE_PROXY_CLS__") && 
+                (!ident.string().startsWith("__nodejs_func_prop_"))){
+            printf("%s use __nodejs_func_set_prop__ %s\n",__func__,ident.utf8().data());
+            PropertySlot slot(baseValue);
+            JSValue result = baseValue.get(exec, Identifier(exec,"__nodejs_func_prop_set__"),slot);
+            if(result.isFunction()){
+                JSObject* funcobj = result.toObject(exec);
+                CallData callData;
+                CallType callType = funcobj->methodTable()->getCallData(funcobj, callData);
+                MarkedArgumentBuffer args;
+                JSString* jsprop = jsString(exec,ident.utf8().data());
+                args.append(jsprop->toPrimitive(exec,PreferString));
+                args.append(LLINT_OP_C(3).jsValue());
+                JSValue e;
+                result = JSC::call(exec, funcobj, callType, callData, baseValue, args, &e);
+                putcustom=true;
+            }
+            //printf("%s reset __nodejs_func_set_prop__ isfunc=%d\n",__func__,result.isFunction());
+        }
+    }
+
+    if(!putcustom){
+        if (pc[8].u.operand)
+            asObject(baseValue)->putDirect(vm, ident, LLINT_OP_C(3).jsValue(), slot);
+        else
+            baseValue.put(exec, ident, LLINT_OP_C(3).jsValue(), slot);
+    }
     LLINT_CHECK_EXCEPTION();
     
     if (!LLINT_ALWAYS_ACCESS_SLOW

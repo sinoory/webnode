@@ -136,3 +136,8 @@ Tools/CTestTestfile.cmake
 Tools/cmake_install.cmake
 cmake_install.cmake
 install_manifest.txt
+*.sw*
+.deps/
+.libs/
+libseed-gtk3.la
+b.sh

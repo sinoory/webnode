@@ -40,7 +40,7 @@ void NodeBindingsLinux::OnWatcherQueueChanged(uv_loop_t* loop) {
 }
 
 void NodeBindingsLinux::PollEvents() {
-  int timeout = uv_backend_timeout(uv_loop_);
+  int timeout = 300;// uv_backend_timeout(uv_loop_);
 
   // Wait for new libuv events.
   int r;
