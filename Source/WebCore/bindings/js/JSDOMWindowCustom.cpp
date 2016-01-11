@@ -457,7 +457,13 @@ JSValue JSDOMWindow::node_proxy_cls_set_prop(ExecState* exec){
 
     bool p=false;
     if(value.isFunction()){
-        printf("%s TODO: function param\n",__func__);
+        printf("=======%s value=func\n",__func__);
+        ostr <<"nodeproxyCb";  
+        if(NodeProxy::m_data !=0){
+            delete NodeProxy::m_data;
+        }
+        NodeProxy::m_data=new JSCallbackData(asObject(value), jsCast<JSDOMGlobalObject*>(exec->lexicalGlobalObject()));
+        p=true;
     }else if(value.isString()){
         ostr<<value.toString(exec)->value(exec).utf8().data()<<"'";
         p=true;
