@@ -42,6 +42,9 @@ void JSNodeProxy::putByIndex(JSCell* cell, ExecState* exec, unsigned index, JSVa
 bool JSNodeProxy::getOwnPropertySlot(JSObject* object, ExecState* exec, PropertyName propertyName, PropertySlot& slot)
 {
     JSNodeProxy* thisObject = jsCast<JSNodeProxy*>(object);
+    slot.setCustom(thisObject, ReadOnly | DontDelete | DontEnum, jsNodeProxyGenralFunc);
+    return true;
+
     NodeProxy& impl = thisObject->impl();
     const char* nm = propertyName.uid()->utf8().data();
     std::ostringstream ostr;
@@ -78,6 +81,7 @@ bool JSNodeProxy::getOwnPropertySlot(JSObject* object, ExecState* exec, Property
     printf("JSNodeProxy::getOwnPropertySlot propertyName=%s\n",propertyName.uid()->characters8());
     return false;
 }
+
 EncodedJSValue jsNodeProxyGenralFunc(ExecState* exec, JSObject* slotBase, EncodedJSValue thisValue, PropertyName propertyName)
 {
     printf("jsNodeProxyGenralFunc argc=%d exe=%p\n",exec->argumentCount(),exec);
@@ -86,12 +90,40 @@ EncodedJSValue jsNodeProxyGenralFunc(ExecState* exec, JSObject* slotBase, Encode
         return JSValue::encode(jsBoolean(true));
     }
 
-
-
     JSNodeProxy* castedThis = toJSNodeProxy(JSValue::decode(thisValue));
     NodeProxy& impl = castedThis->impl();
+    const char* nm = propertyName.uid()->utf8().data();
+    std::ostringstream ostr;
+    ostr<<impl.mModuleName<<"."<<nm;
+    char type = NodeProxy::v8typeof(ostr.str().c_str());
+    printf("JSNodeProxy::getOwnPropertySlot handle %s type=%c exec=%p argc=%d\n",nm,type,exec,exec->argumentCount());
+    if(!impl.globalObject){
+        impl.globalObject=castedThis->globalObject();
+    }
 
-    return JSValue::encode(impl.getProp(exec,(const char*)(propertyName.uid()->utf8().data())));
+    if(type=='f'){//function
+        std::ostringstream ostrf;
+        ostrf << "function __NODE_PROXY_CLS__"<<++NodeProxy::FunProxyCnt<<"(){"
+                    "var args=Array.prototype.slice.call(arguments);"
+                    "args.splice(0,0,'"<<ostr.str().c_str()<<"'); " //p1 is func
+                    "return node_proxy_cls_exe_fun.apply(window,args);"
+                "} ; "
+                "__NODE_PROXY_CLS__"<<NodeProxy::FunProxyCnt<<".__nodejs_func_prop_get__"<<NodeProxy::FunProxyCnt<<"=function(prop){"
+                    " return node_proxy_cls_get_prop('"<< ostr.str().c_str() <<"',prop); "
+                "} ; "
+                "__NODE_PROXY_CLS__"<<NodeProxy::FunProxyCnt<<".__nodejs_func_prop_set__"<<NodeProxy::FunProxyCnt<<"=function(prop,value){"
+                    "node_proxy_cls_set_prop('"<<ostr.str().c_str()<<"',prop,value);"
+                "} ; "
+                "eval(__NODE_PROXY_CLS__"<<NodeProxy::FunProxyCnt<<") " << std::endl;
+        printf("%s f=%s\n",__func__,ostrf.str().c_str());
+        JSValue evaluationException;
+        String jsstr=String::fromUTF8WithLatin1Fallback(ostrf.str().c_str(),strlen(ostrf.str().c_str()));
+        SourceCode jsc = makeSource(jsstr, "nodeproxycls");
+        JSValue returnValue = JSMainThreadExecState::evaluate(exec,jsc,JSValue(), &evaluationException);
+        return JSValue::encode(returnValue);
+    }else{
+        return JSValue::encode(impl.getProp(exec,(const char*)(propertyName.uid()->utf8().data())));
+    }
 
 
 }

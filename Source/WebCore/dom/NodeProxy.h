@@ -56,6 +56,7 @@ class NodeProxy : public ScriptWrappable, public RefCounted<NodeProxy> {
 
 
     static int ExeCnt;
+    static int FunProxyCnt;
     static JSCallbackData* m_data;
 
     JSDOMGlobalObject* globalObject;

@@ -13,6 +13,7 @@ using namespace std;
 namespace WebCore {
     JSCallbackData* NodeProxy::m_data=0;
     int NodeProxy::ExeCnt=0;
+    int NodeProxy::FunProxyCnt=0;
 
 
     JSValue NodeProxy::getProp(ExecState* exec,const char* prop){
@@ -157,7 +158,7 @@ namespace WebCore {
                 v8::Local<v8::Number> rv = v->ToNumber();
                 return (JSValue(rv->Value()));
             }else if (v->IsString()) {
-                printf("v8data2jsc v8 is str\n");
+                printf("v8data2jsc v is str exec=%p\n",exec);
                 if(!exec){
                     return JSC::jsUndefined();
                 }
@@ -169,7 +170,7 @@ namespace WebCore {
                 //V8_INLINE static Array* Cast(Value* obj);
                 return JSC::jsUndefined();
             }else if (v->IsObject()){
-                printf("v8data2jsc v8 is obj\n");
+                printf("v8data2jsc v8 is obj \n");
                 if(!exec){
                     return JSC::jsUndefined();
                 }
@@ -298,11 +299,11 @@ namespace WebCore {
         v8::Context::Scope cscope(g_context);{
             v8::TryCatch try_catch;
             ostringstream osModule;
-            osModule<<"NPReq_"<<module<<"_"<<moduleid<<std::endl;
+            osModule<<"NPReq_"<<module<<"_"<<moduleid;
             mModuleName = osModule.str();
 
             ostringstream oscb;
-            oscb<<"NPReq_"<<module<<"_cb_"<<moduleid<<std::endl;
+            oscb<<"NPReq_"<<module<<"_cb_"<<moduleid;
             mModuleCb = oscb.str();
             moduleid++;
 
