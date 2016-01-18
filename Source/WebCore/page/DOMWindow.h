@@ -126,7 +126,7 @@ namespace WebCore {
 
         PassRefPtr<MediaQueryList> matchMedia(const String&);
         PassRefPtr<NodeProxy> require(const String&);
-        PassRefPtr<NodeProxy> _require_obj_from_class_(const String&);
+        PassRefPtr<NodeProxy> _require_obj_from_class_(const String&,const char* constructParams);
 
         WEBCORE_EXPORT unsigned pendingUnloadEventListeners() const;
 

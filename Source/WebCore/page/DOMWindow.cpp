@@ -481,9 +481,9 @@ PassRefPtr<NodeProxy> DOMWindow::require(const String& module){
     return np;
 }
 
-PassRefPtr<NodeProxy> DOMWindow::_require_obj_from_class_(const String& module){
+PassRefPtr<NodeProxy> DOMWindow::_require_obj_from_class_(const String& module,const char* constructParams){
     PassRefPtr<NodeProxy> np = NodeProxy::create();
-    np->require(module.ascii().data(),true);
+    np->require(module.ascii().data(),true,constructParams);
     return np;
 }
 

@@ -349,8 +349,17 @@ JSValue JSDOMWindow::require(ExecState* exec){
     }
 
     std::ostringstream ostr;
-    //TODO: also need pass arguments to requireObjFromClass to new a real object
-    ostr << "function __NODE_PROXY_CLS__"<<++NodeProxy::FunProxyCnt<<"(){return node_require_obj_from_class('"<< module.ascii().data() <<"');} ; __NODE_PROXY_CLS__"<<NodeProxy::FunProxyCnt<<".__nodejs_func_prop_get__"<<NodeProxy::FunProxyCnt<<"=function(prop){ return node_get_prop_from_required_class('"<< module.ascii().data() <<"',prop); } ;__NODE_PROXY_CLS__"<<NodeProxy::FunProxyCnt<<".__nodejs_func_prop_set__=function(prop,value){node_set_prop_from_required_class('"<<module.ascii().data()<<"',prop,value);} ; eval(__NODE_PROXY_CLS__"<<NodeProxy::FunProxyCnt<<") " << std::endl;
+    ostr << "function __NODE_PROXY_CLS__"<<++NodeProxy::FunProxyCnt<<"(){"
+                "var args=Array.prototype.slice.call(arguments);"
+                "args.splice(0,0,'"<<module.ascii().data()<<"'); " //p1 is module name
+                "return node_require_obj_from_class.apply(window,args);"
+            "} ; "
+            "__NODE_PROXY_CLS__"<<NodeProxy::FunProxyCnt<<".__nodejs_func_prop_get__"<<NodeProxy::FunProxyCnt<<"=function(prop){"
+                " return node_get_prop_from_required_class('"<< module.ascii().data() <<"',prop); "
+            "} ;"
+            "__NODE_PROXY_CLS__"<<NodeProxy::FunProxyCnt<<".__nodejs_func_prop_set__"<<NodeProxy::FunProxyCnt<<"=function(prop,value){"
+                "node_set_prop_from_required_class('"<<module.ascii().data()<<"',prop,value);"
+            "} ; eval(__NODE_PROXY_CLS__"<<NodeProxy::FunProxyCnt<<") " << std::endl;
     printf("===JSDOMWindow::require %s\n",ostr.str().c_str());
     JSValue evaluationException;
     String jsstr=String::fromUTF8WithLatin1Fallback(ostr.str().c_str(),strlen(ostr.str().c_str()));
@@ -360,9 +369,12 @@ JSValue JSDOMWindow::require(ExecState* exec){
 
 }
 JSValue JSDOMWindow::node_require_obj_from_class(ExecState* exec){
-    const String& module(exec->argument(0).isEmpty() ? String() : exec->argument(0).toString(exec)->value(exec));
-    PassRefPtr<NodeProxy> np = impl()._require_obj_from_class_(module);
-    printf("======JSDOMWindow::require obj from class\n");
+    const String& module(exec->argument(0).toString(exec)->value(exec));
+    //TODO:convert jsc argments to string for v8 eval
+    std::ostringstream ostr;
+    NodeProxy::convertJscArgs2String(exec,1,ostr);
+    printf("===========%s construct param=%s\n",__func__,ostr.str().c_str());
+    PassRefPtr<NodeProxy> np = impl()._require_obj_from_class_(module,ostr.str().c_str());
     JSValue result = toJS(exec, this->globalObject(), WTF::getPtr(np));
     return result;
 
@@ -413,6 +425,7 @@ JSValue JSDOMWindow::node_get_prop_from_required_class(ExecState* exec){
 }
 
 JSValue JSDOMWindow::node_set_prop_from_required_class(ExecState* exec){
+    printf("%s TODO : implement it\n");
     return jsNull();
 }
 
@@ -455,9 +468,8 @@ JSValue JSDOMWindow::node_proxy_cls_set_prop(ExecState* exec){
     std::ostringstream ostr;
     ostr<<module.utf8().data()<<"."<<prop.utf8().data()<<"=";
 
-    bool p=false;
+    bool p=false; //param valid or not
     if(value.isFunction()){
-        printf("=======%s value=func\n",__func__);
         ostr <<"nodeproxyCb";  
         if(NodeProxy::m_data !=0){
             delete NodeProxy::m_data;

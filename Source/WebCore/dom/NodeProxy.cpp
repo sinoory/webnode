@@ -3,8 +3,6 @@
 #include "NodeProxy.h"
 #include "JSNodeProxy.h"
 
-#include <sstream>
-#include <iostream>
 
 #include <runtime/JSLock.h>
 #include <runtime/JSONObject.h>
@@ -356,6 +354,49 @@ namespace WebCore {
     }
 
 
+    //static 
+    void NodeProxy::convertJscArgs2String(ExecState* exec,int startindex,std::ostringstream& ostr){
+        bool pa=false;
+        for(int i=startindex;i<exec->argumentCount();i++){
+            JSValue arg=exec->uncheckedArgument(i);
+            if(arg.isString()){
+                ostr<< (pa?",'":"'") <<arg.toString(exec)->value(exec).ascii().data()<<"'";  
+                pa=true;
+            }else if(arg.isNumber()){
+                ostr<< (pa?",":"") <<arg.toNumber(exec);  
+                pa=true;
+            }else if(arg.isFunction()){
+                ostr<< (pa?",":"") <<"nodeproxyCb";  
+                if(NodeProxy::m_data !=0){
+                    delete NodeProxy::m_data;
+                }
+                JSDOMGlobalObject* globalObject =jsCast<JSDOMGlobalObject*>(exec->lexicalGlobalObject());
+                NodeProxy::m_data=new JSCallbackData(asObject(arg), globalObject);
+            }else if(arg.isObject()){//to be the last selection
+                JSValue isnodeproxyobj=arg.get(exec,Identifier(exec,"isNodeProxyObj"));
+                if(isnodeproxyobj.isTrue()){
+                    JSNodeProxy* jnp = jsCast<JSNodeProxy*>(arg);
+                    printf("%s param is nodeproxyobj,module=%s\n",__func__,
+                        jnp->impl().mModuleName.c_str());
+                    ostr<<(pa?",":"")<<jnp->impl().mModuleName.c_str();
+                    continue; 
+                }
+                const char* s = arg.toString(exec)->value(exec).utf8().data();
+                String ss = JSONStringify(exec,arg,0);
+                //printf("setProperty unhandled object s=%s js=%s\n",s,ss.utf8().data());
+                if(ss.startsWith('[')){//object is an array
+                }else if(ss.startsWith('{')){//a json or a object,convert to json 
+                    //TODO: if is object, convert to json will be empty
+                    ostr<<(pa?",":"")<<"JSON.parse('"<<ss.utf8().data()<<"')";
+                    pa=true;
+                }
+            }else{
+                printf("%s TODO unkown arg %d type\n",i);
+            }
+        }
+
+    }
+
     JSValue NodeProxy::exeMethod(ExecState* exec){
         printf("NodeProxy::exeMethod mMethod=%s,argc=%d exe=%p\n",mMethod.c_str(),exec->argumentCount(),exec);
 
@@ -370,43 +411,7 @@ namespace WebCore {
         ostr <<" "<<EXE_RES_VAR<<++ExeCnt<<" = " << mModuleName<< "." <<mMethod<<"(";
         v8::Context::Scope cscope(g_context);{
             v8::TryCatch try_catch;
-            bool pa=false;
-            for(int i=0;i<exec->argumentCount();i++){
-                JSValue arg=exec->uncheckedArgument(i);
-                if(arg.isString()){
-                    ostr<< (pa?",'":"'") <<arg.toString(exec)->value(exec).ascii().data()<<"'";  
-                    pa=true;
-                }else if(arg.isNumber()){
-                    ostr<< (pa?",":"") <<arg.toNumber(exec);  
-                    pa=true;
-                }else if(arg.isFunction()){
-                    ostr<< (pa?",":"") <<"nodeproxyCb";  
-                    if(this->m_data !=0){
-                        delete this->m_data;
-                    }
-                    this->m_data=new JSCallbackData(asObject(arg), this->globalObject);
-                }else if(arg.isObject()){//to be the last selection
-                    JSValue isnodeproxyobj=arg.get(exec,Identifier(exec,"isNodeProxyObj"));
-                    if(isnodeproxyobj.isTrue()){
-                        JSNodeProxy* jnp = jsCast<JSNodeProxy*>(arg);
-                        printf("%s param is nodeproxyobj,module=%s\n",__func__,
-                            jnp->impl().mModuleName.c_str());
-                        ostr<<(pa?",":"")<<jnp->impl().mModuleName.c_str();
-                        continue; 
-                    }
-                    const char* s = arg.toString(exec)->value(exec).utf8().data();
-                    String ss = JSONStringify(exec,arg,0);
-                    //printf("setProperty unhandled object s=%s js=%s\n",s,ss.utf8().data());
-                    if(ss.startsWith('[')){//object is an array
-                    }else if(ss.startsWith('{')){//a json or a object,convert to json 
-                        //TODO: if is object, convert to json will be empty
-                        ostr<<(pa?",":"")<<"JSON.parse('"<<ss.utf8().data()<<"')";
-                        pa=true;
-                    }
-                }else{
-                    printf("%s TODO unkown arg %d type\n",i);
-                }
-            }
+            convertJscArgs2String(exec,0,ostr);
             ostr <<");"<<std::endl;
 
             printf("NodeProxy::exeMethod %s , this=%p\n",ostr.str().c_str(),this);

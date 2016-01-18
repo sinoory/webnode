@@ -20,6 +20,9 @@
 #include "third_party/node/src/node.h"
 #include   <map>
 
+#include <sstream>
+#include <iostream>
+
 using namespace JSC;
 
 #define EXE_RES_VAR "_node_proxy_exe_res_"
@@ -36,6 +39,7 @@ class NodeProxy : public ScriptWrappable, public RefCounted<NodeProxy> {
 
     static v8::Handle<v8::Value> execStringInV8(const char* str,v8::Isolate* isolate=0);
     static char v8typeof(const char* prop);
+    static void convertJscArgs2String(ExecState* exec,int startindex,std::ostringstream& ostr);
 
     //if v8 value is object,then v8refname must supplied, 
     //  return a jsc nodeprox object which contain the v8 object refname 
